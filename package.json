@@ -1,0 +1,7 @@
+{
+  "name": "archery-converge",
+  "private": true,
+  "scripts": {
+    "check:app": "node tools/check-app.js"
+  }
+}

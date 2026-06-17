@@ -135,12 +135,34 @@ label.f{display:block;font-size:10px;color:var(--dim);letter-spacing:.08em;margi
 
 <script>
 "use strict";
-const KEY="archeryConverge.v1", APP_VER=2;
+const KEY="archeryConverge.v1", APP_VER=3;
 let db=load();
-const ui={screen:"home",histId:null,adj:false};
+const ui={screen:"home",histId:null,adj:false,_dist:70};
 
 function blankDb(){return{setups:[],sightMarks:[],sessions:[],active:null};}
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d?.sessions)return Object.assign(blankDb(),d);}catch(e){}return blankDb();}
+function normalizeActive(a){
+  if(!a)return null;
+  if(!Array.isArray(a.ends))a.ends=[];
+  if(!Array.isArray(a.cur))a.cur=[];
+  if(!a.sightStart)a.sightStart={v:"",h:""};
+  if(!a.sightNow)a.sightNow={...a.sightStart};
+  if(!Array.isArray(a.adjLog))a.adjLog=[];
+  if(!a.perEnd)a.perEnd=6;
+  if(!a.phase)a.phase="record";
+  return a;
+}
+function load(){
+  try{
+    const d=JSON.parse(localStorage.getItem(KEY));
+    if(d){
+      const out=Object.assign(blankDb(),d);
+      out.active=normalizeActive(out.active);
+      (out.sessions||[]).forEach(s=>{if(!Array.isArray(s.ends))s.ends=[];});
+      return out;
+    }
+  }catch(e){}
+  return blankDb();
+}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function $(s,r){return (r||document).querySelector(s);}
@@ -205,14 +227,23 @@ function setTop(title,phase,back){
 function nav(screen){ui.screen=screen;ui.histId=null;ui.adj=false;render();}
 
 function render(){
-  if(db.active&&ui.screen==="home")ui.screen=db.active.phase||"record";
-  if(ui.screen==="home")return renderHome();
-  if(ui.screen==="setup")return renderSetup();
-  if(ui.screen==="record")return renderRecord();
-  if(ui.screen==="return")return renderReturn();
-  if(ui.screen==="done")return renderDone();
-  if(ui.screen==="history")return ui.histId?renderHistDetail():renderHistory();
-  if(ui.screen==="gear")return renderGear();
+  try{
+    if(db.active&&ui.screen==="home")ui.screen=db.active.phase||"record";
+    if(ui.screen==="home")return renderHome();
+    if(ui.screen==="setup")return renderSetup();
+    if(ui.screen==="record")return renderRecord();
+    if(ui.screen==="return")return renderReturn();
+    if(ui.screen==="done")return renderDone();
+    if(ui.screen==="history")return ui.histId?renderHistDetail():renderHistory();
+    if(ui.screen==="gear")return renderGear();
+  }catch(e){
+    console.error(e);
+    setTop("ERROR","",null);
+    $("#main").className="stage";
+    $("#main").innerHTML=`<div class="empty">表示エラー: ${esc(e.message)}<br><br>
+      <button class="btn hit" id="errReset">練習データをリセット</button></div>`;
+    $("#errReset").onclick=()=>{db.active=null;save();ui.screen="home";render();};
+  }
 }
 
 /* ── HOME ── */
@@ -300,7 +331,7 @@ function renderRecord(){
       <div><div class="k">R</div><b>${st.rr.toFixed(1)}</b></div>`:`
       <div><div class="k">X</div><b>—</b></div><div><div class="k">Y</div><b>—</b></div><div><div class="k">R</div><b>—</b></div>`}
     </div>
-    <button class="btn beat" id="backLine" ${n?``:`disabled`}>射線に戻った</button>
+    <button class="btn beat" id="backLine"${n?"":" disabled"}>射線に戻った</button>
     <div class="act"><button class="btn ghost sm" id="undo">1本戻す</button></div>`;
   paintMarks(s);
   bindTarget(s);
@@ -415,7 +446,7 @@ function renderDone(){
       ${(s.adjLog||[]).length?`<div class="note">調整 ${s.adjLog.length} 回</div>`:""}
     </div>
     <button class="btn hit" id="home">ホームへ</button>`:`<div class="empty">—</div>`;
-  $("#home")?.onclick=()=>nav("home");
+  const homeBtn=$("#home");if(homeBtn)homeBtn.onclick=()=>nav("home");
 }
 
 /* ── HISTORY ── */
@@ -425,7 +456,7 @@ function renderHistory(){
   $("#main").className="stage";
   $("#main").innerHTML=ss.length?ss.map(s=>`
     <div class="s-row" data-id="${s.id}"><div><div class="d">${fmtD(s.date)} · ${s.dist}m</div>
-      <div class="m">${s.ends.length}E${s.note?` · ${esc(s.note)}`:""}</div></div><div class="pts">${sessTot(s)}</div></div>`).join("")
+      <div class="m">${s.ends.length}E${s.note?" · "+esc(s.note):""}</div></div><div class="pts">${sessTot(s)}</div></div>`).join("")
     :`<div class="empty">なし</div>`;
   $("#main").querySelectorAll(".s-row").forEach(r=>r.onclick=()=>{ui.histId=r.dataset.id;render();});
 }
@@ -466,6 +497,7 @@ if("serviceWorker"in navigator&&(location.protocol==="https:"||location.hostname
 function checkUp(){if(location.protocol==="file:")return;fetch("version.json?"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(j=>{if(j?.v>APP_VER)$("#updBar").style.display="block";}).catch(()=>{});}
 $("#updBar").onclick=()=>location.reload();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkUp();});
+window.onerror=(msg,src,line)=>{toast("ERR:"+line);console.error(msg,src,line);};
 checkUp();render();
 </script>
 </body>
