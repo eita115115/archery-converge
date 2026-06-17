@@ -83,6 +83,8 @@ const requiredHtml = [
   ".face.celebration",
   "--ease-spring",
   "prefers-reduced-motion",
+  "return-verdict",
+  "zenkin-converge",
 ];
 const htmlOnly = new Set([
   'href="style.css"',
@@ -126,7 +128,12 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=54",
+  "APP_VER=55",
+  "return-verdict",
+  "returnVerdictHtml",
+  "home-setup-note",
+  "home-foot-hint",
+  "zenkin-converge",
   "page-in",
   "doneBackupPromptHtml",
   "quickGuideHtml",

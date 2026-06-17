@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=54;
+const KEY="archeryConverge.v1", APP_VER=55;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -376,6 +376,18 @@ function trustLineHtml(adv,s){
   const link=refine&&ctx.needsMove?` <button type="button" class="trust-link" id="trustGear">${begOn()?"設定で精密化":"Refine in Settings"}</button>`:"";
   return `<p class="trust-line">${esc(text)}${link}</p>`;
 }
+function returnVerdictHtml(st,adv,j){
+  if(!begOn()||!Beg)return "";
+  const pj=Beg.plainJudgement(j)||{title:"",body:""};
+  const moves=Beg.plainMoves(adv);
+  const move=moves[0]||"";
+  const action=move.includes("触らなくて")?(begOn()?"このままサイトを触らなくて大丈夫":"No sight change needed"):move;
+  return `<section class="return-verdict" aria-label="${begOn()?"今回の集まり":"Grouping"}">
+    <p class="return-verdict-label">${begOn()?"今回の集まり":"This end"}</p>
+    <p class="return-verdict-main">${esc(Beg.simpleGroup(st))}</p>
+    ${action?`<p class="return-verdict-action">${esc(action)}</p>`:""}
+    ${pj.title?`<p class="return-verdict-hint">${esc(pj.title)}</p>`:""}</section>`;
+}
 function adviceCardHtml(st,adv,j){
   if(!begOn()||!Beg)return "";
   const pj=Beg.plainJudgement(j)||{title:"",body:""};
@@ -554,19 +566,18 @@ function renderHome(){
         <p class="home-tag">${begOn()?"的の前で記録。戻れば、次の一手が見える。":"Record at the face. Return. See the next move."}</p>
       </section>
       ${homePreviewHtml()}
-      ${homeFlowHtml()}
-      ${backupBarHtml("bkOutHome")}
       ${db.sessions.length?`<p class="home-prev">${begOn()?"前回":"Last"} · ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · <b>${sessTot(db.sessions[db.sessions.length-1])}</b></p>`:""}
       <div class="home-start">
-        <button class="btn hero" id="goQuick">${begOn()?"今すぐ記録":"Record now"}</button>
-        <button type="button" class="btn ghost home-setup-link" id="goSetup">${begOn()?"距離・サイトを設定":"Set dist & sight"}</button>
+        <button class="btn hero" id="goQuick">${begOn()?"記録を始める":"Start recording"}</button>
+        <button type="button" class="home-setup-note" id="goSetup">${begOn()?"距離とサイトを変更":"Change dist & sight"}</button>
       </div>
       <footer class="home-foot">
-        <nav class="home-foot-nav">
+        <p class="home-foot-hint">${begOn()
+          ?`記録はこの端末のみ · <button type="button" class="home-foot-link" id="bkOutFoot">書き出し</button> · <button type="button" class="home-foot-link" id="bkInFoot">読み込み</button>`
+          :`On-device only · <button type="button" class="home-foot-link" id="bkOutFoot">Export</button> · <button type="button" class="home-foot-link" id="bkInFoot">Import</button>`}</p>
+        <nav class="home-foot-nav home-foot-nav-thin">
           <button type="button" id="lnkHist">${begOn()?"履歴":"History"}</button>
           <button type="button" id="lnkGear">${begOn()?"設定":"Settings"}</button>
-          <button type="button" id="bkOut">${begOn()?"書き出し":"Export"}</button>
-          <button type="button" id="bkIn">${begOn()?"読み込み":"Import"}</button>
         </nav>
       </footer>
     </div>`,"");
@@ -575,9 +586,8 @@ function renderHome(){
   $("#goSetup").onclick=()=>nav("setup");
   $("#lnkHist").onclick=()=>nav("history");
   $("#lnkGear").onclick=()=>nav("gear");
-  const bkHome=$("#bkOutHome");if(bkHome)bkHome.onclick=exportBackup;
-  $("#bkOut").onclick=exportBackup;
-  $("#bkIn").onclick=importBackup;
+  const bkFoot=$("#bkOutFoot");if(bkFoot)bkFoot.onclick=exportBackup;
+  const bkInFoot=$("#bkInFoot");if(bkInFoot)bkInFoot.onclick=importBackup;
 }
 
 function exportBackup(){
@@ -791,6 +801,12 @@ function afterRecordArrow(s,arrow){
   const stack=document.querySelector(".tgt-stack");
   if(stack){stack.classList.remove("hit-flash");void stack.offsetWidth;stack.classList.add("hit-flash");setTimeout(()=>stack.classList.remove("hit-flash"),400);}
   tapHaptic({zenkin:Geo.isZenkinEnd(s.cur,s.perEnd),ten:arrow.s>=10});
+  if(Geo.isZenkinEnd(s.cur,s.perEnd)){
+    const stack=document.querySelector(".tgt-stack");
+    if(stack){stack.classList.remove("zenkin-converge");void stack.offsetWidth;stack.classList.add("zenkin-converge");setTimeout(()=>stack.classList.remove("zenkin-converge"),760);}
+    const prog=$(".rec-progress");
+    if(prog){prog.classList.remove("converge-dots");void prog.offsetWidth;prog.classList.add("converge-dots");setTimeout(()=>prog.classList.remove("converge-dots"),720);}
+  }
 }
 
 function bindTarget(s){
@@ -871,11 +887,7 @@ function renderReturn(){
   const rtOver=geoDefs+(st?`<g class="geo-layer" pointer-events="none">${Geo.geoSvg(st,s.faceD,sug)}</g>`:"");
   const moveLine=adv&&adv.moves.length&&Beg?Beg.plainSightMove(adv.moves[0]):"";
   shell(2,returnTitle(s,tot,j)+(zenRet?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:"")+(!begOn()&&j?` ${jtagHtml(j)}`:""),"",`
-    ${safetyBannerHtml()}
-    ${coachCardHtml("return",{plainGroup:Beg&&Beg.plainGroup(st),moveLine,zenkin:zenRet})}
-    ${begOn()?"":trustLineHtml(adv,s)}
-    ${adviceCardHtml(st,adv,j)}
-    ${adviceTechHtml(st,adv,j)}
+    ${begOn()?returnVerdictHtml(st,adv,j):`${trustLineHtml(adv,s)}${adviceTechHtml(st,adv,j)}`}
     <div class="ret-split">
       <div class="cell"><div class="box sq-fit"><div class="tgt-stack">${Geo.targetSvg(s.faceD,"rt",rtOver,targetModeFor(end,pe),oiRet)}</div></div></div>
       <div class="cell">${ui.adj?`<div class="sight-adj" style="width:100%;margin:0">
@@ -884,6 +896,7 @@ function renderReturn(){
       </div>`:sightDial(s0,{v:sv,h:sh},sug,adv)}</div>
     </div>
     ${begOn()?"":geoLegendHtml("return",{j})}
+    ${safetyBannerHtml()}
     ${begOn()?adviceFootHtml():""}`,`
     <div class="foot-undo">${reopenEndBtnHtml("reopenRet")}</div>
     <div class="row3">
