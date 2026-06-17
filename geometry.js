@@ -240,7 +240,7 @@
     );
   }
 
-  function dot(a, fd, c, l) {
+  function dot(a, fd, c, l, extraCls) {
     var r = arrowMarkRadius(fd),
       p = mathToSvg(a.x, a.y),
       sw = r / 4,
@@ -248,6 +248,7 @@
     return (
       '<g class="mark-scored' +
       (cut ? " mark-cut" : " mark-solid") +
+      (extraCls ? " " + extraCls : "") +
       '" opacity=".92">' +
       (cut ? dotCutRing(p, r, sw) : "") +
       '<circle cx="' +

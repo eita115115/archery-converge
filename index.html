@@ -22,7 +22,7 @@
   --gold:#b45309;--cut-ok:#0f766e;--cut-miss:#b91c1c;--red:#b91c1c;--blue:#1d4ed8;--ink:#0f0f0e;--link:#0066cc;
   --geo-group:#0d9488;--geo-fill:rgba(13,148,136,.12);--geo-center:#ea580c;--geo-axis:#cbd5e1;
   --slot-done:#0f766e;--slot-active:#1c1b19;--slot-idle:#d8d5cd;
-  --mark-cur:#0f766e;--mark-past:rgba(60,60,60,.45);
+  --mark-cur:#0f0f0e;--mark-past:rgba(60,60,60,.45);
   --preview-fill:#1e3a5f;--preview-fine:#c2410c;
   --shadow:0 2px 16px rgba(28,27,25,.07);--shadow-lg:0 8px 32px rgba(28,27,25,.1);
   --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
@@ -117,8 +117,19 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .box.sq-fit{display:flex;align-items:center;justify-content:center}
 .tgt-stack{position:relative;width:100%;height:100%}
 .tgt-stack svg.face{width:100%;height:100%;display:block;touch-action:none;-ms-touch-action:none;
-  border-radius:50%;box-shadow:var(--shadow),0 0 0 1px rgba(0,0,0,.04)}
+  border-radius:50%;box-shadow:var(--shadow),0 0 0 1px rgba(0,0,0,.04);transition:box-shadow .25s ease,filter .2s ease}
 .tgt-stack svg.face.oppai{box-shadow:0 10px 28px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.06)}
+.tgt-stack.hit-flash svg.face{animation:tgt-flash .38s ease}
+.tgt-stack svg.face.face-reveal{animation:face-reveal .55s cubic-bezier(.2,.85,.25,1)}
+@keyframes tgt-flash{0%,100%{filter:none}35%{filter:brightness(1.06)}}
+@keyframes face-reveal{0%{opacity:.55;transform:scale(.97)}100%{opacity:1;transform:scale(1)}}
+.mark-scored.mark-pop{transform-box:fill-box;transform-origin:center;animation:mark-pop .38s cubic-bezier(.2,.9,.2,1) both}
+.mark-scored.mark-pop.mark-ten{animation-duration:.48s}
+@keyframes mark-pop{0%{transform:scale(.25);opacity:0}55%{transform:scale(1.18);opacity:1}100%{transform:scale(1);opacity:.92}}
+.rec-progress .dot.bump{animation:dot-bump .38s cubic-bezier(.2,.9,.2,1)}
+@keyframes dot-bump{0%{transform:scale(1)}45%{transform:scale(1.45)}100%{transform:scale(1)}}
+.btn.hero.ready-pulse{animation:ready-pulse .55s cubic-bezier(.2,.9,.2,1)}
+@keyframes ready-pulse{0%,100%{transform:scale(1)}40%{transform:scale(1.03)}}
 .tgt-stack .lens{position:absolute}
 .tgt-stack .geo-nums{position:absolute;bottom:6px;right:6px}
 

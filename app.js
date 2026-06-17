@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=38;
+const KEY="archeryConverge.v1", APP_VER=39;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -490,7 +490,7 @@ function renderRecord(){
   });
   if(canSetupBack){const bb=$("#backBtn");if(bb)bb.onclick=()=>backToSetupFromRecord(s);}
   bindReopenEnd(s,"#reopenRec",renderRecord);
-  const undoBtn=$("#undo");if(undoBtn)undoBtn.onclick=()=>{if(s.cur.length){s.cur.pop();if(!Geo.isZenkinEnd(s.cur,pe))s.oppaiIdx=null;save();renderRecord();}};
+  bindRecordUndo(s);
   $("#backLine").onclick=()=>{
     if(!s.cur.length)return;
     const t=s.cur.reduce((a,x)=>a+x.s,0);
@@ -505,11 +505,98 @@ function renderRecord(){
   };
 }
 
-function paintMarks(s){
-  let mh="";
+function tapHaptic(opts){
+  opts=opts||{};
+  if(!navigator.vibrate)return;
+  if(opts.zenkin)navigator.vibrate([10,45,18]);
+  else if(opts.ten)navigator.vibrate(14);
+  else navigator.vibrate(9);
+}
+function paintMarks(s,popIdx){
+  let mh="",i=0;
   s.ends.forEach(e=>e.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--mark-past)",Geo.lbl(a));}));
-  s.cur.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--mark-cur)",Geo.lbl(a));});
+  s.cur.forEach(a=>{
+    const pop=popIdx!=null&&i===popIdx;
+    const cls=pop?(a.s>=10?"mark-pop mark-ten":"mark-pop"):"";
+    mh+=Geo.dot(a,s.faceD,"var(--mark-cur)",Geo.lbl(a),cls);
+    i++;
+  });
   const mk=$("#tgmarks");if(mk)mk.innerHTML=mh;
+}
+function updateRecordFace(s){
+  const pe=s.perEnd,mode=targetModeFor(s.cur,pe);
+  const face=$("#tgface"),svg=$("#tgsvg");
+  if(!face||!svg)return;
+  const wasOppai=svg.classList.contains("oppai"),isOppai=mode==="oppai";
+  if(wasOppai===isOppai&&!isOppai)return;
+  face.innerHTML=Geo.targetFaceSvg(s.faceD,"tg",mode,zenOppaiIdx(s,s.cur,pe));
+  svg.classList.toggle("oppai",isOppai);
+  if(isOppai&&!wasOppai){svg.classList.add("face-reveal");setTimeout(()=>svg.classList.remove("face-reveal"),560);}
+}
+function updateRecordCoach(s){
+  if(!begOn()||!Beg)return;
+  const n=s.cur.length,pe=s.perEnd,zenRec=Geo.isZenkinEnd(s.cur,pe);
+  const card=document.querySelector(".coach-card[data-phase='record']");
+  if(!card)return;
+  const wrap=document.createElement("div");
+  wrap.innerHTML=Beg.coachCard("record",{n,pe,zenkin:zenRec});
+  const neu=wrap.firstElementChild;
+  if(neu)card.replaceWith(neu);
+}
+function bindRecordUndo(s){
+  const undo=$("#undo");if(!undo)return;
+  undo.onclick=()=>{
+    if(!s.cur.length)return;
+    s.cur.pop();
+    if(!Geo.isZenkinEnd(s.cur,s.perEnd))s.oppaiIdx=null;
+    save();renderRecord();
+  };
+}
+function updateRecordChrome(s,justShot){
+  const n=s.cur.length,pe=s.perEnd,zenRec=Geo.isZenkinEnd(s.cur,pe);
+  const title=recordTitle(s,n,pe)+(zenRec?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:"");
+  const ht=$(".hdr .title");if(ht)ht.innerHTML=title;
+  const prog=$(".rec-progress");
+  if(prog)prog.innerHTML=Array.from({length:pe},(_,i)=>{
+    const bump=justShot&&i===n-1?" bump":"";
+    return `<span class="dot${i<n?" on":i===n?" cur":""}${bump}"></span>`;
+  }).join("");
+  let hint=$(".rec-hint");
+  if(n>0){
+    const msg=begOn()?"タップを間違えたら「1本取り消し」· 長押しで位置を直せます":"Wrong tap? Undo one · long-press to nudge";
+    if(!hint&&prog){
+      hint=document.createElement("p");hint.className="rec-hint";hint.textContent=msg;prog.insertAdjacentElement("afterend",hint);
+    }else if(hint)hint.textContent=msg;
+  }else if(hint)hint.remove();
+  const row=$(".foot .row"),gap=row&&row.querySelector(".gap-btn"),undo=$("#undo");
+  if(n>0&&!undo&&row){
+    const btn=document.createElement("button");
+    btn.className="btn ghost sm undo-btn";btn.id="undo";
+    btn.textContent=begOn()?"1本取り消し":"Undo 1";
+    if(gap)gap.replaceWith(btn);else row.insertBefore(btn,row.firstChild);
+    bindRecordUndo(s);
+  }else if(n===0&&undo){
+    const sp=document.createElement("span");sp.className="gap-btn";
+    undo.replaceWith(sp);
+  }else if(undo)bindRecordUndo(s);
+  const bl=$("#backLine");
+  if(bl){
+    const enable=n>0;
+    if(enable&&bl.disabled)bl.classList.add("ready-pulse");
+    bl.disabled=!enable;
+    if(justShot&&n===pe)setTimeout(()=>{bl.classList.add("ready-pulse");setTimeout(()=>bl.classList.remove("ready-pulse"),560);},80);
+    else setTimeout(()=>bl.classList.remove("ready-pulse"),560);
+  }
+  updateRecordCoach(s);
+}
+function afterRecordArrow(s,arrow){
+  const idx=s.cur.length-1;
+  paintMarks(s,idx);
+  updateRecordFace(s);
+  updateRecordChrome(s,true);
+  const stack=document.querySelector(".tgt-stack");
+  if(stack){stack.classList.remove("hit-flash");void stack.offsetWidth;stack.classList.add("hit-flash");setTimeout(()=>stack.classList.remove("hit-flash"),400);}
+  tapHaptic({zenkin:Geo.isZenkinEnd(s.cur,s.perEnd),ten:arrow.s>=10});
 }
 
 function bindTarget(s){
@@ -549,7 +636,7 @@ function bindTarget(s){
     save();
     if(zen){const lb=Geo.oppaiLabelAt(s.oppaiIdx);toast(begOn()?"全金！！ "+lb:"全金 — "+lb);}
     else if(hint)toast(hint);
-    renderRecord();}
+    afterRecordArrow(s,h);}
   function cancel(e){const cp=pt(e);if(!drag||!cp||cp.id===drag.id)reset();}
   if(window.PointerEvent){
     svg.addEventListener("pointerdown",down);svg.addEventListener("pointermove",move);

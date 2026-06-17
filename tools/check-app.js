@@ -68,6 +68,7 @@ const requiredHtml = [
   "home-hero",
   ".btn.hero",
   "app-mode",
+  "mark-pop",
 ];
 requiredHtml.forEach(s => {
   if (!html.includes(s)) fail("missing in index.html: " + s);
@@ -80,7 +81,7 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=38",
+  "APP_VER=39",
   "exportBackup",
   "importBackup",
   "home-foot-nav",
@@ -90,6 +91,7 @@ const requiredApp = [
   "homeFlowHtml",
   "backLbl",
   "app-mode",
+  "afterRecordArrow",
   "clearStaticLanding",
   "applyRecordZoom",
   "zoomChips",
