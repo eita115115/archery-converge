@@ -81,6 +81,8 @@ const requiredHtml = [
   "trust-line",
   "btn.ghost.danger",
   ".face.celebration",
+  "--ease-spring",
+  "prefers-reduced-motion",
 ];
 const htmlOnly = new Set([
   'href="style.css"',
@@ -124,7 +126,8 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=53",
+  "APP_VER=54",
+  "page-in",
   "doneBackupPromptHtml",
   "quickGuideHtml",
   "hasExported",

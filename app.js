@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=53;
+const KEY="archeryConverge.v1", APP_VER=54;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -329,7 +329,15 @@ function shell(phaseIdx,title,back,bodyHtml,footHtml,fit){
   afterRender();
 }
 function afterRender(){
-  if(Cx){Cx.setViewportVars();requestAnimationFrame(function(){Cx.layoutFit();});}
+  if(Cx)Cx.setViewportVars();
+  const body=$("#body");
+  if(body){
+    body.classList.remove("page-in");
+    requestAnimationFrame(()=>{
+      body.classList.add("page-in");
+      if(Cx)Cx.layoutFit();
+    });
+  }else if(Cx)requestAnimationFrame(()=>Cx.layoutFit());
 }
 function jtagHtml(j){
   if(!j)return "";
