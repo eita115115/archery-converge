@@ -219,15 +219,35 @@
     );
   }
 
+  var MARK_FILL_OP = 0.72;
+  var MARK_STROKE_OP = 0.88;
+
   function markRadius(fd) {
-    return arrR(fd) * 1.1;
+    return arrR(fd) * 1.55;
   }
   function markStroke(fd) {
-    return Math.max(fd / 220, 1.4);
+    return Math.max(fd / 200, 1.5);
   }
   function markFontSize(fd, label) {
     var br = markRadius(fd);
-    return label.length > 1 ? br * 0.78 : br * 0.92;
+    return label.length > 1 ? br * 0.88 : br * 1.02;
+  }
+  function markLabelSvg(x, y, fd, l) {
+    var fs = markFontSize(fd, l),
+      sw = Math.max(fs * 0.11, fd / 900);
+    return (
+      '<text x="' +
+      x +
+      '" y="' +
+      y +
+      '" font-size="' +
+      fs +
+      '" fill="#fff" fill-opacity=".96" stroke="#0f172a" stroke-width="' +
+      sw +
+      '" paint-order="stroke fill" text-anchor="middle" dominant-baseline="central" font-weight="800">' +
+      l +
+      "</text>"
+    );
   }
 
   function dot(a, fd, c, l) {
@@ -237,16 +257,16 @@
     if (l) {
       var br = markRadius(fd);
       return (
-        '<g class="mark-scored">' +
+        '<g class="mark-scored" opacity=".94">' +
         '<circle cx="' +
         p.x +
         '" cy="' +
         p.y +
         '" r="' +
-        (br + sw * 0.6) +
+        (br + sw * 0.75) +
         '" fill="none" stroke="#fff" stroke-width="' +
-        (sw * 1.4) +
-        '"/>' +
+        (sw * 1.5) +
+        '" opacity=".85"/>' +
         '<circle cx="' +
         p.x +
         '" cy="' +
@@ -255,18 +275,15 @@
         br +
         '" fill="' +
         c +
+        '" fill-opacity="' +
+        MARK_FILL_OP +
         '" stroke="#1e293b" stroke-width="' +
-        (sw * 0.55) +
+        (sw * 0.65) +
+        '" stroke-opacity="' +
+        MARK_STROKE_OP +
         '"/>' +
-        '<text x="' +
-        p.x +
-        '" y="' +
-        p.y +
-        '" font-size="' +
-        markFontSize(fd, l) +
-        '" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="700">' +
-        l +
-        "</text></g>"
+        markLabelSvg(p.x, p.y, fd, l) +
+        "</g>"
       );
     }
     return (
@@ -278,9 +295,11 @@
       r +
       '" fill="' +
       c +
+      '" fill-opacity="' +
+      MARK_FILL_OP +
       '" stroke="#fff" stroke-width="' +
       sw +
-      '" opacity=".88"/></g>'
+      '" stroke-opacity=".9" opacity=".9"/></g>'
     );
   }
 
@@ -312,18 +331,11 @@
       br +
       '" fill="' +
       inner +
-      '" stroke="#1e293b" stroke-width="' +
+      '" fill-opacity=".78" stroke="#1e293b" stroke-width="' +
       sw +
-      '" opacity=".94"/>' +
-      '<text x="' +
-      p.x +
-      '" y="' +
-      p.y +
-      '" font-size="' +
-      fs +
-      '" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="700">' +
-      lab +
-      "</text></g>"
+      '" stroke-opacity=".9"/>' +
+      markLabelSvg(p.x, p.y, fd, lab) +
+      "</g>"
     );
   }
 

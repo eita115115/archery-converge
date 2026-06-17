@@ -73,7 +73,9 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=19",
+  "APP_VER=20",
+  "backToSetupFromRecord",
+  "canSetupBack",
   "isZenkinEnd",
   "targetModeFor",
   "rec-progress",
@@ -109,6 +111,8 @@ if (!geometrySrc.includes("function slotRadius") || !geometrySrc.includes("var(-
   fail("geometry grouping/slot tokens missing");
 if (!geometrySrc.includes("function previewMark"))
   fail("previewMark missing");
+if (!geometrySrc.includes("MARK_FILL_OP") || !geometrySrc.includes("markLabelSvg"))
+  fail("mark glass style missing");
 
 const scriptOrder = ["compat.js", "physics.js", "geometry.js", "beginner.js", "app.js"];
 let last = -1;
@@ -225,6 +229,10 @@ const zenEnd = end;
 if (!Geo.isZenkinEnd(zenEnd, 6)) fail("zenkin end should pass");
 if (Geo.isZenkinEnd(zenEnd.slice(0, 5), 6)) fail("incomplete end is not zenkin");
 if (Geo.isZenkinEnd(zenEnd.map((a, i) => (i === 0 ? { s: 8 } : a)), 6)) fail("8 ring is not zenkin");
+const dot10 = Geo.dot({ x: 2, y: 1, s: 10, X: true }, 122, "#0d9488", "10");
+if (!dot10.includes('fill-opacity="0.72"') || !dot10.includes('font-weight="800"'))
+  fail("scored mark size/opacity");
+
 const oppai = Geo.targetSvg(122, "opp", "", "oppai");
 if (!oppai.includes('class="face oppai"') || !oppai.includes("#FEE7D9") || !oppai.includes("oppnip"))
   fail("oppai target face missing");

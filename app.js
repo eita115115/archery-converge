@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=19;
+const KEY="archeryConverge.v1", APP_VER=20;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -190,6 +190,15 @@ function endPulse(n,cb,opts){
   setTimeout(()=>{p.classList.remove("on","zenkin");setTimeout(cb,200);},opts.zenkin?820:520);
 }
 function targetModeFor(arrows,pe){return Geo.isZenkinEnd(arrows,pe)?"oppai":"sport";}
+function backToSetupFromRecord(s){
+  ui._dist=s.dist;
+  ui._windDir=s.windDir??"";
+  ui._windSpd=s.windSpeed??0;
+  delete db.active;
+  save();
+  ui.screen="setup";
+  render();
+}
 
 function reopenLastEnd(s){
   if(!s||!s.ends.length||s.cur.length)return false;
@@ -368,7 +377,8 @@ function renderRecord(){
   s.phase="record";save();
   const n=s.cur.length,pe=s.perEnd;
   const zenRec=Geo.isZenkinEnd(s.cur,pe);
-  shell(1,recordTitle(s,n,pe)+(zenRec?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:""),"",`
+  const canSetupBack=!n&&!s.ends.length;
+  shell(1,recordTitle(s,n,pe)+(zenRec?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:""),canSetupBack?(begOn()?"← 準備":"← 準備"):"",`
     ${begOn()&&Beg?Beg.coachCard("record",{n,pe,zenkin:zenRec}):""}
     <div class="tgt-stage">
       <div class="box sq-fit" id="tgBox">
@@ -385,6 +395,7 @@ function renderRecord(){
       <button class="btn beat" id="backLine"${n?"":" disabled"}>${begOn()?"6本終わった・戻る":"射線に戻った"}</button></div>`,true);
   paintMarks(s);
   bindTarget(s);
+  if(canSetupBack){const bb=$("#backBtn");if(bb)bb.onclick=()=>backToSetupFromRecord(s);}
   bindReopenEnd(s,"#reopenRec",renderRecord);
   const undoBtn=$("#undo");if(undoBtn)undoBtn.onclick=()=>{if(s.cur.length){s.cur.pop();save();renderRecord();}};
   $("#backLine").onclick=()=>{
