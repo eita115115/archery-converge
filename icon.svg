@@ -1,57 +1,51 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!--
+    Palette refs (SchemeColor / color-hex):
+    Outer skin  — Tones of Neutral Peach: #FEE7D9 #FBD5C0 #FDC9AD #FEBCA6 #FDB09E
+    Mid skin    — Gentle Makeup: #EBC39E #D7AD93 #C89C88
+    Areola      — Baby Soft Skin: #E1B9B9 #D69FA0
+    Nipple core — Gentle Makeup Heather Cinnamon #B28278 → #9A6358
+  -->
   <defs>
-    <linearGradient id="bg" x1="0.1" y1="0" x2="0.9" y2="1">
-      <stop offset="0%" stop-color="#fffcf7"/>
-      <stop offset="50%" stop-color="#f7f0e8"/>
-      <stop offset="100%" stop-color="#ebe2d6"/>
+    <linearGradient id="bg" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#fffcf8"/>
+      <stop offset="100%" stop-color="#f3ebe2"/>
     </linearGradient>
-    <radialGradient id="skin" cx="44%" cy="32%" r="78%">
-      <stop offset="0%" stop-color="#fff9f6"/>
-      <stop offset="32%" stop-color="#ffe2d8"/>
-      <stop offset="68%" stop-color="#f4b5a8"/>
-      <stop offset="100%" stop-color="#de8f84"/>
+    <radialGradient id="vol" cx="38%" cy="32%" r="72%">
+      <stop offset="0%" stop-color="#fff" stop-opacity=".42"/>
+      <stop offset="42%" stop-color="#fff" stop-opacity=".08"/>
+      <stop offset="100%" stop-color="#c98f7a" stop-opacity=".12"/>
     </radialGradient>
-    <radialGradient id="shade" cx="62%" cy="78%" r="48%">
-      <stop offset="0%" stop-color="#b86b62" stop-opacity=".34"/>
-      <stop offset="100%" stop-color="#b86b62" stop-opacity="0"/>
+    <radialGradient id="nip" cx="42%" cy="36%" r="68%">
+      <stop offset="0%" stop-color="#c99a8c"/>
+      <stop offset="45%" stop-color="#b28278"/>
+      <stop offset="100%" stop-color="#8f564c"/>
     </radialGradient>
-    <radialGradient id="gloss" cx="38%" cy="24%" r="38%">
-      <stop offset="0%" stop-color="#fff" stop-opacity=".78"/>
-      <stop offset="55%" stop-color="#fff" stop-opacity=".18"/>
-      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="lift" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="2.2" stdDeviation="2.8" flood-color="#7a4f48" flood-opacity=".2"/>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.6" flood-color="#9a6d5f" flood-opacity=".24"/>
     </filter>
   </defs>
 
   <rect width="100" height="100" rx="22" fill="url(#bg)"/>
-  <rect width="100" height="100" rx="22" fill="none" stroke="#e5dbd0" stroke-width=".75"/>
 
-  <!-- single breast: chest wall on left, fuller curve below -->
-  <g filter="url(#lift)">
-    <path d="M24 68 C22 52 30 34 48 27 C62 24 74 34 78 50 C81 64 74 78 58 83 C42 86 28 80 24 68 Z"
-          fill="url(#skin)" stroke="#dfa398" stroke-width="1" stroke-linejoin="round"/>
-    <path d="M24 68 C22 52 30 34 48 27 C62 24 74 34 78 50 C81 64 74 78 58 83 C42 86 28 80 24 68 Z"
-          fill="url(#shade)"/>
-    <path d="M24 68 C22 52 30 34 48 27 C62 24 74 34 78 50 C81 64 74 78 58 83 C42 86 28 80 24 68 Z"
-          fill="url(#gloss)"/>
-    <path d="M24 52 C24 44 28 38 34 36" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".35"/>
+  <g transform="translate(50 50)" filter="url(#soft)">
+    <!-- WA face layout: 10 rings, all skin tones (light outside → areola inside) -->
+    <circle r="45.0" fill="#FEE7D9" stroke="#ddb896" stroke-width=".42"/>
+    <circle r="40.5" fill="#F8D2B8" stroke="#d9a888" stroke-width=".4"/>
+    <circle r="36.0" fill="#FDC9AD" stroke="#d9987c" stroke-width=".38"/>
+    <circle r="31.5" fill="#FEBCA6" stroke="#d08872" stroke-width=".38"/>
+    <circle r="27.0" fill="#F5A894" stroke="#cc7d68" stroke-width=".36"/>
+    <circle r="22.5" fill="#EBC39E" stroke="#c08a6a" stroke-width=".36"/>
+    <circle r="18.0" fill="#D7AD93" stroke="#b07d62" stroke-width=".34"/>
+    <circle r="13.5" fill="#E1B9B9" stroke="#b88484" stroke-width=".34"/>
+    <circle r="9.0"  fill="#D69FA0" stroke="#b07072" stroke-width=".32"/>
+    <circle r="4.5"  fill="#C89C88" stroke="#a06e5c" stroke-width=".3"/>
+
+    <!-- nipple -->
+    <circle r="2.15" fill="url(#nip)" stroke="#7a4840" stroke-width=".22"/>
+    <ellipse cx="-0.55" cy="-0.75" rx="0.75" ry="0.45" fill="#fff" opacity=".45"/>
+
+    <!-- soft breast volume -->
+    <circle r="45" fill="url(#vol)"/>
   </g>
-
-  <!-- nipple = WA 122 face (same palette as in-app target) -->
-  <g transform="translate(54 48)">
-    <circle r="20.5" fill="#f5f3ee" stroke="#2a2620" stroke-width=".5"/>
-    <circle r="18.5" fill="#f5f3ee" stroke="#2a2620" stroke-width=".45"/>
-    <circle r="14.8" fill="#222" stroke="#3a3a32" stroke-width=".42"/>
-    <circle r="11.1" fill="#222" stroke="#3a3a32" stroke-width=".4"/>
-    <circle r="7.4" fill="#3d8fd4" stroke="#2a2620" stroke-width=".38"/>
-    <circle r="3.7" fill="#c73e3a" stroke="#2a2620" stroke-width=".35"/>
-    <circle r="1.85" fill="#d4a72c" stroke="#2a2620" stroke-width=".3"/>
-    <line x1="-2.8" y1="0" x2="2.8" y2="0" stroke="#2a2620" stroke-width=".32"/>
-    <line x1="0" y1="-2.8" x2="0" y2="2.8" stroke="#2a2620" stroke-width=".32"/>
-    <ellipse cx="-5" cy="-6.2" rx="2.4" ry="1.3" fill="#fff" opacity=".4"/>
-  </g>
-
-  <ellipse cx="42" cy="34" rx="10" ry="6.5" fill="#fff" opacity=".48" transform="rotate(-14 42 34)"/>
 </svg>
