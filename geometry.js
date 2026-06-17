@@ -90,12 +90,17 @@
     [1, "#d4a72c", "#222"],
   ];
 
-  /** Zenkin face rasters — shape variants (swap files in oppai/ to customize) */
+  /** Zenkin face rasters — refs/oppai 由来9枚（oppai/1〜9） */
   var OPPAI_VARIANTS = [
-    { id: "round", file: "oppai/round.png", label: "丸型" },
-    { id: "teardrop", file: "oppai/teardrop.png", label: "しずく型" },
-    { id: "bell", file: "oppai/bell.png", label: "ベル型" },
-    { id: "heavy", file: "oppai/heavy.png", label: "垂れ型" },
+    { id: "v1", file: "oppai/1.png", label: "①" },
+    { id: "v2", file: "oppai/2.png", label: "②" },
+    { id: "v3", file: "oppai/3.png", label: "③" },
+    { id: "v4", file: "oppai/4.jpg", label: "④" },
+    { id: "v5", file: "oppai/5.jpg", label: "⑤" },
+    { id: "v6", file: "oppai/6.jpg", label: "⑥" },
+    { id: "v7", file: "oppai/7.jpg", label: "⑦" },
+    { id: "v8", file: "oppai/8.jpg", label: "⑧" },
+    { id: "v9", file: "oppai/9.jpg", label: "⑨" },
   ];
 
   function pickOppaiIdx() {
