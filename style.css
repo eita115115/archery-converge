@@ -273,7 +273,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .end-badge .s.cmp{color:var(--ink);margin-top:8px;font-weight:500}
 .rec-thumb-bar .undo-btn{font-weight:600}
 .updbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + var(--safe-bot));z-index:70;
-  background:var(--ink);color:#fff;padding:10px 18px;border-radius:980px;font-size:12px;font-weight:600;cursor:pointer;display:none;box-shadow:var(--shadow-lg);white-space:nowrap}
+  background:var(--ink);color:#fff;padding:10px 18px;border-radius:980px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:var(--shadow-lg);white-space:nowrap}
+.updbar[hidden]{display:none!important}
 
 .hist-row{display:flex;justify-content:space-between;align-items:center;padding:16px 2px;border-bottom:1px solid var(--line);cursor:pointer;letter-spacing:-.01em}
 .hist-row .d{font-size:16px;font-weight:500;color:var(--text)}

@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=50;
+const KEY="archeryConverge.v1", APP_VER=51;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -64,7 +64,8 @@ let db=load();
 const ui={screen:"home",histId:null,adj:false,_dist:70,zoom:1};
 
 function blankDb(){return{setups:[],sightMarks:[],sessions:[],active:null,settings:{eyeSight:850,beginnerMode:true}};}
-/* MIGRATE-V44: rename v44 session fields (endsOppai/oppaiIdx) → endsZenkinFaces/zenkinFaceIdx */
+/* MIGRATE-V44: rename v44 session fields (endsOppai/oppaiIdx) → endsZenkinFaces/zenkinFaceIdx
+ * REMOVE-AT: v55 (~2026-Q3) — delete this block once v44 local data has aged out */
 function migrateV44Session(a){
   if(!a||typeof a!=="object")return;
   if(!Array.isArray(a.endsZenkinFaces)){
@@ -909,7 +910,7 @@ function renderGear(){
 if("serviceWorker"in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
-function checkUp(){if(location.protocol==="file:")return;fetch("version.json?"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(j=>{if(j?.v>APP_VER)$("#updBar").style.display="block";}).catch(()=>{});}
+function checkUp(){if(location.protocol==="file:")return;fetch("version.json?"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(j=>{const b=$("#updBar");if(b&&j?.v>APP_VER)b.hidden=false;}).catch(()=>{});}
 $("#updBar").onclick=()=>location.reload();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkUp();});
 window.onerror=(msg,src,line)=>{toast("ERR:"+line);console.error(msg,src,line);};

@@ -65,6 +65,10 @@ const requiredHtml = [
   "minimum-scale=1",
   "user-scalable=no",
   'meta name="description"',
+  'property="og:description"',
+  'property="og:title"',
+  'application/ld+json',
+  'id="updBar" hidden',
   "static-landing",
   "home-steps",
   "home-flow",
@@ -85,6 +89,10 @@ const htmlOnly = new Set([
   'src="app.js"',
   "ConvergeApp.init",
   'meta name="description"',
+  'property="og:description"',
+  'property="og:title"',
+  'application/ld+json',
+  'id="updBar" hidden',
   "static-landing",
 ]);
 requiredHtml.forEach(s => {
@@ -112,7 +120,8 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=50",
+  "APP_VER=51",
+  "REMOVE-AT: v55",
   "migrateV44Session",
   "home-backup-hint",
   "zenkinFaceIdx",
