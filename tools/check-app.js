@@ -71,7 +71,9 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=11",
+  "APP_VER=12",
+  "--geo-group",
+  "slotRadius",
   "ConvergeBeginner",
   "begOn",
   "adviceCardHtml",

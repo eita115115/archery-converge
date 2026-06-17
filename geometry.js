@@ -6,7 +6,8 @@
 
   /** All target SVG layers MUST share this viewBox (marks, slots, geo overlays). */
   var VIEW_MARGIN = 1.18;
-  var SLOT_R_RATIO = 0.93;
+  /** Outer progress ring sits just outside the scoring face (not viewBox margin). */
+  var SLOT_OUTER_PAD = 0.55;
 
   function clamp(v, a, b) {
     return Math.max(a, Math.min(b, v));
@@ -22,6 +23,9 @@
   }
   function marginRadius(fd) {
     return (fd / 2) * VIEW_MARGIN;
+  }
+  function slotRadius(fd) {
+    return fd / 2 + ringW(fd) * SLOT_OUTER_PAD;
   }
   function viewBoxFor(fd) {
     var M = marginRadius(fd);
@@ -137,9 +141,36 @@
 
   function dot(a, fd, c, l) {
     var r = arrR(fd),
-      p = mathToSvg(a.x, a.y);
+      p = mathToSvg(a.x, a.y),
+      sw = r / 3.5;
+    if (l) {
+      var br = r * 1.12;
+      return (
+        '<g class="mark-scored">' +
+        '<circle cx="' +
+        p.x +
+        '" cy="' +
+        p.y +
+        '" r="' +
+        br +
+        '" fill="' +
+        c +
+        '" stroke="#fff" stroke-width="' +
+        sw +
+        '"/>' +
+        '<text x="' +
+        p.x +
+        '" y="' +
+        p.y +
+        '" font-size="' +
+        br * 0.95 +
+        '" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="700">' +
+        l +
+        "</text></g>"
+      );
+    }
     return (
-      "<g><circle cx=\"" +
+      '<g class="mark-dot"><circle cx="' +
       p.x +
       '" cy="' +
       p.y +
@@ -148,44 +179,32 @@
       '" fill="' +
       c +
       '" stroke="#fff" stroke-width="' +
-      r / 5 +
-      '" opacity=".92"/>' +
-      (l
-        ? '<text x="' +
-          p.x +
-          '" y="' +
-          p.y +
-          '" font-size="' +
-          r * 1.1 +
-          '" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="bold">' +
-          l +
-          "</text>"
-        : "") +
-      "</g>"
+      sw +
+      '" opacity=".88"/></g>'
     );
   }
 
   function geoSvg(st, fd, sug) {
     if (!st) return "";
     var M = marginRadius(fd),
-      w = fd / 600,
+      w = fd / 500,
       h = "";
     h +=
       '<line x1="' +
       -M +
       '" y1="0" x2="' +
       M +
-      '" y2="0" stroke="var(--hit)" stroke-width="' +
+      '" y2="0" stroke="var(--geo-axis)" stroke-width="' +
       w +
-      '" opacity=".25"/>';
+      '" opacity=".35"/>';
     h +=
       '<line x1="0" y1="' +
       -M +
       '" x2="0" y2="' +
       M +
-      '" stroke="var(--hit)" stroke-width="' +
+      '" stroke="var(--geo-axis)" stroke-width="' +
       w +
-      '" opacity=".25"/>';
+      '" opacity=".35"/>';
     if (st.major && st.minor) {
       var sp = mathToSvg(st.mx, st.my);
       h +=
@@ -203,12 +222,12 @@
         sp.x +
         " " +
         sp.y +
-        ')" fill="none" stroke="var(--hit)" stroke-width="' +
-        fd / 450 +
-        '" opacity=".35" stroke-dasharray="' +
-        fd / 55 +
+        ')" fill="var(--geo-fill)" stroke="var(--geo-group)" stroke-width="' +
+        fd / 380 +
+        '" opacity="1" stroke-dasharray="' +
+        fd / 40 +
         " " +
-        fd / 85 +
+        fd / 55 +
         '"/>';
     }
     var cp = mathToSvg(st.mx, st.my);
@@ -219,12 +238,12 @@
       cp.y +
       '" r="' +
       st.rr +
-      '" fill="none" stroke="var(--hit)" stroke-width="' +
-      fd / 400 +
-      '" opacity=".55" stroke-dasharray="' +
-      fd / 45 +
+      '" fill="none" stroke="var(--geo-group)" stroke-width="' +
+      fd / 340 +
+      '" opacity=".95" stroke-dasharray="' +
+      fd / 35 +
       " " +
-      fd / 70 +
+      fd / 50 +
       '"/>';
     h +=
       '<circle cx="' +
@@ -233,8 +252,8 @@
       cp.y +
       '" r="' +
       fd / 90 +
-      '" fill="var(--warn)" stroke="#fff" stroke-width="' +
-      fd / 800 +
+      '" fill="var(--geo-center)" stroke="#fff" stroke-width="' +
+      fd / 700 +
       '"/>';
     if (sug && (sug.h || sug.v)) {
       var L = Math.min(M * 0.38, Math.hypot(sug.h, sug.v) * 0.16 + 6);
@@ -254,12 +273,11 @@
   }
 
   function slotRingSvg(cur, pe, fd) {
-    var M = marginRadius(fd),
-      R = M * SLOT_R_RATIO,
+    var R = slotRadius(fd),
       seg = 360 / pe,
       gap = 4,
-      sw = fd / 110,
-      fs = fd / 17,
+      sw = fd / 100,
+      fs = fd / 19,
       s = "",
       i;
     for (i = 0; i < pe; i++) {
@@ -271,8 +289,8 @@
         y2 = -R * Math.sin(a1);
       var hit = cur[i],
         active = i === cur.length;
-      var col = hit ? (hit.s >= 9 ? "var(--warn)" : "var(--hit)") : active ? "var(--text)" : "var(--line)";
-      var op = hit ? 0.75 : active ? 0.4 : 0.18;
+      var col = hit ? "var(--slot-done)" : active ? "var(--slot-active)" : "var(--slot-idle)";
+      var op = hit ? 0.9 : active ? 0.55 : 0.28;
       s +=
         '<path d="M' +
         x1 +
@@ -289,34 +307,14 @@
         '" fill="none" stroke="' +
         col +
         '" stroke-width="' +
-        (active ? sw * 1.3 : sw) +
+        (active ? sw * 1.35 : sw) +
         '" opacity="' +
         op +
         '" stroke-linecap="round"/>';
-      var mid = (a0 + a1) / 2;
       if (active && !hit) {
-        var ix = R * 0.86 * Math.cos(mid),
-          iy = -R * 0.86 * Math.sin(mid);
-        s +=
-          '<circle cx="' +
-          ix +
-          '" cy="' +
-          iy +
-          '" r="' +
-          fd / 42 +
-          '" fill="none" stroke="' +
-          col +
-          '" stroke-width="' +
-          sw * 0.7 +
-          '" stroke-dasharray="' +
-          fd / 55 +
-          " " +
-          fd / 40 +
-          '" opacity=".55"/>';
-      }
-      if (hit) {
-        var tx = R * 0.84 * Math.cos(mid),
-          ty = -R * 0.84 * Math.sin(mid);
+        var mid = (a0 + a1) / 2,
+          tx = (R + ringW(fd) * 0.15) * Math.cos(mid),
+          ty = -(R + ringW(fd) * 0.15) * Math.sin(mid);
         s +=
           '<text x="' +
           tx +
@@ -324,24 +322,7 @@
           ty +
           '" font-size="' +
           fs +
-          '" fill="' +
-          col +
-          '" text-anchor="middle" dominant-baseline="central" font-weight="700">' +
-          lbl(hit) +
-          "</text>";
-      } else if (active) {
-        tx = R * 0.84 * Math.cos(mid);
-        ty = -R * 0.84 * Math.sin(mid);
-        s +=
-          '<text x="' +
-          tx +
-          '" y="' +
-          ty +
-          '" font-size="' +
-          fs * 0.85 +
-          '" fill="' +
-          col +
-          '" text-anchor="middle" dominant-baseline="central" font-weight="600" opacity=".7">' +
+          '" fill="var(--slot-active)" text-anchor="middle" dominant-baseline="central" font-weight="600">' +
           (i + 1) +
           "</text>";
       }
@@ -434,13 +415,15 @@
     if (back.x !== 3.5 || back.y !== -2.1) errs.push("math/svg roundtrip");
     var stack = targetSvg(fd, "inv", "<g>" + slotRingSvg([], 6, fd) + "</g>");
     if (stack.split('viewBox="')[1].split('"')[0] !== vb.str) errs.push("layers share viewBox");
+    if (slotRadius(fd) <= fd / 2) errs.push("slot ring inside face");
     return errs;
   }
 
   root.ConvergeGeometry = {
     VERSION: 1,
     VIEW_MARGIN: VIEW_MARGIN,
-    SLOT_R_RATIO: SLOT_R_RATIO,
+    SLOT_OUTER_PAD: SLOT_OUTER_PAD,
+    slotRadius: slotRadius,
     GEO_MARKER_DEFS: GEO_MARKER_DEFS,
     clamp: clamp,
     ringW: ringW,

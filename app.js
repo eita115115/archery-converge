@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=11;
+const KEY="archeryConverge.v1", APP_VER=12;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -114,7 +114,7 @@ function geoLegend(kind,extra){
     record:b?[
       {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--hit)" stroke-width="2"/><circle cx="13" cy="13" r="3.5" fill="var(--hit)"/>',t:"刺さった所をタップ"},
       {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="3 2"/>',t:"長押しで位置を直す"},
-      {svg:'<path d="M5 13 A8 8 0 0 1 21 13" fill="none" stroke="var(--text)" stroke-width="2.5"/>',t:"外の数字=得点"}
+      {svg:'<circle cx="13" cy="13" r="7" fill="var(--hit)"/><text x="13" y="16" font-size="9" fill="#fff" text-anchor="middle" font-weight="700">10</text>',t:"丸の数字=得点"}
     ]:[
       {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--hit)" stroke-width="2"/><circle cx="13" cy="13" r="3.5" fill="var(--hit)"/>',t:"タップで着弾"},
       {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="3 2"/><circle cx="13" cy="13" r="5" fill="none" stroke="var(--warn)"/>',t:"長押しで微調整"},
@@ -366,8 +366,9 @@ function renderRecord(){
 }
 
 function paintMarks(s){
-  let mh="";s.ends.forEach(e=>e.forEach(a=>{mh+=Geo.dot(a,s.faceD,"rgba(94,207,122,.22)");}));
-  s.cur.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--hit)",Geo.lbl(a));});
+  let mh="";
+  s.ends.forEach(e=>e.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--mark-past)",Geo.lbl(a));}));
+  s.cur.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--mark-cur)",Geo.lbl(a));});
   const mk=$("#tgmarks");if(mk)mk.innerHTML=mh;
 }
 
@@ -453,7 +454,7 @@ function renderReturn(){
       <button class="btn hit" id="next">${begOn()?"もう6本打つ":"次へ"}</button>
       <button class="btn ghost" id="fin">${begOn()?"今日は終わり":"終了"}</button>
     </div>`,true);
-  let mh="";end.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--hit)",Geo.lbl(a));});const rm=$("#rtmarks");if(rm)rm.innerHTML=mh;
+  let mh="";end.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--mark-cur)",Geo.lbl(a));});const rm=$("#rtmarks");if(rm)rm.innerHTML=mh;
   $("#adjBtn").onclick=()=>{
     if(!ui.adj){ui.adj=true;renderReturn();return;}
     const nv=$("#nv").value.trim(),nh=$("#nh").value.trim();
