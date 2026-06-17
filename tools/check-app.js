@@ -76,7 +76,7 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=28",
+  "APP_VER=29",
   "homeStepsHtml",
   "clearStaticLanding",
   "applyRecordZoom",
