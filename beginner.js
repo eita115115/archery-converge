@@ -69,7 +69,7 @@
   }
 
   function adviceDisclaimer() {
-    return "※着弾の集まりからの目安です。実際の調整はコーチ・安全確認・射場ルールを優先してください。";
+    return "※判断補助です。サイトを動かす前に射形・安全・コーチの指示を優先してください。";
   }
 
   function coachCard(phase, ctx) {

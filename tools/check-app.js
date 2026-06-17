@@ -76,7 +76,10 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=35",
+  "APP_VER=36",
+  "exportBackup",
+  "importBackup",
+  "bk-row",
   "advice-foot",
   "adviceDisclaimer",
   "sessCompareHint",
@@ -265,6 +268,6 @@ if (Geo.pickOppaiIdx() < 0 || Geo.pickOppaiIdx() >= Geo.OPPAI_VARIANTS.length) f
 const Beg = loadModule(beginnerSrc).ConvergeBeginner;
 if (!Beg || typeof Beg.plainGroup !== "function" || !Beg.coachCard("home")) fail("ConvergeBeginner export failed");
 if (!Beg.zenkinExplain || !Beg.zenkinExplain().includes("金")) fail("zenkinExplain missing");
-if (!Beg.adviceDisclaimer || !Beg.adviceDisclaimer().includes("コーチ")) fail("adviceDisclaimer missing");
+if (!Beg.adviceDisclaimer || !Beg.adviceDisclaimer().includes("判断補助")) fail("adviceDisclaimer missing");
 
 console.log("check-app OK");

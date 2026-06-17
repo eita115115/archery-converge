@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=35;
+const KEY="archeryConverge.v1", APP_VER=36;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -359,7 +359,7 @@ function renderHome(){
         <line x1="6" y1="50" x2="94" y2="50" stroke="var(--hit)" stroke-width=".5" opacity=".4"/>
       </svg></div>
       <h1 class="home-title">Converge</h1>
-      <p class="home-tag">${begOn()?"アーチェリーの着弾位置から、集まりと次のサイト調整の目安を見える化する記録アプリ":"Record hits at the face, return to see grouping and sight-move hints"}</p>
+      <p class="home-tag">${begOn()?"着弾を記録し、戻ったら集まりを見る。サイト調整は目安 — 判断の補助アプリです":"Tap hits, return to see grouping. Sight hints are estimates, not orders."}</p>
       ${homeStepsHtml()}
       <button class="btn hit" id="goSetup" style="max-width:280px">${begOn()?"練習を始める":"Start"}</button>
       ${begOn()&&Beg?Beg.coachCard("home"):""}
@@ -369,19 +369,42 @@ function renderHome(){
         <button id="lnkHist">${begOn()?"練習の履歴":"History"}</button>
         <button id="lnkGear">${begOn()?"設定":"Settings"}</button>
       </div>
-      <button class="home-bk" id="lnkBk" type="button">${begOn()?"データのバックアップ":"Backup data"}</button>
+      <div class="bk-row">
+        <button class="btn ghost sm" id="bkOut" type="button">${begOn()?"データを書き出す":"Export"}</button>
+        <button class="btn ghost sm" id="bkIn" type="button">${begOn()?"データを読み込む":"Import"}</button>
+      </div>
     </div>`,"");
   $("#goSetup").onclick=()=>nav("setup");
   $("#lnkHist").onclick=()=>nav("history");
   $("#lnkGear").onclick=()=>nav("gear");
-  $("#lnkBk").onclick=exportImport;
+  $("#bkOut").onclick=exportBackup;
+  $("#bkIn").onclick=importBackup;
 }
 
-function exportImport(){
-  const m=prompt("export と入力で保存、import で復元","export");
-  if(m==="export"){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db)]));a.download="converge-backup.json";a.click();}
-  if(m==="import"){const inp=document.createElement("input");inp.type="file";inp.accept=".json";inp.onchange=()=>{const f=inp.files[0];if(!f)return;
-    const r=new FileReader();r.onload=()=>{try{db=Object.assign(blankDb(),JSON.parse(r.result));save();toast("ok");render();}catch(e){toast("error");}};r.readAsText(f);};inp.click();}
+function exportBackup(){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));
+  a.download="converge-backup-"+today()+".json";
+  a.click();
+  toast(begOn()?"バックアップを保存しました":"Exported");
+}
+function importBackup(){
+  const inp=document.createElement("input");
+  inp.type="file";inp.accept=".json,application/json";
+  inp.onchange=()=>{
+    const f=inp.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>{
+      try{
+        if(!confirm(begOn()?"今のデータを上書きします。よろしいですか？":"Replace all data?"))return;
+        db=Object.assign(blankDb(),JSON.parse(r.result));
+        db.active=normalizeActive(db.active);
+        save();toast(begOn()?"読み込みました":"Imported");render();
+      }catch(e){toast(begOn()?"ファイルが読めません":"Invalid file");}
+    };
+    r.readAsText(f);
+  };
+  inp.click();
 }
 
 function renderSetup(){
