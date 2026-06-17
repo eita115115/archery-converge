@@ -85,6 +85,9 @@ const requiredHtml = [
   "prefers-reduced-motion",
   "return-verdict",
   "zenkin-converge",
+  "home-breathe",
+  "hero-glow",
+  "verdict-in",
 ];
 const htmlOnly = new Set([
   'href="style.css"',
@@ -128,21 +131,18 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=55",
+  "APP_VER=56",
   "return-verdict",
   "returnVerdictHtml",
   "home-setup-note",
-  "home-foot-hint",
   "zenkin-converge",
+  "ret-reveal",
   "page-in",
   "doneBackupPromptHtml",
-  "quickGuideHtml",
   "hasExported",
   "REMOVE-AT: v55",
   "migrateV44Session",
-  "home-previews",
   "startQuickSession",
-  "homePreviewHtml",
   "backup-bar",
   "safety-banner",
   "safetyBannerHtml",
@@ -191,7 +191,7 @@ const requiredApp = [
   "--mark-cur",
   "ConvergeBeginner",
   "begOn",
-  "adviceCardHtml",
+
   "beginnerMode",
   "function renderRecord",
   "function renderReturn",
