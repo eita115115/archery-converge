@@ -73,7 +73,9 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=13",
+  "APP_VER=14",
+  "reopenLastEnd",
+  "reopen-btn",
   "Geo.previewMark",
   "--mark-cur",
   "ConvergeBeginner",

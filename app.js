@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=13;
+const KEY="archeryConverge.v1", APP_VER=14;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -183,6 +183,36 @@ function sessTot(s){return sessArr(s).reduce((a,x)=>a+x.s,0);}
 
 function endPulse(n,cb){const p=$("#pulse"),pn=$("#pulseN");pn.textContent=n;p.classList.add("on");
   setTimeout(()=>{p.classList.remove("on");setTimeout(cb,200);},520);}
+
+function reopenLastEnd(s){
+  if(!s||!s.ends.length||s.cur.length)return false;
+  s.cur=s.ends.pop();
+  s.phase="record";
+  ui.adj=false;
+  save();
+  return true;
+}
+function undoFinishSession(){
+  if(db.active||!db.sessions.length)return false;
+  const last=db.sessions[db.sessions.length-1];
+  db.active=normalizeActive(Object.assign({},last,{cur:[]}));
+  db.sessions.pop();
+  save();
+  ui.screen=db.active.phase||"return";
+  ui.adj=false;
+  return true;
+}
+function reopenEndBtnHtml(id){
+  const t=begOn()?"間違えた・記録に戻る":"記録を直す";
+  return `<button type="button" class="btn ghost reopen-btn" id="${id}">${t}</button>`;
+}
+function bindReopenEnd(s,id,then){
+  const el=$(id);if(!el)return;
+  el.onclick=()=>{
+    if(!reopenLastEnd(s)){toast("戻せません");return;}
+    toast(begOn()?"記録に戻しました":"直前のエンドを再開");(then||(()=>render()))();
+  };
+}
 
 function shell(phaseIdx,title,back,bodyHtml,footHtml,fit){
   const el=$("#frame");
@@ -451,11 +481,13 @@ function renderReturn(){
     </div>
     ${geoLegend("return",{j})}
     ${retBarHtml(st,adv,j)}`,`
+    <div class="foot-undo">${reopenEndBtnHtml("reopenRet")}</div>
     <div class="row3">
       <button class="btn ghost" id="adjBtn">${ui.adj?"保存":begOn()?"サイトを直す":"調整"}</button>
       <button class="btn hit" id="next">${begOn()?"もう6本打つ":"次へ"}</button>
       <button class="btn ghost" id="fin">${begOn()?"今日は終わり":"終了"}</button>
     </div>`,true);
+  bindReopenEnd(s,"#reopenRet",renderRecord);
   let mh="";end.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--mark-cur)",Geo.lbl(a));});const rm=$("#rtmarks");if(rm)rm.innerHTML=mh;
   $("#adjBtn").onclick=()=>{
     if(!ui.adj){ui.adj=true;renderReturn();return;}
@@ -481,7 +513,9 @@ function renderDone(){
     ${sightDial(s.sightStart||{},s.sightNow||{},null)}
     ${(s.adjLog||[]).length?`<p style="text-align:center;font-size:12px;color:var(--dim)">調整 ${s.adjLog.length} 回</p>`:""}`:
     `<div class="empty">—</div>`,
-    s?`<button class="btn hit" id="home">ホームへ</button>`:"");
+    s?`<button class="btn ghost" id="undoFin" style="margin-bottom:8px">${begOn()?"終了を取り消す":"練習を続ける"}</button>
+    <button class="btn hit" id="home">ホームへ</button>`:"");
+  const uf=$("#undoFin");if(uf)uf.onclick=()=>{if(undoFinishSession()){toast(begOn()?"練習に戻しました":"取り消しました");render();}else toast("戻せません");};
   const homeBtn=$("#home");if(homeBtn)homeBtn.onclick=()=>nav("home");
 }
 
