@@ -7,6 +7,7 @@ const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const compatSrc = fs.readFileSync(path.join(root, "compat.js"), "utf8");
 const physicsSrc = fs.readFileSync(path.join(root, "physics.js"), "utf8");
 const geometrySrc = fs.readFileSync(path.join(root, "geometry.js"), "utf8");
+const beginnerSrc = fs.readFileSync(path.join(root, "beginner.js"), "utf8");
 const appSrc = fs.readFileSync(path.join(root, "app.js"), "utf8");
 
 function fail(msg) {
@@ -36,6 +37,7 @@ try {
   new vm.Script(compatSrc);
   new vm.Script(physicsSrc);
   new vm.Script(geometrySrc);
+  new vm.Script(beginnerSrc);
   new vm.Script(appSrc);
 } catch (e) {
   fail("JavaScript syntax error: " + e.message);
@@ -45,8 +47,11 @@ const requiredHtml = [
   'src="compat.js"',
   'src="physics.js"',
   'src="geometry.js"',
+  'src="beginner.js"',
   'src="app.js"',
   "ConvergeApp.init",
+  "coach-card",
+  "advice-card",
   ".frame.fit",
   "tgt-stack",
   "geo-legend",
@@ -66,7 +71,11 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=10",
+  "APP_VER=11",
+  "ConvergeBeginner",
+  "begOn",
+  "adviceCardHtml",
+  "beginnerMode",
   "function renderRecord",
   "function renderReturn",
   "function renderSetup",
@@ -84,7 +93,7 @@ if (/\?\.onclick\s*=/.test(appSrc)) fail("optional chaining assignment found");
 if (appSrc.includes("function targetSvg(") || appSrc.includes("function hitAt("))
   fail("scoring must live in geometry.js only");
 
-const scriptOrder = ["compat.js", "physics.js", "geometry.js", "app.js"];
+const scriptOrder = ["compat.js", "physics.js", "geometry.js", "beginner.js", "app.js"];
 let last = -1;
 scriptOrder.forEach(f => {
   const i = html.indexOf('src="' + f + '"');
@@ -99,7 +108,7 @@ const sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
 const swVer = +/archery-converge-v(\d+)/.exec(sw)[1];
 if (appVer !== version || swVer !== version) fail(`version mismatch app=${appVer} json=${version} sw=${swVer}`);
 
-const swAssets = ["index.html", "compat.js", "physics.js", "geometry.js", "app.js"];
+const swAssets = ["index.html", "compat.js", "physics.js", "geometry.js", "beginner.js", "app.js"];
 swAssets.forEach(a => {
   if (!sw.includes(a)) fail("sw.js missing cache asset: " + a);
 });
@@ -194,5 +203,8 @@ const stack = Geo.targetSvg(
 );
 if (!stack.includes('id="chksvg"') || !stack.includes('id="chkmarks"')) fail("targetSvg structure broken");
 if (!stack.includes("slot-layer") || !stack.includes("geo-layer")) fail("target overlays missing");
+
+const Beg = loadModule(beginnerSrc).ConvergeBeginner;
+if (!Beg || typeof Beg.plainGroup !== "function" || !Beg.coachCard("home")) fail("ConvergeBeginner export failed");
 
 console.log("check-app OK");

@@ -3,15 +3,17 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=10;
+const KEY="archeryConverge.v1", APP_VER=11;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
+const Beg=window.ConvergeBeginner;
 const PHASES=["準備","記録","確認"];
+function begOn(){return Beg&&Beg.isOn(db.settings);}
 const DISTS=[70,50,30,18];
 let db=load();
 const ui={screen:"home",histId:null,adj:false,_dist:70};
 
-function blankDb(){return{setups:[],sightMarks:[],sessions:[],active:null,settings:{eyeSight:850}};}
+function blankDb(){return{setups:[],sightMarks:[],sessions:[],active:null,settings:{eyeSight:850,beginnerMode:true}};}
 function normalizeActive(a){
   if(!a)return null;
   if(!Array.isArray(a.ends))a.ends=[];
@@ -28,7 +30,8 @@ function load(){
     const d=JSON.parse(localStorage.getItem(KEY));
     if(d){
       const out=Object.assign(blankDb(),d);
-      out.settings=Object.assign({eyeSight:850},out.settings||{});
+      out.settings=Object.assign({eyeSight:850,beginnerMode:true},out.settings||{});
+      if(out.settings.beginnerMode===undefined)out.settings.beginnerMode=true;
       out.active=normalizeActive(out.active);
       (out.sessions||[]).forEach(s=>{if(!Array.isArray(s.ends))s.ends=[];});
       return out;
@@ -80,14 +83,15 @@ function windCompass(dir,spd){
 }
 
 function phaseArc(cur){
-  const w=360,paths=DISTS.length;
+  const w=360;
   const segs=PHASES.map((p,i)=>{
     const x1=20+i*(w-40)/3,x2=20+(i+1)*(w-40)/3,mid=(x1+x2)/2;
     const on=i<=cur,active=i===cur;
     return `<path class="seg${on?" on":""}${active?" cur":""}" d="M${x1+8} 22 A 40 40 0 0 1 ${x2-8} 22"/>
       <text class="lbl${active?" on":""}" x="${mid}" y="14" text-anchor="middle">${p}</text>`;
   }).join("");
-  return `<div class="phase-arc"><svg viewBox="0 0 ${w} 36" xmlns="http://www.w3.org/2000/svg">${segs}</svg></div>`;
+  const sub=begOn()&&Beg?`<div class="phase-sub"><span class="on">${esc(Beg.phaseSubtitles()[cur]||"")}</span></div>`:"";
+  return `<div class="phase-arc"><svg viewBox="0 0 ${w} 36" xmlns="http://www.w3.org/2000/svg">${segs}</svg>${sub}</div>`;
 }
 
 function distRings(dist){
@@ -105,19 +109,31 @@ function distRings(dist){
 }
 
 function geoLegend(kind,extra){
+  const b=begOn();
   const items={
-    record:[
+    record:b?[
+      {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--hit)" stroke-width="2"/><circle cx="13" cy="13" r="3.5" fill="var(--hit)"/>',t:"刺さった所をタップ"},
+      {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="3 2"/>',t:"長押しで位置を直す"},
+      {svg:'<path d="M5 13 A8 8 0 0 1 21 13" fill="none" stroke="var(--text)" stroke-width="2.5"/>',t:"外の数字=得点"}
+    ]:[
       {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--hit)" stroke-width="2"/><circle cx="13" cy="13" r="3.5" fill="var(--hit)"/>',t:"タップで着弾"},
       {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="3 2"/><circle cx="13" cy="13" r="5" fill="none" stroke="var(--warn)"/>',t:"長押しで微調整"},
       {svg:'<path d="M5 13 A8 8 0 0 1 21 13" fill="none" stroke="var(--text)" stroke-width="2.5" opacity=".7"/>',t:"外周=得点"}
     ],
-    return:[
+    return:b?[
+      {svg:'<circle cx="13" cy="13" r="4" fill="var(--warn)"/>',t:"黄点=集まった中心"},
+      {svg:'<circle cx="9" cy="13" r="3" fill="var(--dim)"/><circle cx="17" cy="13" r="4" fill="var(--sight)"/>',t:"サイトの位置"},
+      {svg:'<line x1="5" y1="21" x2="21" y2="5" stroke="var(--warn)" stroke-width="2.5"/>',t:"黄線=動かす方向"}
+    ]:[
       {svg:'<ellipse cx="13" cy="13" rx="10" ry="6.5" fill="none" stroke="var(--hit)" stroke-width="1.5" stroke-dasharray="3 2"/>',t:"散布"},
       {svg:'<circle cx="13" cy="13" r="4" fill="var(--warn)" stroke="#fff" stroke-width="1"/>',t:"中心"},
       {svg:'<line x1="5" y1="21" x2="21" y2="5" stroke="var(--sight)" stroke-width="2.5"/>',t:"サイト方向"},
       {svg:'<circle cx="9" cy="13" r="3" fill="var(--dim)"/><circle cx="17" cy="13" r="4" fill="var(--sight)" stroke="#fff" stroke-width="1"/>',t:"灰=開始·紫=今"}
     ],
-    setup:[
+    setup:b?[
+      {svg:'<circle cx="13" cy="13" r="10" fill="none" stroke="var(--line2)" stroke-width="3"/>',t:"タップで距離を選ぶ"},
+      {svg:'<circle cx="13" cy="13" r="4" fill="var(--hit)"/>',t:"真ん中=無風でOK"}
+    ]:[
       {svg:'<circle cx="13" cy="13" r="10" fill="none" stroke="var(--line2)" stroke-width="3"/><circle cx="13" cy="13" r="4" fill="var(--hit)"/>',t:"リング=距離"},
       {svg:'<circle cx="13" cy="13" r="10" fill="none" stroke="var(--line)"/><line x1="13" y1="3" x2="13" y2="23" stroke="var(--line)"/><circle cx="13" cy="5" r="2.5" fill="var(--hit)"/>',t:"コンパス=風"}
     ]
@@ -193,13 +209,26 @@ function jtagHtml(j){
   const cls=j.tone==="ok"?"ok":j.tone==="warn"?"warn":j.tone==="hold"?"hold":"mid";
   return `<span class="jtag ${cls}">${esc(j.label)}</span>`;
 }
+function adviceCardHtml(st,adv,j){
+  if(!begOn()||!Beg)return "";
+  const pj=Beg.plainJudgement(j)||{title:"",body:""};
+  const moves=Beg.plainMoves(adv);
+  return `<div class="advice-card${j?" tone-"+j.tone:""}">
+    <div class="advice-title">${esc(pj.title)}</div>
+    <div class="advice-group">矢の集まり：<b>${esc(Beg.plainGroup(st))}</b></div>
+    ${moves.map(m=>`<div class="advice-move">${esc(m)}</div>`).join("")}
+    <div class="advice-note">${esc(pj.body)}</div></div>`;
+}
 function retBarHtml(st,adv,j){
+  if(begOn())return "";
   const parts=[];
   if(st)parts.push(`${mono(st.mx,"x")} ${mono(st.my,"y")} R${st.rr.toFixed(1)}`);
   if(adv&&adv.moves.length)parts.push(adv.moves.map(m=>`${m.dir}${m.cm.toFixed(1)}cm`).join("·"));
   else if(j&&j.label==="維持")parts.push("調整不要");
   return parts.length?`<div class="ret-bar">${parts.map(p=>`<span>${esc(p)}</span>`).join(" · ")}</div>`:"";
 }
+function recordTitle(s,n,pe){return begOn()?`${Beg.endLabel(s.ends.length+1)} · ${Beg.arrowProgress(n,pe)}`:`E${s.ends.length+1} · ${n}/${pe}`;}
+function returnTitle(s,tot,j){return begOn()?`${Beg.endLabel(s.ends.length)} · ${tot}点`:`E${s.ends.length} · ${tot}点 ${jtagHtml(j)}`;}
 
 function nav(screen){ui.screen=screen;ui.histId=null;ui.adj=false;render();}
 
@@ -234,17 +263,18 @@ function renderHome(){
         <line x1="6" y1="50" x2="94" y2="50" stroke="var(--hit)" stroke-width=".5" opacity=".4"/>
       </svg></div>
       <button class="btn hit" id="goSetup" style="max-width:280px">練習を始める</button>
-      <p>弓を組み立ててサイトを確認し、<br>的の前で記録 → 戻って偏差を見る</p>
+      ${begOn()&&Beg?Beg.coachCard("home"):"<p>弓を組み立ててサイトを確認し、<br>的の前で記録 → 戻って結果を見る</p>"}
       ${db.sessions.length?`<p>前回 ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · ${sessTot(db.sessions[db.sessions.length-1])}点</p>`:""}
       <div class="home-links">
         <button id="lnkHist">過去</button>
         <button id="lnkGear">装備</button>
-        <button id="lnkBk">backup</button>
+        <button id="lnkBk">バックアップ</button>
       </div>
     </div>`,"");
   $("#goSetup").onclick=()=>nav("setup");
   $("#lnkHist").onclick=()=>nav("history");
   $("#lnkGear").onclick=()=>nav("gear");
+  if(begOn()){const lg=$("#lnkGear");if(lg)lg.textContent="設定";}
   $("#lnkBk").onclick=exportImport;
 }
 
@@ -261,20 +291,24 @@ function renderSetup(){
   const wDir=ui._windDir??last?.windDir??"";
   const wSpd=ui._windSpd??last?.windSpeed??0;
   const mk=db.sightMarks.filter(m=>g&&m.setupId===g.id&&m.dist===dist).sort((a,b)=>b.date.localeCompare(a.date))[0];
-  shell(0,`${dist}m`,"←",`
+  shell(0,begOn()?`距離 ${dist}m`:`${dist}m`,"←",`
+    ${begOn()&&Beg?Beg.coachCard("setup"):""}
     ${distRings(dist)}
+    <p class="field-hint">${begOn()?"的までの距離（メートル）をタップで選びます":""}</p>
     <div class="setup-mid">
-      <div>${windCompass(wDir,wSpd)}</div>
+      <div>${windCompass(wDir,wSpd)}${begOn()?`<p class="field-hint">風がわからなければ真ん中「無」でOK</p>`:""}</div>
       <div class="sight-x">
-        <input class="v-up" id="sv" inputmode="decimal" placeholder="上下" value="${esc(mk?.v||"")}">
+        <p class="field-hint sight-lbl">${begOn()?"サイト（照準）の目盛り":""}</p>
+        <input class="v-up" id="sv" inputmode="decimal" placeholder="${begOn()?"上下の数字":"上下"}" value="${esc(mk?.v||"")}">
         <div class="core"><svg viewBox="0 0 72 72"><circle cx="36" cy="36" r="34" fill="none" stroke="var(--line)" stroke-width="1"/>
           <line x1="36" y1="4" x2="36" y2="68" stroke="var(--hit)" stroke-width="1" opacity=".5"/>
           <line x1="4" y1="36" x2="68" y2="36" stroke="var(--hit)" stroke-width="1" opacity=".5"/>
           <circle cx="36" cy="36" r="4" fill="var(--red)"/></svg></div>
-        <input class="h-l" id="sh" inputmode="decimal" placeholder="左右" value="${esc(mk?.h||"")}">
+        <input class="h-l" id="sh" inputmode="decimal" placeholder="${begOn()?"左右の数字":"左右"}" value="${esc(mk?.h||"")}">
+        ${begOn()?`<p class="field-hint full">今見ている数字でOK。空欄でも始められます</p>`:""}
       </div>
     </div>`,
-    `${geoLegend("setup")}<button class="btn hit" id="start">射る</button>`,"setup");
+    `${geoLegend("setup")}<button class="btn hit" id="start">${begOn()?"記録を始める（的の前へ）":"射る"}</button>`,"setup");
   document.querySelectorAll(".dist-svg .ring").forEach(c=>c.onclick=()=>{ui._dist=+c.dataset.d;renderSetup();});
   document.querySelectorAll(".wbtn").forEach(c=>c.onclick=()=>{ui._windDir=c.dataset.wd;renderSetup();});
   document.querySelectorAll(".wind-spd button").forEach(c=>c.onclick=()=>{ui._windSpd=+c.dataset.ws;renderSetup();});
@@ -304,19 +338,21 @@ function renderRecord(){
   const overlays=geoDefs
     +`<g class="slot-layer" pointer-events="none">${Geo.slotRingSvg(s.cur,pe,s.faceD)}</g>`
     +(st?`<g class="geo-layer" pointer-events="none">${Geo.geoSvg(st,s.faceD,sug)}</g>`:"")
-    +Geo.recordGuideSvg(s.faceD,n,pe);
-  shell(1,`E${s.ends.length+1} · ${n}/${pe}`,"",`
+    +(begOn()?"":Geo.recordGuideSvg(s.faceD,n,pe));
+  shell(1,recordTitle(s,n,pe),"",`
+    ${begOn()&&Beg?Beg.coachCard("record",{n,pe}):""}
     <div class="tgt-stage">
       <div class="box sq-fit" id="tgBox">
         <div class="tgt-stack">
           ${Geo.targetSvg(s.faceD,"tg",overlays)}
           <div class="lens" id="lens"><svg id="lensSvg" width="120" height="120" xmlns:xlink="http://www.w3.org/1999/xlink"><use href="#tgg" xlink:href="#tgg"/></svg></div>
-          ${st?`<div class="geo-nums"><span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span></div>`:""}
+          ${st&&!begOn()?`<div class="geo-nums"><span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span></div>`:""}
+          ${st&&begOn()?`<div class="geo-plain">${esc(Beg.plainGroup(st))}</div>`:""}
         </div>
       </div>
     </div>
     ${geoLegend("record")}`,
-    `<div class="row"><button class="btn ghost sm" id="undo">戻す</button><button class="btn beat" id="backLine"${n?"":" disabled"}>射線に戻った</button></div>`,true);
+    `<div class="row"><button class="btn ghost sm" id="undo">1本戻す</button><button class="btn beat" id="backLine"${n?"":" disabled"}>${begOn()?"6本終わった・戻る":"射線に戻った"}</button></div>`,true);
   paintMarks(s);
   bindTarget(s);
   $("#undo").onclick=()=>{if(s.cur.length){s.cur.pop();save();renderRecord();}};
@@ -350,7 +386,7 @@ function bindTarget(s){
   function reset(){if(drag?.tm)clearTimeout(drag.tm);drag=null;cur.innerHTML="";lens.style.display="none";}
   svg.oncontextmenu=e=>e.preventDefault();
   svg.addEventListener("selectstart",e=>e.preventDefault());
-  function down(e){if(s.cur.length>=s.perEnd){toast("6本 — 戻る");return;}const cp=pt(e);if(!cp)return;e.preventDefault();
+  function down(e){if(s.cur.length>=s.perEnd){toast(begOn()?"6本たったので射線に戻ってください":"6本 — 戻る");return;}const cp=pt(e);if(!cp)return;e.preventDefault();
     if(e.pointerId!=null){try{svg.setPointerCapture(e.pointerId);}catch(_){}}
     const p=toS(cp.x,cp.y);
     drag={p,raw:{x:cp.x,y:cp.y},fine:false,id:cp.id,tm:setTimeout(()=>{if(drag){drag.fine=true;draw(drag.p);}},400)};
@@ -361,7 +397,8 @@ function bindTarget(s){
   function up(e){const cp=pt(e);if(!drag||cp.id!==drag.id)return;e.preventDefault();clearTimeout(drag.tm);
     const p=Geo.clampMathXY(s.faceD,drag.p.x,drag.p.y);reset();
     const h=Geo.hitAt(p.x,p.y,s.faceD);s.cur.push({x:+h.x.toFixed(2),y:+h.y.toFixed(2),s:h.s,X:h.X});
-    save();renderRecord();}
+    const hint=begOn()&&Beg?Beg.firstArrowToast(s.cur.length,s.perEnd,h.s):null;
+    save();if(hint)toast(hint);renderRecord();}
   function cancel(e){const cp=pt(e);if(!drag||!cp||cp.id===drag.id)reset();}
   if(window.PointerEvent){
     svg.addEventListener("pointerdown",down);svg.addEventListener("pointermove",move);
@@ -398,7 +435,10 @@ function renderReturn(){
   const s0=s.sightStart||{};
   const geoDefs=Geo.GEO_MARKER_DEFS;
   const rtOver=geoDefs+(st?`<g class="geo-layer" pointer-events="none">${Geo.geoSvg(st,s.faceD,sug)}</g>`:"");
-  shell(2,`E${s.ends.length} · ${tot}点 ${jtagHtml(j)}`,"",`
+  const moveLine=adv&&adv.moves.length&&Beg?Beg.plainSightMove(adv.moves[0]):"";
+  shell(2,returnTitle(s,tot,j)+(begOn()&&j?` <span class="jtag ${j.tone==="ok"?"ok":j.tone==="warn"?"warn":j.tone==="hold"?"hold":"mid"}">${esc((Beg.plainJudgement(j)||{}).title||j.label)}</span>`:""),"",`
+    ${begOn()&&Beg?Beg.coachCard("return",{plainGroup:Beg.plainGroup(st),moveLine}):""}
+    ${adviceCardHtml(st,adv,j)}
     <div class="ret-split">
       <div class="cell"><div class="box sq-fit"><div class="tgt-stack">${Geo.targetSvg(s.faceD,"rt",rtOver)}</div></div></div>
       <div class="cell">${ui.adj?`<div class="sight-adj" style="width:100%;margin:0">
@@ -409,9 +449,9 @@ function renderReturn(){
     ${geoLegend("return",{j})}
     ${retBarHtml(st,adv,j)}`,`
     <div class="row3">
-      <button class="btn ghost" id="adjBtn">${ui.adj?"保存":"調整"}</button>
-      <button class="btn hit" id="next">次へ</button>
-      <button class="btn ghost" id="fin">終了</button>
+      <button class="btn ghost" id="adjBtn">${ui.adj?"保存":begOn()?"サイトを直す":"調整"}</button>
+      <button class="btn hit" id="next">${begOn()?"もう6本打つ":"次へ"}</button>
+      <button class="btn ghost" id="fin">${begOn()?"今日は終わり":"終了"}</button>
     </div>`,true);
   let mh="";end.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--hit)",Geo.lbl(a));});const rm=$("#rtmarks");if(rm)rm.innerHTML=mh;
   $("#adjBtn").onclick=()=>{
@@ -431,9 +471,10 @@ function renderReturn(){
 
 function renderDone(){
   const s=db.sessions[db.sessions.length-1];
-  shell(-1,"終了",null,s?`
+  shell(-1,"おつかれさま",null,s?`
+    ${begOn()&&Beg?Beg.coachCard("done"):""}
     <div class="end-badge" style="padding:32px 0"><div class="n">${sessTot(s)}</div>
-      <div class="s">${s.ends.length}E · ${s.dist}m</div></div>
+      <div class="s">${begOn()?`${s.ends.length}回（各6本）· ${s.dist}m`:`${s.ends.length}E · ${s.dist}m`}</div></div>
     ${sightDial(s.sightStart||{},s.sightNow||{},null)}
     ${(s.adjLog||[]).length?`<p style="text-align:center;font-size:12px;color:var(--dim)">調整 ${s.adjLog.length} 回</p>`:""}`:
     `<div class="empty">—</div>`,
@@ -446,7 +487,7 @@ function renderHistory(){
     const ss=[...db.sessions].reverse();
     return ss.length?ss.map(s=>`
       <div class="hist-row" data-id="${s.id}"><div><div class="d">${fmtD(s.date)} · ${s.dist}m</div>
-        <div class="m">${s.ends.length}E${s.note?" · "+esc(s.note):""}</div></div><div class="pts">${sessTot(s)}</div></div>`).join("")
+        <div class="m">${begOn()?s.ends.length+"回":s.ends.length+"E"}${s.note?" · "+esc(s.note):""}</div></div><div class="pts">${sessTot(s)}</div></div>`).join("")
       :`<div class="empty">なし</div>`;
   })(),"");
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
@@ -471,15 +512,16 @@ function renderHistDetail(){
 function renderGear(){
   const g=getSetup();
   const gp=Phy.gearPrecisionProfile(g);
-  shell(-1,"装備","←",`
+  shell(-1,"設定","←",`
+    <div class="beg-toggle"><label class="beg-lbl"><input type="checkbox" id="begMode" ${db.settings.beginnerMode!==false?"checked":""}> やさしい説明（初心者向け）</label></div>
     <div class="gear-lbl">名前 / 弓</div>
     <div class="gear-grid">
       <input class="gear-inp" id="gn" placeholder="名前" value="${esc(g.name)}">
       <input class="gear-inp" id="gb" placeholder="弓" value="${esc(g.bow)}">
     </div>
-    <div class="phys-traj" style="margin:8px 0">物理入力 ${Math.round(gp.score*100)}% — RK4精度に影響</div>
+    <div class="phys-traj" style="margin:8px 0">${begOn()?"詳しく入れると提案がより正確に（なくても使えます）":`物理入力 ${Math.round(gp.score*100)}% — RK4精度に影響`}</div>
     <div class="gear-sep"></div>
-    <div class="gear-lbl">弓・矢（物理エンジン）</div>
+    <div class="gear-lbl">${begOn()?"弓・矢（任意）":"弓・矢（物理エンジン）"}</div>
     <div class="gear-grid">
       <input class="gear-inp" id="gp" inputmode="decimal" placeholder="ポンド" value="${esc(g.poundage||"")}">
       <input class="gear-inp" id="gd" inputmode="decimal" placeholder="引き尺" value="${esc(g.drawLength||"")}">
@@ -498,6 +540,7 @@ function renderGear(){
     </div>`,
     `<button class="btn hit" id="gs">保存</button>`);
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
+  const bm=$("#begMode");if(bm)bm.onchange=()=>{db.settings.beginnerMode=bm.checked;save();toast(bm.checked?"やさしい説明オン":"上級者表示");render();};
   $("#gs").onclick=()=>{
     const d={id:g.id||uid(),name:$("#gn").value.trim()||"main",bow:$("#gb").value.trim(),
       poundage:$("#gp").value.trim(),drawLength:$("#gd").value.trim(),arrowWeight:$("#gw").value.trim(),
