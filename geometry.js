@@ -223,14 +223,14 @@
   var MARK_STROKE_OP = 0.88;
 
   function markRadius(fd) {
-    return arrR(fd) * 1.55;
+    return arrR(fd) * 1.1;
   }
   function markStroke(fd) {
-    return Math.max(fd / 200, 1.5);
+    return Math.max(fd / 220, 1.4);
   }
   function markFontSize(fd, label) {
-    var br = markRadius(fd);
-    return label.length > 1 ? br * 0.88 : br * 1.02;
+    var r = arrR(fd);
+    return label.length > 1 ? r * 1.18 : r * 1.38;
   }
   function markLabelSvg(x, y, fd, l) {
     var fs = markFontSize(fd, l),
@@ -263,9 +263,9 @@
         '" cy="' +
         p.y +
         '" r="' +
-        (br + sw * 0.75) +
+        (br + sw * 0.6) +
         '" fill="none" stroke="#fff" stroke-width="' +
-        (sw * 1.5) +
+        (sw * 1.4) +
         '" opacity=".85"/>' +
         '<circle cx="' +
         p.x +
@@ -278,7 +278,7 @@
         '" fill-opacity="' +
         MARK_FILL_OP +
         '" stroke="#1e293b" stroke-width="' +
-        (sw * 0.65) +
+        (sw * 0.55) +
         '" stroke-opacity="' +
         MARK_STROKE_OP +
         '"/>' +
@@ -310,7 +310,6 @@
       br = markRadius(fd),
       sw = markStroke(fd),
       lab = lbl(h),
-      fs = markFontSize(fd, lab),
       inner = fine ? "var(--preview-fine)" : "var(--preview-fill)";
     return (
       '<g class="preview-mark" pointer-events="none">' +
