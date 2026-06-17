@@ -3,12 +3,12 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=41;
+const KEY="archeryConverge.v1", APP_VER=42;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
-const PHASES=["準備","記録","確認"];
+
 function begOn(){return Beg&&Beg.isOn(db.settings);}
 function coachSeenMap(){
   if(!db.settings.coachSeen||typeof db.settings.coachSeen!=="object")db.settings.coachSeen={};
@@ -121,18 +121,6 @@ function windCompass(dir,spd){
     <line x1="${cx-R}" y1="${cy}" x2="${cx+R}" y2="${cy}" stroke="var(--line)" stroke-width=".5" opacity=".5"/>
     ${btns}</svg></div>
     <div class="wind-spd">${spdBtns}<span style="font-size:11px;color:var(--dim);align-self:center">m/s</span></div>`;
-}
-
-function phaseArc(cur){
-  const w=360;
-  const segs=PHASES.map((p,i)=>{
-    const x1=20+i*(w-40)/3,x2=20+(i+1)*(w-40)/3,mid=(x1+x2)/2;
-    const on=i<=cur,active=i===cur;
-    return `<path class="seg${on?" on":""}${active?" cur":""}" d="M${x1+8} 22 A 40 40 0 0 1 ${x2-8} 22"/>
-      <text class="lbl${active?" on":""}" x="${mid}" y="14" text-anchor="middle">${p}</text>`;
-  }).join("");
-  const sub=begOn()&&Beg?`<div class="phase-sub"><span class="on">${esc(Beg.phaseSubtitles()[cur]||"")}</span></div>`:"";
-  return `<div class="phase-arc"><svg viewBox="0 0 ${w} 36" xmlns="http://www.w3.org/2000/svg">${segs}</svg>${sub}</div>`;
 }
 
 function distRings(dist){
@@ -299,7 +287,6 @@ function shell(phaseIdx,title,back,bodyHtml,footHtml,fit){
   }
   document.body.classList.toggle("noflow",fitOn&&fit!=="setup");
   el.innerHTML=`
-    ${phaseIdx>=0?phaseArc(phaseIdx):""}
     ${title||back?`<div class="hdr">
       ${back?`<button class="back" id="backBtn">${back}</button>`:`<span class="gap"></span>`}
       <div class="title">${title||""}</div>
@@ -380,8 +367,14 @@ function retBarHtml(st,adv,j){
   else if(j&&j.label==="維持")parts.push("調整不要");
   return parts.length?`<div class="ret-bar">${parts.map(p=>`<span>${esc(p)}</span>`).join(" · ")}</div>`:"";
 }
-function recordTitle(s,n,pe){return begOn()?`${Beg.endLabel(s.ends.length+1)} · ${Beg.arrowProgress(n,pe)}`:`E${s.ends.length+1} · ${n}/${pe}`;}
-function returnTitle(s,tot,j){return begOn()?`${Beg.endLabel(s.ends.length)} · ${tot}点`:`E${s.ends.length} · ${tot}点 ${jtagHtml(j)}`;}
+function recordTitle(s,n,pe){
+  const core=begOn()?`${Beg.endLabel(s.ends.length+1)} · ${Beg.arrowProgress(n,pe)}`:`E${s.ends.length+1} · ${n}/${pe}`;
+  return begOn()?`記録 · ${core}`:core;
+}
+function returnTitle(s,tot,j){
+  const core=begOn()?`${Beg.endLabel(s.ends.length)} · ${tot}点`:`E${s.ends.length} · ${tot}点 ${jtagHtml(j)}`;
+  return begOn()?`確認 · ${core}`:core;
+}
 
 function nav(screen){ui.screen=screen;ui.histId=null;ui.adj=false;ui._coachBump={};render();}
 

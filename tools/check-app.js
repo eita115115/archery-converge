@@ -82,7 +82,7 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=41",
+  "APP_VER=42",
   "exportBackup",
   "importBackup",
   "home-foot-nav",

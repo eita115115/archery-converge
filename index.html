@@ -47,25 +47,14 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
   body.noflow{height:100dvh;max-height:100dvh}
 }
 .frame.fit .main{flex:1;min-height:0;display:flex;flex-direction:column}
-.frame.fit .phase-arc{padding:6px 12px 0;padding-top:calc(6px + var(--safe-top))}
-.frame.fit .phase-arc svg{height:34px}
-.frame.fit .hdr{padding:2px 12px 6px;min-height:38px}
+.frame.fit .hdr{padding:calc(4px + var(--safe-top)) 12px 6px;min-height:38px}
 .frame.fit .hdr .title{font-size:16px;color:var(--text)}
 .frame.fit .body{flex:1;min-height:0;overflow:hidden;padding:0 10px;display:flex;flex-direction:column}
 .frame.fit.setup-fit .body{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
 .frame.fit .foot{flex-shrink:0;padding:8px 12px;padding-bottom:calc(8px + var(--safe-bot))}
 .frame.fit .btn{padding:15px 14px;font-size:16px}
 .frame.fit .btn.sm{padding:12px 14px;font-size:14px;min-height:48px}
-.phase-arc{flex-shrink:0;padding:8px 12px 4px;padding-top:calc(8px + var(--safe-top))}
-.phase-arc svg{display:block;width:100%;height:36px}
-.phase-arc .lbl{font-size:11px;fill:var(--dim)}
-.phase-arc .lbl.on{fill:var(--text);font-weight:600}
-.phase-arc .seg{fill:none;stroke:var(--line);stroke-width:4;stroke-linecap:round}
-.phase-arc .seg.on{stroke:var(--ink);opacity:.35}
-.phase-arc .seg.cur{stroke:var(--ink);opacity:1}
-.phase-sub .on{color:var(--ink)}
-
-.hdr{display:flex;align-items:center;gap:10px;padding:6px 16px 10px;min-height:44px}
+.hdr{display:flex;align-items:center;gap:10px;padding:calc(6px + var(--safe-top)) 16px 10px;min-height:44px}
 .hdr .back{background:none;border:none;color:var(--link);font-size:15px;font-weight:400;cursor:pointer;padding:8px 4px;min-width:44px;letter-spacing:-.01em}
 .hdr .title{flex:1;text-align:center;font-size:17px;font-weight:600;letter-spacing:-.03em;color:var(--ink)}
 .hdr .gap{min-width:44px}
@@ -232,7 +221,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .frame.app-mode .body{padding:0 20px 16px}
 .frame.app-mode .foot{padding-left:20px;padding-right:20px}
 .frame.app-mode .hdr{padding-left:12px;padding-right:12px}
-.frame.app-mode .phase-arc{padding-left:16px;padding-right:16px}
+
 .frame.app-mode.fit .body{padding:0 10px}
 .frame.app-mode.fit .foot{padding-left:12px;padding-right:12px}
 .frame.home-mode .body{padding:0;flex:1;display:flex;flex-direction:column}
@@ -330,14 +319,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
   .frame.fit .wind-compass svg{width:96px;height:96px}
 }
 @media (max-height:480px){
-  .frame.fit .phase-arc svg{height:28px}
   .frame.fit .hdr{min-height:32px}
   .frame.fit .btn{padding:12px 10px;font-size:15px}
 }
 .gear-sep{height:1px;background:var(--line);margin:14px 0}
-
-.phase-sub{text-align:center;font-size:12px;color:var(--mute);padding:0 8px 4px;line-height:1.35}
-
 
 .coach-card{display:flex;gap:12px;align-items:flex-start;text-align:left;background:transparent;border:none;
   border-radius:0;padding:12px 2px 14px;margin:0 0 4px;max-width:100%;border-bottom:1px solid var(--line)}
