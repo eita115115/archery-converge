@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=52;
+const KEY="archeryConverge.v1", APP_VER=53;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -395,6 +395,32 @@ function adviceFootHtml(){
   const t=begOn()&&Beg?Beg.safetyNote():"Follow coach, safety, and range rules before adjusting sight.";
   return `<p class="advice-foot">${esc(t)}</p>`;
 }
+function shouldShowDoneBackup(s){
+  if(db.settings.hasExported)return false;
+  if(s&&db.settings.lastDoneBackupSkip===s.id)return false;
+  return true;
+}
+function doneBackupPromptHtml(s){
+  if(!shouldShowDoneBackup(s))return "";
+  const b=begOn();
+  return `<div class="done-backup-prompt">
+    <p class="done-backup-warn">${b?"記録はこの端末のみです":"Data stays on this device"}</p>
+    <p class="done-backup-sub">${b?"今のうちに書き出ししておくと安心です":"Export a backup file while you are here"}</p>
+    <button type="button" class="btn ghost done-backup-btn" id="bkOutDone">${b?"書き出しする":"Export now"}</button>
+    <button type="button" class="done-backup-skip" id="skipDoneBk">${b?"あとで":"Later"}</button>
+  </div>`;
+}
+function quickGuideHtml(){
+  if(!ui._showQuickGuide)return "";
+  const msg=begOn()?"①的をタップ → ②6本 → ③「6本終わった・戻る」":"Tap face → 6 arrows → Return";
+  return `<p class="quick-guide">${msg}</p>`;
+}
+function markQuickGuideSeen(){
+  if(!ui._showQuickGuide)return;
+  ui._showQuickGuide=false;
+  db.settings.quickGuideSeen=true;
+  save();
+}
 function backupBarHtml(id){
   const b=begOn();
   return `<div class="backup-bar">
@@ -474,6 +500,7 @@ function quickStartSight(dist){
 function startQuickSession(){
   const dist=quickStartDist(),last=db.sessions[db.sessions.length-1];
   const {v,h}=quickStartSight(dist);
+  ui._showQuickGuide=!db.settings.quickGuideSeen;
   beginSession(dist,v,h,last?.windDir??"",last?.windSpeed??0);
 }
 function homePreviewHtml(){
@@ -550,7 +577,11 @@ function exportBackup(){
   a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));
   a.download="converge-backup-"+today()+".json";
   a.click();
-  toast(begOn()?"バックアップを保存しました":"Exported");
+  db.settings.hasExported=true;
+  save();
+  const n=db.sessions.length;
+  toast(begOn()?`バックアップを保存（${n}件）`:`Exported (${n} sessions)`);
+  if(ui.screen==="done")render();
 }
 function importBackup(){
   const inp=document.createElement("input");
@@ -562,8 +593,11 @@ function importBackup(){
       try{
         if(!confirm(begOn()?"今のデータを上書きします。よろしいですか？":"Replace all data?"))return;
         db=Object.assign(blankDb(),JSON.parse(r.result));
+        db.settings=Object.assign({eyeSight:850,beginnerMode:true},db.settings||{});
         db.active=normalizeActive(db.active);
-        save();toast(begOn()?"読み込みました":"Imported");render();
+        (db.sessions||[]).forEach(s=>{if(!Array.isArray(s.ends))s.ends=[];});
+        const n=db.sessions.length;
+        save();toast(begOn()?`${n}件の練習を読み込みました`:`Imported ${n} sessions`);render();
       }catch(e){toast(begOn()?"ファイルが読めません":"Invalid file");}
     };
     r.readAsText(f);
@@ -612,6 +646,7 @@ function renderRecord(){
   const oiRec=zenkinFaceIdx(s,s.cur,pe);
   const canSetupBack=!n&&!s.ends.length;
   shell(1,recordTitle(s,n,pe)+(zenRec?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:""),canSetupBack?backLbl():"",`
+    ${quickGuideHtml()}
     ${coachCardHtml("record",{n,pe,zenkin:zenRec})}
     <div class="zoom-bar">${zoomChipsHtml()}</div>
     <div class="tgt-stage">
@@ -740,6 +775,7 @@ function updateRecordChrome(s,justShot){
   updateRecordCoach(s);
 }
 function afterRecordArrow(s,arrow){
+  markQuickGuideSeen();
   const idx=s.cur.length-1;
   paintMarks(s,idx);
   updateRecordFace(s);
@@ -879,12 +915,15 @@ function renderDone(){
         ${sessCompareHint(s)?`<div class="s cmp">${esc(sessCompareHint(s))}</div>`:""}</div>
       ${sightDial(s.sightStart||{},s.sightNow||{},null)}
       ${(s.adjLog||[]).length?`<p style="text-align:center;font-size:13px;color:var(--dim);letter-spacing:-.01em">調整 ${s.adjLog.length} 回</p>`:""}
+      ${doneBackupPromptHtml(s)}
     </div>`:
     `<div class="empty">—</div>`,
     s?`<button class="btn ghost" id="undoFin" style="margin-bottom:8px">${begOn()?"終了を取り消す":"練習を続ける"}</button>
     <button class="btn hero" id="home">${begOn()?"ホームへ":"Home"}</button>`:"");
   const uf=$("#undoFin");if(uf)uf.onclick=()=>{if(undoFinishSession()){toast(begOn()?"練習に戻しました":"取り消しました");render();}else toast("戻せません");};
   const homeBtn=$("#home");if(homeBtn)homeBtn.onclick=()=>nav("home");
+  const bkDone=$("#bkOutDone");if(bkDone)bkDone.onclick=exportBackup;
+  const skipBk=$("#skipDoneBk");if(skipBk)skipBk.onclick=()=>{if(s){db.settings.lastDoneBackupSkip=s.id;save();}render();};
 }
 
 function renderHistory(){

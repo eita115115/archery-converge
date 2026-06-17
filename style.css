@@ -256,6 +256,16 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .advice-tech{flex-shrink:0;text-align:center;font-size:12px;color:var(--dim);padding:6px 4px 2px;line-height:1.5;letter-spacing:-.01em}
 .advice-tech span{color:var(--text);font-weight:500}
 .beg-mode-hint{margin:6px 0 0}
+.quick-guide{flex-shrink:0;text-align:center;margin:0 0 8px;padding:10px 12px;border-radius:12px;background:rgba(15,118,110,.08);
+  border:1px solid rgba(15,118,110,.14);font-size:13px;font-weight:600;line-height:1.45;color:var(--hit);letter-spacing:-.01em}
+.done-backup-prompt{margin:20px 0 0;padding:16px;border-radius:16px;background:var(--panel);border:1.5px solid var(--line2);text-align:center;
+  box-shadow:0 1px 0 rgba(28,27,25,.04)}
+.done-backup-warn{margin:0;font-size:14px;font-weight:600;color:var(--text)}
+.done-backup-sub{margin:8px 0 0;font-size:12px;color:var(--dim);line-height:1.45}
+.done-backup-btn{width:100%;margin-top:14px;padding:13px 16px;font-size:14px}
+.done-backup-skip{display:block;width:100%;margin-top:10px;padding:8px;background:none;border:none;font:inherit;font-size:13px;
+  color:var(--dim);cursor:pointer;letter-spacing:-.01em}
+.done-backup-skip:active{opacity:.7}
 .home-steps{}
 .home-flow{display:flex;align-items:center;justify-content:center;gap:0;width:100%;max-width:360px;margin:36px 0 8px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .home-flow .flow-item{flex:1;min-width:0;padding:0 4px}

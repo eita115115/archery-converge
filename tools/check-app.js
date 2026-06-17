@@ -67,6 +67,8 @@ const requiredHtml = [
   'meta name="description"',
   'property="og:description"',
   'property="og:title"',
+  'property="og:site_name"',
+  'name="twitter:image"',
   'application/ld+json',
   'id="updBar" hidden',
   "static-landing",
@@ -91,6 +93,8 @@ const htmlOnly = new Set([
   'meta name="description"',
   'property="og:description"',
   'property="og:title"',
+  'property="og:site_name"',
+  'name="twitter:image"',
   'application/ld+json',
   'id="updBar" hidden',
   "static-landing",
@@ -120,7 +124,10 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=52",
+  "APP_VER=53",
+  "doneBackupPromptHtml",
+  "quickGuideHtml",
+  "hasExported",
   "REMOVE-AT: v55",
   "migrateV44Session",
   "home-previews",
@@ -342,5 +349,10 @@ if (!Beg.zenkinExplain || !Beg.zenkinExplain().includes("金")) fail("zenkinExpl
 if (!Beg.adviceDisclaimer || !Beg.adviceDisclaimer().includes("判断補助")) fail("adviceDisclaimer missing");
 if (!Beg.trustLine || !Beg.trustLine({ needsMove: true, qualityLabel: "低", conf: 40 }).includes("目安")) fail("trustLine missing");
 if (!Beg.safetyNote || !Beg.safetyNote().includes("コーチ")) fail("safetyNote missing");
+
+const ogDesc = /property="og:description" content="([^"]+)"/.exec(html);
+if (!ogDesc || ogDesc[1].length < 36) fail("og:description too short");
+if (!/準備|記録|確認/.test(ogDesc[1])) fail("og:description missing 3-step hint");
+if (!html.includes("記録は消えません")) fail("updBar missing data-safety copy");
 
 console.log("check-app OK");
