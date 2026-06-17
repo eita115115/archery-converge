@@ -73,7 +73,8 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=15",
+  "APP_VER=16",
+  "rec-progress",
   "reopenLastEnd",
   "undoFinishSession",
   "reopen-btn",

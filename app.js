@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=15;
+const KEY="archeryConverge.v1", APP_VER=16;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -118,7 +118,7 @@ function geoLegend(kind,extra){
     ]:[
       {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--hit)" stroke-width="2"/><circle cx="13" cy="13" r="3.5" fill="var(--hit)"/>',t:"タップで着弾"},
       {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="3 2"/><circle cx="13" cy="13" r="5" fill="none" stroke="var(--warn)"/>',t:"長押しで微調整"},
-      {svg:'<path d="M5 13 A8 8 0 0 1 21 13" fill="none" stroke="var(--text)" stroke-width="2.5" opacity=".7"/>',t:"外周=得点"}
+      {svg:'<circle cx="13" cy="13" r="7" fill="var(--hit)"/><text x="13" y="16" font-size="9" fill="#fff" text-anchor="middle" font-weight="700">10</text>',t:"丸の数字=得点"}
     ],
     return:b?[
       {svg:'<circle cx="13" cy="13" r="4" fill="var(--warn)"/>',t:"黄点=集まった中心"},
@@ -360,27 +360,17 @@ function renderRecord(){
   const s=db.active;if(!s){nav("home");return;}
   s.phase="record";save();
   const n=s.cur.length,pe=s.perEnd;
-  const st=stats(s.cur);
-  const adv=n>=3?endAdvice(s,s.cur):null;
-  const j=adv?Phy.judgementFor(adv,s):null;
-  const sug=sugFromAdv(adv,j);
-  const geoDefs=Geo.GEO_MARKER_DEFS;
-  const overlays=geoDefs
-    +`<g class="slot-layer" pointer-events="none">${Geo.slotRingSvg(s.cur,pe,s.faceD)}</g>`
-    +(st?`<g class="geo-layer" pointer-events="none">${Geo.geoSvg(st,s.faceD,sug)}</g>`:"")
-    +(begOn()?"":Geo.recordGuideSvg(s.faceD,n,pe));
   shell(1,recordTitle(s,n,pe),"",`
     ${begOn()&&Beg?Beg.coachCard("record",{n,pe}):""}
     <div class="tgt-stage">
       <div class="box sq-fit" id="tgBox">
         <div class="tgt-stack">
-          ${Geo.targetSvg(s.faceD,"tg",overlays)}
+          ${Geo.targetSvg(s.faceD,"tg","")}
           <div class="lens" id="lens"><svg id="lensSvg" width="120" height="120" xmlns:xlink="http://www.w3.org/1999/xlink"><use href="#tgg" xlink:href="#tgg"/></svg></div>
-          ${st&&!begOn()?`<div class="geo-nums"><span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span></div>`:""}
-          ${st&&begOn()?`<div class="geo-plain">${esc(Beg.plainGroup(st))}</div>`:""}
         </div>
       </div>
     </div>
+    <div class="rec-progress" aria-hidden="true">${Array.from({length:pe},(_,i)=>`<span class="dot${i<n?" on":i===n?" cur":""}"></span>`).join("")}</div>
     ${geoLegend("record")}`,
     `${!n&&s.ends.length?`<div class="foot-undo">${reopenEndBtnHtml("reopenRec")}</div>`:""}
     <div class="row">${n?`<button class="btn ghost sm" id="undo">1本戻す</button>`:`<span class="gap-btn"></span>`}
