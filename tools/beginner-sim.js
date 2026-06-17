@@ -55,6 +55,10 @@ const settings = { beginnerMode: true, eyeSight: 850 };
   const sg = Beg.simpleGroup(st);
   if (!sg || sg.length < 3) fail("simpleGroup empty for novice end");
   if (/R\d|mx|my|x|y/.test(sg)) fail("simpleGroup contains jargon: " + sg);
+  const gd = Beg.groupDirection(st);
+  if (!gd || gd.length < 3) fail("groupDirection empty for novice end");
+  if (/R\d|mx|my|x|y/.test(gd)) fail("groupDirection contains jargon: " + gd);
+  if (!gd.includes("中心")) fail("groupDirection should mention 中心: " + gd);
 
   const db = { setups: [{}], sessions: [], sightMarks: [], settings };
   const sess = { dist: 30, faceD: fd, setupId: null, sightNow: { v: "", h: "" } };
@@ -67,6 +71,9 @@ const settings = { beginnerMode: true, eyeSight: 850 };
   });
 
   const j = Phy.judgementFor(adv, sess);
+  const sa = Beg.simpleSightAction(adv, j);
+  if (!sa || sa.length < 4) fail("simpleSightAction empty");
+  if (/cm|TH|vector/.test(sa)) fail("jargon in simpleSightAction: " + sa);
   const pj = Beg.plainJudgement(j);
   if (!pj || !pj.title) fail("plainJudgement missing");
 })();

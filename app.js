@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=56;
+const KEY="archeryConverge.v1", APP_VER=57;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -191,7 +191,7 @@ function geoLegend(kind,extra){
       {svg:'<ellipse cx="13" cy="13" rx="10" ry="6.5" fill="none" stroke="var(--hit)" stroke-width="1.5" stroke-dasharray="3 2"/>',t:"散布"},
       {svg:'<circle cx="13" cy="13" r="4" fill="var(--warn)" stroke="#fff" stroke-width="1"/>',t:"中心"},
       {svg:'<line x1="5" y1="21" x2="21" y2="5" stroke="var(--sight)" stroke-width="2.5"/>',t:"サイト方向"},
-      {svg:'<circle cx="9" cy="13" r="3" fill="var(--dim)"/><circle cx="17" cy="13" r="4" fill="var(--sight)" stroke="#fff" stroke-width="1"/>',t:"灰=開始·紫=今"}
+      {svg:'<circle cx="9" cy="13" r="3" fill="var(--dim)"/><circle cx="17" cy="13" r="4" fill="var(--sight)" stroke="#fff" stroke-width="1"/>',t:"灰=開始·緑=今"}
     ],
     setup:b?[
       {svg:'<circle cx="13" cy="13" r="10" fill="none" stroke="var(--line2)" stroke-width="3"/>',t:"タップで距離を選ぶ"},
@@ -378,12 +378,35 @@ function trustLineHtml(adv,s){
 }
 function returnVerdictHtml(st,adv,j){
   if(!begOn()||!Beg)return "";
-  const moves=Beg.plainMoves(adv);
-  const move=moves[0]||"";
-  const action=move.includes("触らなくて")?(begOn()?"このままサイトを触らなくて大丈夫":"No sight change needed"):move;
+  const dir=Beg.groupDirection(st);
+  const action=Beg.simpleSightAction(adv,j);
+  const quality=Beg.simpleGroup(st);
+  const detail=quality&&quality!=="記録しよう"&&!dir.includes(quality)?quality:"";
   return `<section class="return-verdict" aria-label="${begOn()?"今回の集まり":"Grouping"}">
-    <p class="return-verdict-main">${esc(Beg.simpleGroup(st))}</p>
-    ${action?`<p class="return-verdict-action">${esc(action)}</p>`:""}</section>`;
+    <p class="return-verdict-eyebrow">${begOn()?"今日の6本":"This end"}</p>
+    <p class="return-verdict-main">${esc(dir)}</p>
+    <p class="return-verdict-action">${esc(action)}</p>
+    ${detail?`<p class="return-verdict-detail">${esc(detail)}</p>`:""}</section>`;
+}
+function zenkinDotsHtml(){
+  return `<div class="zenkin-dots" aria-hidden="true">${"<span></span>".repeat(6)}</div>`;
+}
+function flashZenkinConverge(stack,prog){
+  if(stack){
+    stack.classList.remove("zenkin-converge");
+    void stack.offsetWidth;
+    stack.classList.add("zenkin-converge");
+    const old=stack.querySelector(".zenkin-dots");
+    if(old)old.remove();
+    stack.insertAdjacentHTML("beforeend",zenkinDotsHtml());
+    setTimeout(()=>{stack.classList.remove("zenkin-converge");const d=stack.querySelector(".zenkin-dots");if(d)d.remove();},1150);
+  }
+  if(prog){
+    prog.classList.remove("converge-dots");
+    void prog.offsetWidth;
+    prog.classList.add("converge-dots");
+    setTimeout(()=>prog.classList.remove("converge-dots"),1000);
+  }
 }
 function adviceTechHtml(st,adv,j){
   if(begOn()||!st)return "";
@@ -533,12 +556,12 @@ function renderHome(){
         <h1 class="home-title${begOn()?" is-ja":" is-en"}">${begOn()
           ?`<span class="home-title-line"><span class="home-title-body">着弾が</span><span class="home-title-punct">、</span></span><span class="home-title-line"><span class="home-title-body">収束する</span><span class="home-title-punct">。</span></span>`
           :`<span class="home-title-line"><span class="home-title-body">Hits</span></span><span class="home-title-line"><span class="home-title-body">converge</span><span class="home-title-punct">.</span></span>`}</h1>
-        <p class="home-tag">${begOn()?"的の前で記録。戻れば、次の一手が見える。":"Record at the face. Return. See the next move."}</p>
+        <p class="home-tag">${begOn()?"6本のあとに、次が見える。":"After six, the next move shows."}</p>
       </section>
       ${db.sessions.length?`<p class="home-prev">${begOn()?"前回":"Last"} · ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · <b>${sessTot(db.sessions[db.sessions.length-1])}</b></p>`:""}
       <div class="home-start">
         <button class="btn hero" id="goQuick">${begOn()?"記録を始める":"Start recording"}</button>
-        <button type="button" class="home-setup-note" id="goSetup">${begOn()?"距離とサイトを変更":"Change dist & sight"}</button>
+        <button type="button" class="home-setup-note" id="goSetup">${begOn()?"距離・サイトを変更":"Change dist & sight"}</button>
       </div>
       <footer class="home-foot">
         <nav class="home-foot-nav home-foot-nav-thin">
@@ -752,12 +775,7 @@ function afterRecordArrow(s,arrow){
   const stack=document.querySelector(".tgt-stack");
   if(stack){stack.classList.remove("hit-flash");void stack.offsetWidth;stack.classList.add("hit-flash");setTimeout(()=>stack.classList.remove("hit-flash"),520);}
   tapHaptic({zenkin:Geo.isZenkinEnd(s.cur,s.perEnd),ten:arrow.s>=10});
-  if(Geo.isZenkinEnd(s.cur,s.perEnd)){
-    const stack=document.querySelector(".tgt-stack");
-    if(stack){stack.classList.remove("zenkin-converge");void stack.offsetWidth;stack.classList.add("zenkin-converge");setTimeout(()=>stack.classList.remove("zenkin-converge"),1100);}
-    const prog=$(".rec-progress");
-    if(prog){prog.classList.remove("converge-dots");void prog.offsetWidth;prog.classList.add("converge-dots");setTimeout(()=>prog.classList.remove("converge-dots"),1000);}
-  }
+  if(Geo.isZenkinEnd(s.cur,s.perEnd))flashZenkinConverge(document.querySelector(".tgt-stack"),$(".rec-progress"));
 }
 
 function bindTarget(s){
@@ -840,7 +858,7 @@ function renderReturn(){
   shell(2,returnTitle(s,tot,j)+(zenRet?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:"")+(!begOn()&&j?` ${jtagHtml(j)}`:""),"",`
     ${begOn()?returnVerdictHtml(st,adv,j):`${trustLineHtml(adv,s)}${adviceTechHtml(st,adv,j)}`}
     <div class="ret-split ret-reveal">
-      <div class="cell"><div class="box sq-fit"><div class="tgt-stack">${Geo.targetSvg(s.faceD,"rt",rtOver,targetModeFor(end,pe),oiRet)}</div></div></div>
+      <div class="cell"><div class="box sq-fit"><div class="tgt-stack ret-converge">${Geo.targetSvg(s.faceD,"rt",rtOver,targetModeFor(end,pe),oiRet)}</div></div></div>
       <div class="cell">${ui.adj?`<div class="sight-adj" style="width:100%;margin:0">
         <input id="nv" inputmode="decimal" placeholder="上下" value="${esc(sv)}">
         <input id="nh" inputmode="decimal" placeholder="左右" value="${esc(sh)}">
@@ -855,7 +873,7 @@ function renderReturn(){
     </div>`,true);
   bindReopenEnd(s,"#reopenRet",renderRecord);
   const tg=$("#trustGear");if(tg)tg.onclick=()=>nav("gear");
-  let mh="";end.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--mark-cur)",Geo.lbl(a));});const rm=$("#rtmarks");if(rm)rm.innerHTML=mh;
+  let mh="";end.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--mark-cur)",Geo.lbl(a),"ret-mark-in");});const rm=$("#rtmarks");if(rm)rm.innerHTML=mh;
   $("#adjBtn").onclick=()=>{
     if(!ui.adj){ui.adj=true;renderReturn();return;}
     const nv=$("#nv").value.trim(),nh=$("#nh").value.trim();

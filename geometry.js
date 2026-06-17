@@ -385,7 +385,7 @@
       fd / 90 +
       '" fill="var(--geo-center)" stroke="#fff" stroke-width="' +
       fd / 700 +
-      '"/>';
+      '" class="geo-center-dot"/>';
     if (sug && (sug.h || sug.v)) {
       var L = Math.min(M * 0.38, Math.hypot(sug.h, sug.v) * 0.16 + 6);
       var ang = Math.atan2(-sug.v, sug.h),

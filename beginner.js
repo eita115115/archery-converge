@@ -25,6 +25,37 @@
     return "ばらけ気味です";
   }
 
+  /** Where the group center landed — headline for return screen. */
+  function groupDirection(st) {
+    if (!st || st.n < 1) return "記録しよう";
+    var th = 0.35,
+      thStrong = 0.7;
+    if (Math.abs(st.my) <= th && Math.abs(st.mx) <= th) return "中心はだいたい真ん中";
+    var soft =
+      (Math.abs(st.my) > th || Math.abs(st.mx) > th) &&
+      Math.abs(st.my) <= thStrong &&
+      Math.abs(st.mx) <= thStrong;
+    var prefix = soft ? "中心は少し" : "中心は";
+    var v = "",
+      h = "";
+    if (st.my > th) v = "上";
+    else if (st.my < -th) v = "下";
+    if (st.mx > th) h = "右";
+    else if (st.mx < -th) h = "左";
+    return prefix + (v + h);
+  }
+
+  /** One-line sight suggestion — meaning before numbers. */
+  function simpleSightAction(adv, j) {
+    if (j && j.label === "射形優先") return "まずフォームをそろえよう";
+    if (j && j.label === "保留") return "もう1回打ってから判断しよう";
+    if (!adv || !adv.moves || !adv.moves.length) return "このままサイトを触らなくて大丈夫";
+    var m = adv.moves[0];
+    if (!m) return "サイトを少し調整";
+    var axis = m.axis === "v" ? (m.dir === "上" ? "上" : "下") : m.dir === "右" ? "右" : "左";
+    return "サイトを少し" + axis + "へ";
+  }
+
   /** Where the group landed vs center, in words a novice understands. */
   function plainGroup(st) {
     if (!st || st.n < 1) return "まだ矢がありません";
@@ -197,6 +228,8 @@
     endLabel: endLabel,
     arrowProgress: arrowProgress,
     simpleGroup: simpleGroup,
+    groupDirection: groupDirection,
+    simpleSightAction: simpleSightAction,
     plainGroup: plainGroup,
     plainSightMove: plainSightMove,
     plainMoves: plainMoves,
