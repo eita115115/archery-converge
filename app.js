@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=43;
+const KEY="archeryConverge.v1", APP_VER=44;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -40,6 +40,23 @@ function coachCardHtml(phase,ctx){
   const key=coachKey(phase,ctx);
   if(!ui._coachBump)ui._coachBump={};
   if(!ui._coachBump[key]){ui._coachBump[key]=true;bumpCoachSeen(phase,ctx);}
+  return html;
+}
+function legendKey(kind){return "legend-"+kind;}
+function shouldShowLegend(kind){return (coachSeenMap()[legendKey(kind)]||0)<COACH_CAP;}
+function bumpLegendSeen(kind){
+  const key=legendKey(kind);
+  const m=coachSeenMap();
+  m[key]=(m[key]||0)+1;
+  save();
+}
+function geoLegendHtml(kind,extra){
+  if(!shouldShowLegend(kind))return "";
+  const html=geoLegend(kind,extra);
+  if(!html)return "";
+  const key=legendKey(kind);
+  if(!ui._legendBump)ui._legendBump={};
+  if(!ui._legendBump[key]){ui._legendBump[key]=true;bumpLegendSeen(kind);}
   return html;
 }
 const DISTS=[70,50,30,18];
@@ -376,7 +393,7 @@ function returnTitle(s,tot,j){
   return begOn()?`確認 · ${core}`:core;
 }
 
-function nav(screen){ui.screen=screen;ui.histId=null;ui.adj=false;ui._coachBump={};render();}
+function nav(screen){ui.screen=screen;ui.histId=null;ui.adj=false;ui._coachBump={};ui._legendBump={};render();}
 
 function render(){
   try{
@@ -495,7 +512,7 @@ function renderSetup(){
         ${begOn()?`<p class="field-hint full">今見ている数字でOK。空欄でも始められます</p>`:""}
       </div>
     </div>`,
-    `${geoLegend("setup")}<button class="btn hero" id="start">${begOn()?"記録を始める（的の前へ）":"射る"}</button>`,"setup");
+    `${geoLegendHtml("setup")}<button class="btn hero" id="start">${begOn()?"記録を始める（的の前へ）":"射る"}</button>`,"setup");
   document.querySelectorAll(".dist-svg .ring").forEach(c=>c.onclick=()=>{ui._dist=+c.dataset.d;renderSetup();});
   document.querySelectorAll(".wbtn").forEach(c=>c.onclick=()=>{ui._windDir=c.dataset.wd;renderSetup();});
   document.querySelectorAll(".wind-spd button").forEach(c=>c.onclick=()=>{ui._windSpd=+c.dataset.ws;renderSetup();});
@@ -533,7 +550,7 @@ function renderRecord(){
     </div>
     <div class="rec-progress" aria-hidden="true">${Array.from({length:pe},(_,i)=>`<span class="dot${i<n?" on":i===n?" cur":""}"></span>`).join("")}</div>
     ${n?`<p class="rec-hint">${begOn()?"タップを間違えたら「1本取り消し」· 長押しで位置を直せます":"Wrong tap? Undo one · long-press to nudge"}</p>`:""}
-    ${geoLegend("record")}`,
+    ${geoLegendHtml("record")}`,
     `${!n&&s.ends.length?`<div class="foot-undo">${reopenEndBtnHtml("reopenRec")}</div>`:""}
     <div class="row">${n?`<button class="btn ghost sm undo-btn" id="undo">${begOn()?"1本取り消し":"Undo 1"}</button>`:`<span class="gap-btn"></span>`}
       <button class="btn hero" id="backLine"${n?"":" disabled"}>${begOn()?"6本終わった・戻る":"6 done · return"}</button></div>`,true);
@@ -748,7 +765,7 @@ function renderReturn(){
         <input id="nh" inputmode="decimal" placeholder="左右" value="${esc(sh)}">
       </div>`:sightDial(s0,{v:sv,h:sh},sug,adv)}</div>
     </div>
-    ${geoLegend("return",{j})}
+    ${geoLegendHtml("return",{j})}
     ${retBarHtml(st,adv,j)}
     ${adviceFootHtml()}`,`
     <div class="foot-undo">${reopenEndBtnHtml("reopenRet")}</div>
@@ -861,7 +878,7 @@ function renderGear(){
   const bm=$("#begMode");if(bm)bm.onchange=()=>{
     db.settings.beginnerMode=bm.checked;
     if(bm.checked)db.settings.coachSeen={};
-    save();toast(bm.checked?"やさしい説明オン":"上級者表示");ui._coachBump={};render();
+    save();toast(bm.checked?"やさしい説明オン":"上級者表示");ui._coachBump={};ui._legendBump={};render();
   };
   $("#gs").onclick=()=>{
     const d={id:g.id||uid(),name:$("#gn").value.trim()||"main",bow:$("#gb").value.trim(),
