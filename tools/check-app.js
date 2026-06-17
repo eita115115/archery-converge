@@ -73,7 +73,8 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=22",
+  "APP_VER=23",
+  "isLineCut",
   "backToSetupFromRecord",
   "canSetupBack",
   "isZenkinEnd",
@@ -234,6 +235,11 @@ const r122 = 122 / 85;
 if (!dot10.includes('opacity=".92"') || !dot10.includes('font-size="' + r122 * 1.2 + '"'))
   fail("archery-note mark sizing");
 if (Geo.arrowMarkRadius(122) !== r122) fail("arrowMarkRadius parity");
+const dotCut = Geo.dot({ x: 2, y: 1, s: 10, cut: true }, 122, "#0f766e", "10");
+if (!dotCut.includes("mark-cut") || !dotCut.includes("stroke-dasharray")) fail("line-cut mark ring");
+const dotSolid = Geo.dot({ x: 2, y: 1, s: 10, cut: false }, 122, "#0f766e", "10");
+if (!dotSolid.includes("mark-solid") || dotSolid.includes("stroke-dasharray")) fail("solid mark");
+if (typeof Geo.isLineCut !== "function") fail("isLineCut export");
 
 const oppai = Geo.targetSvg(122, "opp", "", "oppai");
 if (!oppai.includes('class="face oppai"') || !oppai.includes("#FEE7D9") || !oppai.includes("oppnip"))

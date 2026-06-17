@@ -224,12 +224,38 @@
     return arrR(fd);
   }
 
+  function isLineCut(x, y, fd) {
+    return lineCut(x, y, fd);
+  }
+
+  function dotCutRing(p, r, sw) {
+    return (
+      '<circle class="cut-ring" cx="' +
+      p.x +
+      '" cy="' +
+      p.y +
+      '" r="' +
+      (r + sw * 0.65) +
+      '" fill="none" stroke="var(--gold)" stroke-width="' +
+      (sw * 0.95) +
+      '" stroke-dasharray="' +
+      (r * 0.42) +
+      " " +
+      (r * 0.28) +
+      '" opacity=".95"/>'
+    );
+  }
+
   function dot(a, fd, c, l) {
     var r = arrowMarkRadius(fd),
       p = mathToSvg(a.x, a.y),
-      sw = r / 4;
+      sw = r / 4,
+      cut = a.cut != null ? !!a.cut : lineCut(a.x, a.y, fd);
     return (
-      '<g class="mark-scored" opacity=".92">' +
+      '<g class="mark-scored' +
+      (cut ? " mark-cut" : " mark-solid") +
+      '" opacity=".92">' +
+      (cut ? dotCutRing(p, r, sw) : "") +
       '<circle cx="' +
       p.x +
       '" cy="' +
@@ -238,7 +264,9 @@
       r +
       '" fill="' +
       c +
-      '" stroke="#fff" stroke-width="' +
+      '" stroke="' +
+      (cut ? "var(--gold)" : "#fff") +
+      '" stroke-width="' +
       sw +
       '"/>' +
       (l
@@ -256,16 +284,20 @@
     );
   }
 
-  /** Live preview while dragging — same footprint as dot(). */
-  function previewMark(x, y, fd, fine) {
+  /** Live preview while dragging — same footprint as dot(); fine+cut colors like archery-note. */
+  function previewMark(x, y, fd, fine, cut) {
     var h = hitAt(x, y, fd),
       p = mathToSvg(x, y),
       r = arrowMarkRadius(fd),
       sw = r / 4,
       lab = lbl(h),
-      inner = fine ? "var(--preview-fine)" : "var(--preview-fill)";
+      inner = fine ? "var(--preview-fine)" : "var(--preview-fill)",
+      edge = fine ? (cut ? "var(--cut-ok)" : "var(--cut-miss)") : cut ? "var(--gold)" : "#fff";
     return (
-      '<g class="preview-mark" pointer-events="none" opacity=".92">' +
+      '<g class="preview-mark' +
+      (cut ? " preview-cut" : " preview-solid") +
+      '" pointer-events="none" opacity=".92">' +
+      (cut ? dotCutRing(p, r, sw) : "") +
       '<circle cx="' +
       p.x +
       '" cy="' +
@@ -274,8 +306,10 @@
       r +
       '" fill="' +
       inner +
-      '" stroke="#fff" stroke-width="' +
-      sw +
+      '" stroke="' +
+      edge +
+      '" stroke-width="' +
+      (fine ? sw * 1.15 : sw) +
       '"/>' +
       '<text x="' +
       p.x +
@@ -543,6 +577,7 @@
     scoreAt: scoreAt,
     rank: rank,
     lineCut: lineCut,
+    isLineCut: isLineCut,
     hitAt: hitAt,
     lbl: lbl,
     isZenkinEnd: isZenkinEnd,

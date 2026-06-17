@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=22;
+const KEY="archeryConverge.v1", APP_VER=23;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -114,11 +114,14 @@ function geoLegend(kind,extra){
     record:b?[
       {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--hit)" stroke-width="2"/><circle cx="13" cy="13" r="3.5" fill="var(--hit)"/>',t:"刺さった所をタップ"},
       {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="3 2"/>',t:"長押しで位置を直す"},
-      {svg:'<circle cx="13" cy="13" r="7" fill="var(--hit)"/><text x="13" y="16" font-size="9" fill="#fff" text-anchor="middle" font-weight="700">10</text>',t:"丸の数字=得点"}
+      {svg:'<circle cx="13" cy="13" r="7" fill="var(--hit)"/><text x="13" y="16" font-size="9" fill="#fff" text-anchor="middle" font-weight="700">10</text>',t:"丸の数字=得点"},
+      {svg:'<circle cx="13" cy="13" r="6" fill="var(--hit)"/><circle cx="13" cy="13" r="9" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="2.5 2"/>',t:"点線=線かみ"}
     ]:[
       {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--hit)" stroke-width="2"/><circle cx="13" cy="13" r="3.5" fill="var(--hit)"/>',t:"タップで着弾"},
       {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="3 2"/><circle cx="13" cy="13" r="5" fill="none" stroke="var(--warn)"/>',t:"長押しで微調整"},
-      {svg:'<circle cx="13" cy="13" r="7" fill="var(--hit)"/><text x="13" y="16" font-size="9" fill="#fff" text-anchor="middle" font-weight="700">10</text>',t:"丸の数字=得点"}
+      {svg:'<circle cx="13" cy="13" r="7" fill="var(--hit)"/><text x="13" y="16" font-size="9" fill="#fff" text-anchor="middle" font-weight="700">10</text>',t:"丸の数字=得点"},
+      {svg:'<circle cx="13" cy="13" r="6" fill="var(--hit)"/><circle cx="13" cy="13" r="9" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="2.5 2"/>',t:"点線=線かみ"},
+      {svg:'<circle cx="13" cy="13" r="7" fill="none" stroke="var(--cut-ok)" stroke-width="2"/>',t:"長押し·緑縁=かみ"}
     ],
     return:b?[
       {svg:'<circle cx="13" cy="13" r="4" fill="var(--warn)"/>',t:"黄点=集まった中心"},
@@ -422,14 +425,16 @@ function bindTarget(s){
   function toS(x,y){return Cx?Cx.svgClientToLocal(svg,x,y):{x:0,y:0};}
   function draw(p){
     const fine=!!drag?.fine;
+    const cut=Geo.isLineCut(p.x,p.y,s.faceD);
     lens.classList.toggle("fine",fine);
-    lens.classList.toggle("cut",false);
-    cur.innerHTML=Geo.previewMark(p.x,p.y,s.faceD,fine);
+    lens.classList.toggle("cut",fine&&cut);
+    lens.classList.toggle("miss",fine&&!cut);
+    cur.innerHTML=Geo.previewMark(p.x,p.y,s.faceD,fine,cut);
     const sp=Geo.mathToSvg(p.x,p.y);
     const z=Geo.ringW(s.faceD)*2.4;
     lensSvg.setAttribute("viewBox",`${sp.x-z} ${sp.y-z} ${2*z} ${2*z}`);
     lens.style.left=p.x<0?"auto":"6px";lens.style.right=p.x<0?"6px":"auto";}
-  function reset(){if(drag?.tm)clearTimeout(drag.tm);drag=null;cur.innerHTML="";lens.style.display="none";}
+  function reset(){if(drag?.tm)clearTimeout(drag.tm);drag=null;cur.innerHTML="";lens.style.display="none";lens.classList.remove("fine","cut","miss");}
   svg.oncontextmenu=e=>e.preventDefault();
   svg.addEventListener("selectstart",e=>e.preventDefault());
   function down(e){if(s.cur.length>=s.perEnd){toast(begOn()?"6本たったので射線に戻ってください":"6本 — 戻る");return;}const cp=pt(e);if(!cp)return;e.preventDefault();
@@ -442,7 +447,8 @@ function bindTarget(s){
     drag.p={x:drag.p.x+(a.x-b.x)*k,y:drag.p.y+(a.y-b.y)*k};drag.raw={x:cp.x,y:cp.y};draw(drag.p);}
   function up(e){const cp=pt(e);if(!drag||cp.id!==drag.id)return;e.preventDefault();clearTimeout(drag.tm);
     const p=Geo.clampMathXY(s.faceD,drag.p.x,drag.p.y);reset();
-    const h=Geo.hitAt(p.x,p.y,s.faceD);s.cur.push({x:+h.x.toFixed(2),y:+h.y.toFixed(2),s:h.s,X:h.X});
+    const h=Geo.hitAt(p.x,p.y,s.faceD),cut=Geo.isLineCut(p.x,p.y,s.faceD);
+    s.cur.push({x:+h.x.toFixed(2),y:+h.y.toFixed(2),s:h.s,X:h.X,cut});
     const hint=begOn()&&Beg?Beg.firstArrowToast(s.cur.length,s.perEnd,h.s):null;
     const zen=Geo.isZenkinEnd(s.cur,s.perEnd);
     save();
