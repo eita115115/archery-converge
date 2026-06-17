@@ -72,8 +72,10 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=12",
+  "APP_VER=13",
+  "Geo.previewMark",
   "--mark-cur",
+  "--preview-fill",
   "ConvergeBeginner",
   "begOn",
   "adviceCardHtml",
@@ -96,6 +98,8 @@ if (appSrc.includes("function targetSvg(") || appSrc.includes("function hitAt(")
   fail("scoring must live in geometry.js only");
 if (!geometrySrc.includes("function slotRadius") || !geometrySrc.includes("var(--geo-group)"))
   fail("geometry grouping/slot tokens missing");
+if (!geometrySrc.includes("function previewMark"))
+  fail("previewMark missing");
 
 const scriptOrder = ["compat.js", "physics.js", "geometry.js", "beginner.js", "app.js"];
 let last = -1;

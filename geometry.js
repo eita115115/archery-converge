@@ -139,14 +139,34 @@
     );
   }
 
+  function markRadius(fd) {
+    return arrR(fd) * 1.1;
+  }
+  function markStroke(fd) {
+    return Math.max(fd / 220, 1.4);
+  }
+  function markFontSize(fd, label) {
+    var br = markRadius(fd);
+    return label.length > 1 ? br * 0.78 : br * 0.92;
+  }
+
   function dot(a, fd, c, l) {
     var r = arrR(fd),
       p = mathToSvg(a.x, a.y),
-      sw = r / 3.5;
+      sw = markStroke(fd);
     if (l) {
-      var br = r * 1.12;
+      var br = markRadius(fd);
       return (
         '<g class="mark-scored">' +
+        '<circle cx="' +
+        p.x +
+        '" cy="' +
+        p.y +
+        '" r="' +
+        (br + sw * 0.6) +
+        '" fill="none" stroke="#fff" stroke-width="' +
+        (sw * 1.4) +
+        '"/>' +
         '<circle cx="' +
         p.x +
         '" cy="' +
@@ -155,15 +175,15 @@
         br +
         '" fill="' +
         c +
-        '" stroke="#fff" stroke-width="' +
-        sw +
+        '" stroke="#1e293b" stroke-width="' +
+        (sw * 0.55) +
         '"/>' +
         '<text x="' +
         p.x +
         '" y="' +
         p.y +
         '" font-size="' +
-        br * 0.95 +
+        markFontSize(fd, l) +
         '" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="700">' +
         l +
         "</text></g>"
@@ -181,6 +201,49 @@
       '" stroke="#fff" stroke-width="' +
       sw +
       '" opacity=".88"/></g>'
+    );
+  }
+
+  /** Live preview while dragging — always visible on any ring color. */
+  function previewMark(x, y, fd, fine) {
+    var h = hitAt(x, y, fd),
+      p = mathToSvg(x, y),
+      br = markRadius(fd),
+      sw = markStroke(fd),
+      lab = lbl(h),
+      fs = markFontSize(fd, lab),
+      inner = fine ? "var(--preview-fine)" : "var(--preview-fill)";
+    return (
+      '<g class="preview-mark" pointer-events="none">' +
+      '<circle cx="' +
+      p.x +
+      '" cy="' +
+      p.y +
+      '" r="' +
+      (br + sw * 0.85) +
+      '" fill="none" stroke="#fff" stroke-width="' +
+      (sw * 1.6) +
+      '"/>' +
+      '<circle cx="' +
+      p.x +
+      '" cy="' +
+      p.y +
+      '" r="' +
+      br +
+      '" fill="' +
+      inner +
+      '" stroke="#1e293b" stroke-width="' +
+      sw +
+      '" opacity=".94"/>' +
+      '<text x="' +
+      p.x +
+      '" y="' +
+      p.y +
+      '" font-size="' +
+      fs +
+      '" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="700">' +
+      lab +
+      "</text></g>"
     );
   }
 
@@ -442,6 +505,8 @@
     lbl: lbl,
     targetSvg: targetSvg,
     dot: dot,
+    previewMark: previewMark,
+    markRadius: markRadius,
     geoSvg: geoSvg,
     slotRingSvg: slotRingSvg,
     recordGuideSvg: recordGuideSvg,

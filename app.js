@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=12;
+const KEY="archeryConverge.v1", APP_VER=13;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -377,13 +377,15 @@ function bindTarget(s){
   let drag=null;
   function pt(e){const t=e.changedTouches?.[0]||e.touches?.[0]||e;return t?.clientX!=null?{x:t.clientX,y:t.clientY,id:e.pointerId??t.identifier??"m"}:null;}
   function toS(x,y){return Cx?Cx.svgClientToLocal(svg,x,y):{x:0,y:0};}
-  function draw(p){const fine=drag?.fine,cut=fine&&Geo.lineCut(p.x,p.y,s.faceD);
-    const col=fine?(cut?"var(--hit)":"var(--warn)"):"#fff";
-    lens.classList.toggle("fine",!!fine);lens.classList.toggle("cut",!!cut);
+  function draw(p){
+    const fine=!!drag?.fine;
+    lens.classList.toggle("fine",fine);
+    lens.classList.toggle("cut",false);
+    cur.innerHTML=Geo.previewMark(p.x,p.y,s.faceD,fine);
     const sp=Geo.mathToSvg(p.x,p.y);
-    cur.innerHTML=`<circle cx="${sp.x}" cy="${sp.y}" r="${Geo.arrR(s.faceD)}" fill="none" stroke="${col}" stroke-width="${s.faceD/400}"/>`;
-    const z=Geo.ringW(s.faceD)*2.2;lensSvg.setAttribute("viewBox",`${sp.x-z} ${sp.y-z} ${2*z} ${2*z}`);
-    lens.style.left=p.x<0?"auto":"4px";lens.style.right=p.x<0?"4px":"auto";}
+    const z=Geo.ringW(s.faceD)*2.4;
+    lensSvg.setAttribute("viewBox",`${sp.x-z} ${sp.y-z} ${2*z} ${2*z}`);
+    lens.style.left=p.x<0?"auto":"6px";lens.style.right=p.x<0?"6px":"auto";}
   function reset(){if(drag?.tm)clearTimeout(drag.tm);drag=null;cur.innerHTML="";lens.style.display="none";}
   svg.oncontextmenu=e=>e.preventDefault();
   svg.addEventListener("selectstart",e=>e.preventDefault());
