@@ -52,6 +52,8 @@ const requiredHtml = [
   "ConvergeApp.init",
   "coach-card",
   "advice-card",
+  "--geo-group",
+  "slotRadius",
   ".frame.fit",
   "tgt-stack",
   "geo-legend",
@@ -72,8 +74,7 @@ forbiddenHtml.forEach(s => {
 const requiredApp = [
   "ConvergeGeometry required",
   "APP_VER=12",
-  "--geo-group",
-  "slotRadius",
+  "--mark-cur",
   "ConvergeBeginner",
   "begOn",
   "adviceCardHtml",
