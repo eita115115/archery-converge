@@ -1,7 +1,8 @@
 {
   "name": "Converge — 得点記録 & サイト確認",
   "short_name": "Converge",
-  "description": "弓を組み、エンドごとに記録し、戻ってサイト偏差を確認するアーチェリー練習帳",
+  "description": "的の前でタップ記録、射線に戻ってグルーピングとサイト調整を確認するアーチェリー練習帳。オフライン対応。",
+  "categories": ["sports", "utilities"],
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

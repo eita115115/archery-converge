@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=24;
+const KEY="archeryConverge.v1", APP_VER=25;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -311,10 +311,22 @@ function render(){
   }
 }
 
+function homeStepsHtml(){
+  const steps=begOn()?[
+    ["1","距離とサイトを決める","リングでメートルを選び、照準の数字をメモ"],
+    ["2","的の前で6本タップ","刺さった場所をタップ。長押しで微調整"],
+    ["3","戻ってサイトを確認","集まりと「動かす方向」を見る"]
+  ]:[
+    ["1","Setup","距離・風・サイト"],
+    ["2","Record","着弾タップ ×6"],
+    ["3","Return","散布 & サイト提案"]
+  ];
+  return `<ol class="home-steps">${steps.map(([n,t,d])=>`<li><b>${n}</b><span><strong>${t}</strong> — ${d}</span></li>`).join("")}</ol>`;
+}
 function renderHome(){
   shell(-1,"",null,`
     <div class="home-wrap">
-      <div class="home-rings"><svg viewBox="0 0 100 100">
+      <div class="home-rings"><svg viewBox="0 0 100 100" role="img" aria-label="的">
         <circle cx="50" cy="50" r="44" fill="none" stroke="var(--line2)" stroke-width="2"/>
         <circle cx="50" cy="50" r="32" fill="none" stroke="var(--line2)" stroke-width="2"/>
         <circle cx="50" cy="50" r="20" fill="none" stroke="var(--line2)" stroke-width="2"/>
@@ -322,9 +334,12 @@ function renderHome(){
         <line x1="50" y1="6" x2="50" y2="94" stroke="var(--hit)" stroke-width=".5" opacity=".4"/>
         <line x1="6" y1="50" x2="94" y2="50" stroke="var(--hit)" stroke-width=".5" opacity=".4"/>
       </svg></div>
-      <button class="btn hit" id="goSetup" style="max-width:280px">練習を始める</button>
-      ${begOn()&&Beg?Beg.coachCard("home"):"<p>弓を組み立ててサイトを確認し、<br>的の前で記録 → 戻って結果を見る</p>"}
-      ${db.sessions.length?`<p>前回 ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · ${sessTot(db.sessions[db.sessions.length-1])}点</p>`:""}
+      <h1 class="home-title">Converge</h1>
+      <p class="home-tag">${begOn()?"的で記録して、戻ったらサイトの直し方がわかる練習帳":"Tap at the face, return to see grouping & sight moves"}</p>
+      ${homeStepsHtml()}
+      <button class="btn hit" id="goSetup" style="max-width:280px">${begOn()?"練習を始める":"Start"}</button>
+      ${begOn()&&Beg?Beg.coachCard("home"):""}
+      ${db.sessions.length?`<p class="home-prev">前回 ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · ${sessTot(db.sessions[db.sessions.length-1])}点</p>`:""}
       <div class="home-links">
         <button id="lnkHist">過去</button>
         <button id="lnkGear">装備</button>
@@ -639,4 +654,5 @@ function checkUp(){if(location.protocol==="file:")return;fetch("version.json?"+D
 $("#updBar").onclick=()=>location.reload();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkUp();});
 window.onerror=(msg,src,line)=>{toast("ERR:"+line);console.error(msg,src,line);};
-window.ConvergeApp={init:function(){if(Cx)Cx.init();blockZoom();checkUp();render();}};
+function clearStaticLanding(){const el=$("#staticLanding");if(el)el.remove();}
+window.ConvergeApp={init:function(){clearStaticLanding();if(Cx)Cx.init();blockZoom();checkUp();render();}};

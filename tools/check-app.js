@@ -61,6 +61,11 @@ const requiredHtml = [
   "touch-action:manipulation",
   "minimum-scale=1",
   "user-scalable=no",
+  'meta name="description"',
+  'property="og:title"',
+  'property="og:description"',
+  "static-landing",
+  "home-steps",
 ];
 requiredHtml.forEach(s => {
   if (!html.includes(s)) fail("missing in index.html: " + s);
@@ -73,7 +78,9 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=24",
+  "APP_VER=25",
+  "homeStepsHtml",
+  "clearStaticLanding",
   "applyRecordZoom",
   "zoomChips",
   "isLineCut",
