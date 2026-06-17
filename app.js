@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=45;
+const KEY="archeryConverge.v1", APP_VER=46;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -64,6 +64,19 @@ let db=load();
 const ui={screen:"home",histId:null,adj:false,_dist:70,zoom:1};
 
 function blankDb(){return{setups:[],sightMarks:[],sessions:[],active:null,settings:{eyeSight:850,beginnerMode:true}};}
+/* MIGRATE-V44: rename v44 session fields (endsOppai/oppaiIdx) → endsZenkinFaces/zenkinFaceIdx */
+function migrateV44Session(a){
+  if(!a||typeof a!=="object")return;
+  if(!Array.isArray(a.endsZenkinFaces)){
+    a.endsZenkinFaces=Array.isArray(a.endsOppai)?a.endsOppai.slice():[];
+    delete a.endsOppai;
+  }
+  if(a.zenkinFaceIdx==null&&a.oppaiIdx!=null){
+    a.zenkinFaceIdx=a.oppaiIdx;
+    delete a.oppaiIdx;
+  }
+}
+/* END-MIGRATE-V44 */
 function normalizeActive(a){
   if(!a)return null;
   if(!Array.isArray(a.ends))a.ends=[];
@@ -73,17 +86,9 @@ function normalizeActive(a){
   if(!Array.isArray(a.adjLog))a.adjLog=[];
   if(!a.perEnd)a.perEnd=6;
   if(!a.phase)a.phase="record";
-  if(!Array.isArray(a.endsZenkinFaces)){
-    const kEnds=String.fromCharCode(101,110,100,115,79,112,112,97,105);
-    a.endsZenkinFaces=Array.isArray(a[kEnds])?a[kEnds].slice():[];
-    delete a[kEnds];
-  }
+  migrateV44Session(a);
   while(a.endsZenkinFaces.length>a.ends.length)a.endsZenkinFaces.pop();
   while(a.endsZenkinFaces.length<a.ends.length)a.endsZenkinFaces.push(null);
-  if(a.zenkinFaceIdx==null){
-    const kIdx=String.fromCharCode(111,112,112,97,105,73,100,120);
-    if(a[kIdx]!=null){a.zenkinFaceIdx=a[kIdx];delete a[kIdx];}
-  }
   return a;
 }
 function zenkinFaceIdx(s,arrows,pe){
@@ -455,6 +460,7 @@ function renderHome(){
       ${db.sessions.length?`<p class="home-prev">${begOn()?"前回":"Last"} · ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · <b>${sessTot(db.sessions[db.sessions.length-1])}</b></p>`:""}
       <button class="btn hero" id="goSetup">${begOn()?"練習を始める":"Get started"}</button>
       <footer class="home-foot">
+        <p class="home-backup-hint">${begOn()?"記録はこの端末のみ。<b>書き出し</b>でバックアップを。":"Data stays on this device — <b>Export</b> after practice."}</p>
         <nav class="home-foot-nav">
           <button type="button" id="lnkHist">${begOn()?"履歴":"History"}</button>
           <button type="button" id="lnkGear">${begOn()?"設定":"Settings"}</button>

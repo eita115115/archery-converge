@@ -92,9 +92,13 @@ requiredHtml.forEach(s => {
   if (!src.includes(s)) fail("missing in page: " + s);
 });
 
+function stripMigrateV44(src) {
+  return src.replace(/\/\* MIGRATE-V44[\s\S]*?END-MIGRATE-V44 \*\//g, "");
+}
 const bannedPublic = ["oppai", "OPPAI", "endsOppai", "oppaiIdx", "pickOppai", "oppaiLabel", "oppaiImg", "oppaiVariant"];
 const swSrc = fs.readFileSync(path.join(root, "sw.js"), "utf8");
-[appSrc, geometrySrc, css, html, swSrc, beginnerSrc].forEach((src, i) => {
+const appPublic = stripMigrateV44(appSrc);
+[appPublic, geometrySrc, css, html, swSrc, beginnerSrc].forEach((src, i) => {
   const names = ["app.js", "geometry.js", "style.css", "index.html", "sw.js", "beginner.js"];
   bannedPublic.forEach(term => {
     if (src.includes(term)) fail("banned token in " + names[i] + ": " + term);
@@ -108,7 +112,9 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=45",
+  "APP_VER=46",
+  "migrateV44Session",
+  "home-backup-hint",
   "zenkinFaceIdx",
   "endsZenkinFaces",
   "pickZenkinFace",
