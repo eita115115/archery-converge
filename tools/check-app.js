@@ -76,7 +76,7 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=30",
+  "APP_VER=31",
   "homeStepsHtml",
   "clearStaticLanding",
   "applyRecordZoom",
@@ -252,9 +252,12 @@ if (!dotSolid.includes("mark-solid") || dotSolid.includes("stroke-dasharray")) f
 if (typeof Geo.isLineCut !== "function") fail("isLineCut export");
 
 const oppai = Geo.targetSvg(122, "opp", "", "oppai");
-if (!oppai.includes('class="face oppai"') || !oppai.includes("oppai-face.png"))
+if (!oppai.includes('class="face oppai"') || !oppai.includes("oppai/round.png"))
   fail("oppai target face missing");
-if (!fs.existsSync(path.join(root, "oppai-face.png"))) fail("oppai-face.png missing");
+Geo.OPPAI_VARIANTS.forEach((v) => {
+  if (!fs.existsSync(path.join(root, v.file))) fail("oppai variant missing: " + v.file);
+});
+if (Geo.pickOppaiIdx() < 0 || Geo.pickOppaiIdx() >= Geo.OPPAI_VARIANTS.length) fail("pickOppaiIdx range");
 
 const Beg = loadModule(beginnerSrc).ConvergeBeginner;
 if (!Beg || typeof Beg.plainGroup !== "function" || !Beg.coachCard("home")) fail("ConvergeBeginner export failed");

@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=30;
+const KEY="archeryConverge.v1", APP_VER=31;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -23,7 +23,15 @@ function normalizeActive(a){
   if(!Array.isArray(a.adjLog))a.adjLog=[];
   if(!a.perEnd)a.perEnd=6;
   if(!a.phase)a.phase="record";
+  if(!Array.isArray(a.endsOppai))a.endsOppai=[];
+  while(a.endsOppai.length>a.ends.length)a.endsOppai.pop();
+  while(a.endsOppai.length<a.ends.length)a.endsOppai.push(null);
   return a;
+}
+function zenOppaiIdx(s,arrows,pe){
+  if(!Geo.isZenkinEnd(arrows,pe))return null;
+  if(s.oppaiIdx==null)s.oppaiIdx=Geo.pickOppaiIdx();
+  return s.oppaiIdx;
 }
 function load(){
   try{
@@ -216,7 +224,10 @@ function applyRecordZoom(s){
 
 function reopenLastEnd(s){
   if(!s||!s.ends.length||s.cur.length)return false;
+  if(!s.endsOppai)s.endsOppai=[];
+  const oi=s.endsOppai.pop();
   s.cur=s.ends.pop();
+  s.oppaiIdx=oi!=null?oi:null;
   s.phase="record";
   ui.adj=false;
   save();
@@ -406,6 +417,7 @@ function renderRecord(){
   s.phase="record";save();
   const n=s.cur.length,pe=s.perEnd;
   const zenRec=Geo.isZenkinEnd(s.cur,pe);
+  const oiRec=zenOppaiIdx(s,s.cur,pe);
   const canSetupBack=!n&&!s.ends.length;
   shell(1,recordTitle(s,n,pe)+(zenRec?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:""),canSetupBack?(begOn()?"← 準備":"← 準備"):"",`
     ${begOn()&&Beg?Beg.coachCard("record",{n,pe,zenkin:zenRec}):""}
@@ -413,7 +425,7 @@ function renderRecord(){
     <div class="tgt-stage">
       <div class="box sq-fit" id="tgBox">
         <div class="tgt-stack">
-          ${Geo.targetSvg(s.faceD,"tg","",targetModeFor(s.cur,pe))}
+          ${Geo.targetSvg(s.faceD,"tg","",targetModeFor(s.cur,pe),oiRec)}
           <div class="lens" id="lens"><svg id="lensSvg" width="120" height="120" xmlns:xlink="http://www.w3.org/1999/xlink"><use href="#tgg" xlink:href="#tgg"/></svg></div>
         </div>
       </div>
@@ -433,13 +445,17 @@ function renderRecord(){
   });
   if(canSetupBack){const bb=$("#backBtn");if(bb)bb.onclick=()=>backToSetupFromRecord(s);}
   bindReopenEnd(s,"#reopenRec",renderRecord);
-  const undoBtn=$("#undo");if(undoBtn)undoBtn.onclick=()=>{if(s.cur.length){s.cur.pop();save();renderRecord();}};
+  const undoBtn=$("#undo");if(undoBtn)undoBtn.onclick=()=>{if(s.cur.length){s.cur.pop();if(!Geo.isZenkinEnd(s.cur,pe))s.oppaiIdx=null;save();renderRecord();}};
   $("#backLine").onclick=()=>{
     if(!s.cur.length)return;
     const t=s.cur.reduce((a,x)=>a+x.s,0);
-    s.ends.push(s.cur);s.cur=[];
+    const finished=s.cur;
+    const zen=Geo.isZenkinEnd(finished,pe);
+    s.ends.push(finished);s.cur=[];
+    if(!s.endsOppai)s.endsOppai=[];
+    s.endsOppai.push(zen?s.oppaiIdx:null);
+    s.oppaiIdx=null;
     save();
-    const zen=Geo.isZenkinEnd(s.ends[s.ends.length-1],pe);
     endPulse(t,()=>{ui.screen="return";render();},{zenkin:zen});
   };
 }
@@ -484,8 +500,9 @@ function bindTarget(s){
     s.cur.push({x:+h.x.toFixed(2),y:+h.y.toFixed(2),s:h.s,X:h.X,cut});
     const hint=begOn()&&Beg?Beg.firstArrowToast(s.cur.length,s.perEnd,h.s):null;
     const zen=Geo.isZenkinEnd(s.cur,s.perEnd);
+    if(zen&&s.oppaiIdx==null)s.oppaiIdx=Geo.pickOppaiIdx();
     save();
-    if(zen)toast(begOn()?"全金！！おめでとう！":"全金 — 金ゾーン6本");
+    if(zen){const lb=Geo.oppaiLabelAt(s.oppaiIdx);toast(begOn()?"全金！！ "+lb:"全金 — "+lb);}
     else if(hint)toast(hint);
     renderRecord();}
   function cancel(e){const cp=pt(e);if(!drag||!cp||cp.id===drag.id)reset();}
@@ -516,6 +533,7 @@ function renderReturn(){
   s.phase="return";save();
   const end=s.ends[s.ends.length-1]||[],pe=s.perEnd||6;
   const zenRet=Geo.isZenkinEnd(end,pe);
+  const oiRet=zenRet?(s.endsOppai||[])[s.ends.length-1]:null;
   const st=stats(end);
   const tot=end.reduce((a,x)=>a+x.s,0);
   const adv=endAdvice(s,end);
@@ -530,7 +548,7 @@ function renderReturn(){
     ${begOn()&&Beg?Beg.coachCard("return",{plainGroup:Beg.plainGroup(st),moveLine,zenkin:zenRet}):""}
     ${adviceCardHtml(st,adv,j)}
     <div class="ret-split">
-      <div class="cell"><div class="box sq-fit"><div class="tgt-stack">${Geo.targetSvg(s.faceD,"rt",rtOver,targetModeFor(end,pe))}</div></div></div>
+      <div class="cell"><div class="box sq-fit"><div class="tgt-stack">${Geo.targetSvg(s.faceD,"rt",rtOver,targetModeFor(end,pe),oiRet)}</div></div></div>
       <div class="cell">${ui.adj?`<div class="sight-adj" style="width:100%;margin:0">
         <input id="nv" inputmode="decimal" placeholder="上下" value="${esc(sv)}">
         <input id="nh" inputmode="decimal" placeholder="左右" value="${esc(sh)}">

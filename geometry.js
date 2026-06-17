@@ -90,10 +90,27 @@
     [1, "#d4a72c", "#222"],
   ];
 
-  /** Zenkin face: reference raster (refs/oppai → oppai-face.png); scoring math unchanged */
-  var OPPAI_FACE_IMG = "oppai-face.png";
+  /** Zenkin face rasters — shape variants (swap files in oppai/ to customize) */
+  var OPPAI_VARIANTS = [
+    { id: "round", file: "oppai/round.png", label: "丸型" },
+    { id: "teardrop", file: "oppai/teardrop.png", label: "しずく型" },
+    { id: "bell", file: "oppai/bell.png", label: "ベル型" },
+    { id: "heavy", file: "oppai/heavy.png", label: "垂れ型" },
+  ];
 
-  function targetFaceSvg(fd, id, mode) {
+  function pickOppaiIdx() {
+    return Math.floor(Math.random() * OPPAI_VARIANTS.length);
+  }
+  function oppaiImgAt(idx) {
+    var v = OPPAI_VARIANTS[idx == null ? 0 : idx % OPPAI_VARIANTS.length];
+    return v ? v.file : OPPAI_VARIANTS[0].file;
+  }
+  function oppaiLabelAt(idx) {
+    var v = OPPAI_VARIANTS[idx == null ? 0 : idx % OPPAI_VARIANTS.length];
+    return v ? v.label : "";
+  }
+
+  function targetFaceSvg(fd, id, mode, oppaiIdx) {
     var w = ringW(fd),
       R = fd / 2,
       sw = R / 280,
@@ -110,7 +127,7 @@
         'clip"><circle cx="0" cy="0" r="' +
         R +
         '"/></clipPath></defs><image href="' +
-        OPPAI_FACE_IMG +
+        oppaiImgAt(oppaiIdx) +
         '" x="' +
         -R +
         '" y="' +
@@ -160,7 +177,7 @@
     return g;
   }
 
-  function targetSvg(fd, id, overlays, mode) {
+  function targetSvg(fd, id, overlays, mode, oppaiIdx) {
     var vb = viewBoxFor(fd),
       face = mode === "oppai" ? "oppai" : "sport";
     return (
@@ -176,7 +193,7 @@
       'g"><g id="' +
       id +
       'face">' +
-      targetFaceSvg(fd, id, face) +
+      targetFaceSvg(fd, id, face, oppaiIdx) +
       "</g>" +
       (overlays || "") +
       '<g id="' +
@@ -549,6 +566,10 @@
     hitAt: hitAt,
     lbl: lbl,
     isZenkinEnd: isZenkinEnd,
+    OPPAI_VARIANTS: OPPAI_VARIANTS,
+    pickOppaiIdx: pickOppaiIdx,
+    oppaiImgAt: oppaiImgAt,
+    oppaiLabelAt: oppaiLabelAt,
     targetSvg: targetSvg,
     targetFaceSvg: targetFaceSvg,
     dot: dot,
