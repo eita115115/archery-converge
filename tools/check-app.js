@@ -73,7 +73,9 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=23",
+  "APP_VER=24",
+  "applyRecordZoom",
+  "zoomChips",
   "isLineCut",
   "backToSetupFromRecord",
   "canSetupBack",
@@ -175,6 +177,9 @@ const Phy = phyCtx.ArcheryPhysics || phyCtx.module.exports;
 const face70 = Geo.faceDForDist(70);
 const face18 = Geo.faceDForDist(18);
 if (face70 !== 122 || face18 !== 40) fail("faceDForDist mapping wrong");
+const vbZ1 = Geo.viewBoxFor(122, 1);
+const vbZ3 = Geo.viewBoxFor(122, 3);
+if (vbZ3.M >= vbZ1.M - 1e-6) fail("record zoom must shrink viewBox");
 
 const ten = Geo.scoreAt(0, 0, 122);
 if (ten.s !== 10 || !ten.X) fail("center score must be X");

@@ -127,6 +127,14 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .geo-nums{display:flex;gap:8px;font-size:12px;color:var(--dim);pointer-events:none}
 .geo-nums b{color:var(--mute);font-weight:600}
 
+.zoom-bar{flex-shrink:0;display:flex;justify-content:flex-end;padding:0 2px 4px}
+.zoom-chips{display:flex;gap:6px;flex-wrap:wrap}
+.zoom-chip{padding:6px 12px;border-radius:999px;border:1.5px solid var(--line2);background:var(--card);
+  color:var(--mute);font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation}
+.zoom-chip.on{background:var(--hit);border-color:var(--hit);color:#fff}
+.frame.fit .zoom-bar{padding:0 0 3px}
+.frame.fit .zoom-chip{padding:5px 11px;font-size:12px}
+
 .rec-progress{flex-shrink:0;display:flex;justify-content:center;gap:7px;padding:4px 0 2px}
 .rec-progress .dot{width:9px;height:9px;border-radius:50%;background:var(--slot-idle);opacity:.45}
 .rec-progress .dot.on{background:var(--slot-done);opacity:1}

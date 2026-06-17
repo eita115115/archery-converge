@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=23;
+const KEY="archeryConverge.v1", APP_VER=24;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -11,7 +11,7 @@ const PHASES=["準備","記録","確認"];
 function begOn(){return Beg&&Beg.isOn(db.settings);}
 const DISTS=[70,50,30,18];
 let db=load();
-const ui={screen:"home",histId:null,adj:false,_dist:70};
+const ui={screen:"home",histId:null,adj:false,_dist:70,zoom:1};
 
 function blankDb(){return{setups:[],sightMarks:[],sessions:[],active:null,settings:{eyeSight:850,beginnerMode:true}};}
 function normalizeActive(a){
@@ -197,10 +197,21 @@ function backToSetupFromRecord(s){
   ui._dist=s.dist;
   ui._windDir=s.windDir??"";
   ui._windSpd=s.windSpeed??0;
+  ui.zoom=1;
   delete db.active;
   save();
   ui.screen="setup";
   render();
+}
+function zoomChipsHtml(){
+  const z=ui.zoom||1;
+  const labs=begOn()?[[1,"全体"],[2,"×2"],[3,"×3"]]:[[1,"1×"],[2,"2×"],[3,"3×"]];
+  return `<div class="zoom-chips" id="zoomChips">${labs.map(([n,lb])=>`<button type="button" class="zoom-chip${z===n?" on":""}" data-z="${n}">${lb}</button>`).join("")}</div>`;
+}
+function applyRecordZoom(s){
+  const svg=$("#tgsvg");if(!svg)return;
+  const vb=Geo.viewBoxFor(s.faceD,ui.zoom||1);
+  svg.setAttribute("viewBox",vb.str);
 }
 
 function reopenLastEnd(s){
@@ -371,7 +382,7 @@ function renderSetup(){
       phase:"record",ends:[],cur:[],adjLog:[]
     };
     if(g&&(v||h))db.sightMarks.push({id:uid(),setupId:g.id,date:today(),dist,v,h,tag:"start"});
-    save();ui.screen="record";render();
+    ui.zoom=1;save();ui.screen="record";render();
   };
 }
 
@@ -383,6 +394,7 @@ function renderRecord(){
   const canSetupBack=!n&&!s.ends.length;
   shell(1,recordTitle(s,n,pe)+(zenRec?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:""),canSetupBack?(begOn()?"← 準備":"← 準備"):"",`
     ${begOn()&&Beg?Beg.coachCard("record",{n,pe,zenkin:zenRec}):""}
+    <div class="zoom-bar">${zoomChipsHtml()}</div>
     <div class="tgt-stage">
       <div class="box sq-fit" id="tgBox">
         <div class="tgt-stack">
@@ -397,7 +409,13 @@ function renderRecord(){
     <div class="row">${n?`<button class="btn ghost sm" id="undo">1本戻す</button>`:`<span class="gap-btn"></span>`}
       <button class="btn beat" id="backLine"${n?"":" disabled"}>${begOn()?"6本終わった・戻る":"射線に戻った"}</button></div>`,true);
   paintMarks(s);
+  applyRecordZoom(s);
   bindTarget(s);
+  document.querySelectorAll("#zoomChips .zoom-chip").forEach(c=>c.onclick=()=>{
+    ui.zoom=+c.dataset.z||1;
+    document.querySelectorAll("#zoomChips .zoom-chip").forEach(x=>x.classList.toggle("on",x===c));
+    applyRecordZoom(s);
+  });
   if(canSetupBack){const bb=$("#backBtn");if(bb)bb.onclick=()=>backToSetupFromRecord(s);}
   bindReopenEnd(s,"#reopenRec",renderRecord);
   const undoBtn=$("#undo");if(undoBtn)undoBtn.onclick=()=>{if(s.cur.length){s.cur.pop();save();renderRecord();}};

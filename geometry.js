@@ -27,8 +27,8 @@
   function slotRadius(fd) {
     return fd / 2 + ringW(fd) * SLOT_OUTER_PAD;
   }
-  function viewBoxFor(fd) {
-    var M = marginRadius(fd);
+  function viewBoxFor(fd, zoom) {
+    var M = marginRadius(fd) / (zoom == null || zoom < 1 ? 1 : zoom);
     return { M: M, minX: -M, minY: -M, width: 2 * M, height: 2 * M, str: -M + " " + -M + " " + 2 * M + " " + 2 * M };
   }
   function faceDForDist(dist) {
