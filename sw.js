@@ -1,4 +1,4 @@
-const CACHE = "archery-converge-v8";
+const CACHE = "archery-converge-v9";
 const ASSETS = ["./index.html", "./compat.js", "./physics.js", "./manifest.json", "./icon.svg", "./apple-touch-icon.png", "./version.json"];
 
 self.addEventListener("install", e => {

@@ -52,33 +52,35 @@ function svgClientToLocal(svg,x,y){
 function sizeSquare(box,host,maxSide){
   if(!box||!host)return;
   var w=host.clientWidth,h=host.clientHeight;
-  var lim=maxSide||root.innerWidth||w;
-  var s=Math.floor(Math.min(w,h,lim)-2);
-  if(s<28)return;
+  if(w<40||h<40)return;
+  var lim=maxSide||Math.min(root.innerWidth||w,w);
+  var s=Math.floor(Math.min(w,h,lim)*0.96);
+  if(s<72)return;
   box.style.width=s+"px";
   box.style.height=s+"px";
   box.style.maxWidth=s+"px";
   box.style.maxHeight=s+"px";
 }
 function layoutFit(){
-  var i,box,host,dist,wrap,ds,dials,dial,cell;
+  var i,box,host,dist,wrap,ds,dials,dial,cell,stage;
   var squares=document.querySelectorAll(".sq-fit");
   for(i=0;i<squares.length;i++){
     box=squares[i];
-    host=box.closest(".tgt-stage")||box.closest(".ret-split .cell")||box.parentElement;
-    sizeSquare(box,host);
+    stage=box.closest(".tgt-stage");
+    host=stage||box.closest(".ret-split .cell")||box.parentElement;
+    sizeSquare(box,host,stage?Math.min((root.innerWidth||480)-12,500):undefined);
   }
   dials=document.querySelectorAll(".frame.fit .sight-dial svg");
   for(i=0;i<dials.length;i++){
     dial=dials[i];cell=dial.closest(".cell");
-    if(cell&&cell.clientHeight>20)dial.style.maxHeight=Math.floor(cell.clientHeight)+"px";
+    if(cell&&cell.clientHeight>48)dial.style.maxHeight=Math.floor(cell.clientHeight*0.92)+"px";
   }
   dist=document.querySelector(".frame.fit .dist-svg");
   if(dist){
     wrap=dist.closest(".dist-wrap");
     if(wrap){
-      ds=Math.floor(Math.min(wrap.clientWidth,wrap.clientHeight,240));
-      if(ds>72){dist.style.width=ds+"px";dist.style.height=ds+"px";}
+      ds=Math.floor(Math.min(wrap.clientWidth,wrap.clientHeight,300));
+      if(ds>100){dist.style.width=ds+"px";dist.style.height=ds+"px";}
     }
   }
 }

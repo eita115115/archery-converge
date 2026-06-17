@@ -36,14 +36,15 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
   body.noflow{height:100dvh;max-height:100dvh}
 }
 .frame.fit .main{flex:1;min-height:0;display:flex;flex-direction:column}
-.frame.fit .phase-arc{padding:4px 10px 0;padding-top:calc(4px + var(--safe-top))}
-.frame.fit .phase-arc svg{height:26px}
-.frame.fit .hdr{padding:0 10px 4px;min-height:30px}
-.frame.fit .hdr .title{font-size:15px;color:var(--text)}
-.frame.fit .body{flex:1;min-height:0;overflow:hidden;padding:0 8px;display:flex;flex-direction:column}
-.frame.fit .foot{flex-shrink:0;padding:6px 10px;padding-bottom:calc(6px + var(--safe-bot))}
-.frame.fit .btn{padding:13px 12px;font-size:15px}
-.frame.fit .btn.sm{padding:10px 12px;font-size:12px;min-height:44px}
+.frame.fit .phase-arc{padding:6px 12px 0;padding-top:calc(6px + var(--safe-top))}
+.frame.fit .phase-arc svg{height:34px}
+.frame.fit .hdr{padding:2px 12px 6px;min-height:38px}
+.frame.fit .hdr .title{font-size:16px;color:var(--text)}
+.frame.fit .body{flex:1;min-height:0;overflow:hidden;padding:0 10px;display:flex;flex-direction:column}
+.frame.fit.setup-fit .body{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.frame.fit .foot{flex-shrink:0;padding:8px 12px;padding-bottom:calc(8px + var(--safe-bot))}
+.frame.fit .btn{padding:15px 14px;font-size:16px}
+.frame.fit .btn.sm{padding:12px 14px;font-size:14px;min-height:48px}
 .phase-arc{flex-shrink:0;padding:8px 12px 4px;padding-top:calc(8px + var(--safe-top))}
 .phase-arc svg{display:block;width:100%;height:36px}
 .phase-arc .lbl{font-size:11px;fill:var(--dim)}
@@ -63,9 +64,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 
 /* distance rings */
 .dist-wrap{display:flex;justify-content:center;padding:20px 0 12px}
-.frame.fit .dist-wrap{padding:4px 0 2px;flex:1;min-height:0;align-items:center}
+.frame.fit .dist-wrap{padding:12px 0 8px;flex:0 0 auto;align-items:center}
 .dist-svg{width:min(280px,88vw);height:min(280px,88vw);touch-action:manipulation}
-.frame.fit .dist-svg{width:min(200px,58vw);height:min(200px,58vw)}
+.frame.fit .dist-svg{width:min(280px,76vw);height:min(280px,76vw)}
+.frame.fit.setup-fit .dist-svg{width:min(300px,82vw);height:min(300px,82vw)}
 .dist-svg .ring{cursor:pointer;fill:none;stroke:var(--line2);stroke-width:14;transition:stroke .2s,stroke-width .2s}
 .dist-svg .ring.on{stroke:var(--hit);stroke-width:18}
 .dist-svg .ring.lab{stroke:none;fill:var(--dim);font-size:11px;text-anchor:middle}
@@ -81,13 +83,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .sight-x input{width:100%;padding:12px 8px;border:1px solid var(--line);border-radius:50px;
   background:var(--panel);color:var(--text);font-size:18px;text-align:center}
 .frame.fit .sight-x{margin:0;max-width:none}
-.frame.fit .sight-x .core{width:52px;height:52px}
-.frame.fit .sight-x input{padding:10px 6px;font-size:16px}
-.setup-mid{display:flex;align-items:center;justify-content:center;gap:10px;flex-shrink:0;padding:2px 0}
-.frame.fit .wind-compass{padding:0}
-.frame.fit .wind-compass svg{width:min(108px,30vw);height:min(108px,30vw)}
-.frame.fit .wind-spd{margin:2px 0 0;gap:4px}
-.frame.fit .wind-spd button{padding:6px 10px;font-size:12px}
+.frame.fit .sight-x .core{width:68px;height:68px}
+.frame.fit .sight-x input{padding:12px 8px;font-size:18px}
+.setup-mid{display:flex;align-items:center;justify-content:center;gap:14px;flex-shrink:0;padding:8px 0}
+.frame.fit .wind-compass{padding:4px 0}
+.frame.fit .wind-compass svg{width:min(168px,44vw);height:min(168px,44vw)}
+.frame.fit .wind-spd{margin:6px 0 0;gap:6px}
+.frame.fit .wind-spd button{padding:10px 14px;font-size:14px}
 .sight-x .v-up{grid-column:2}.sight-x .v-dn{grid-column:2}
 .sight-x .h-l{grid-column:1;grid-row:2}.sight-x .h-r{grid-column:3;grid-row:2}
 .sight-x .core{grid-column:2;grid-row:2}
@@ -97,21 +99,29 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 
 /* target hero */
 .tgt-stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:0;touch-action:none;-ms-touch-action:none}
-.frame.fit .tgt-stage{flex:1;width:100%;height:100%}
-.tgt-stage .box{position:relative;width:100%;max-width:min(100vw - 24px, 480px);transform-origin:center center}
-.frame.fit .tgt-stage .box.sq-fit{margin:0 auto;flex-shrink:1}
-.tgt-stage .box svg.face{width:100%;display:block;touch-action:none;-ms-touch-action:none}
-.tgt-geo{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}
-.tgt-geo svg{width:100%;height:100%;display:block}
-.slot-ring{position:absolute;top:-8%;right:-8%;bottom:-8%;left:-8%;pointer-events:none}
-.slot-ring svg{width:100%;height:100%;display:block}
+.frame.fit .tgt-stage{flex:1;width:100%;min-height:0}
+.tgt-stage .box{position:relative;width:100%;max-width:min(100vw - 16px, 500px);transform-origin:center center}
+.frame.fit .tgt-stage .box.sq-fit{margin:0 auto;flex-shrink:0}
+.box.sq-fit{display:flex;align-items:center;justify-content:center}
+.tgt-stack{position:relative;width:100%;height:100%}
+.tgt-stack svg.face{width:100%;height:100%;display:block;touch-action:none;-ms-touch-action:none}
+.tgt-stack .lens{position:absolute}
+.tgt-stack .geo-nums{position:absolute;bottom:6px;right:6px}
 
-.lens{position:absolute;top:4px;width:108px;height:108px;border-radius:50%;border:2px solid var(--hit);
+.lens{top:6px;width:120px;height:120px;border-radius:50%;border:2px solid var(--hit);
   background:#222420;display:none;pointer-events:none;overflow:hidden;box-shadow:0 0 16px rgba(0,0,0,.5)}
 .lens.fine{border-color:var(--warn)}.lens.cut{border-color:var(--hit)}
 
-.geo-nums{position:absolute;bottom:4px;right:4px;display:flex;gap:6px;font-size:10px;color:var(--dim);pointer-events:none}
+.geo-nums{display:flex;gap:8px;font-size:12px;color:var(--dim);pointer-events:none}
 .geo-nums b{color:var(--mute);font-weight:600}
+
+.geo-legend{flex-shrink:0;display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:8px 6px 4px;border-top:1px solid var(--line);margin-top:4px}
+.geo-legend .gl{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);white-space:nowrap}
+.geo-legend .gl svg{width:26px;height:26px;flex-shrink:0;display:block}
+.frame.fit .geo-legend{padding:6px 4px 2px;gap:10px}
+.frame.fit .geo-legend .gl{font-size:12px}
+.frame.fit .geo-legend .gl svg{width:24px;height:24px}
 
 /* return: grouping + sight dial */
 .ret-geo{display:flex;flex-direction:column;align-items:center;gap:8px}
@@ -125,13 +135,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
   .frame.fit .ret-split .cell{flex:1 1 0}
 }
 .ret-split .sight-dial{width:100%;max-width:100%;margin:0}
-.ret-bar{flex-shrink:0;text-align:center;font-size:11px;color:var(--dim);line-height:1.35;padding:2px 4px 4px}
+.ret-bar{flex-shrink:0;text-align:center;font-size:13px;color:var(--dim);line-height:1.4;padding:4px 6px 2px}
 .ret-bar b{color:var(--mute);font-weight:600}
 .ret-geo .mini{width:min(240px,70vw)}
 .ret-geo .mini .box{transform:scale(1)}
 
-.sight-dial{width:min(260px,80vw);margin:8px auto}
-.frame.fit .sight-dial svg{max-height:200px}
+.sight-dial{width:min(280px,88vw);margin:8px auto}
+.frame.fit .sight-dial svg{max-height:none}
 .sight-dial svg{width:100%;display:block}
 .sight-dial .tick{stroke:var(--line2);stroke-width:1}
 .sight-dial .axis{stroke:var(--line);stroke-width:1.5;opacity:.6}
@@ -152,7 +162,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .hdr .jtag.hold{background:rgba(155,124,240,.12);color:var(--sight)}
 .hdr .jtag.warn{background:rgba(224,96,80,.12);color:var(--beat)}
 .frame.fit .foot .row3{display:flex;flex-direction:row;align-items:stretch}
-.frame.fit .foot .row3 .btn{flex:1;min-width:0;margin-top:0;padding:11px 4px;font-size:12px}
+.frame.fit .foot .row3 .btn{flex:1;min-width:0;margin-top:0;padding:13px 6px;font-size:14px}
 .frame.fit .foot .row3 .btn+.btn{margin-left:6px}
 .frame.fit .foot .row3 .btn:nth-child(2){flex:1.15}
 
@@ -209,7 +219,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .wind-spd button.on{border-color:var(--hit);color:var(--hit)}
 
 .phys-badge{text-align:center;padding:6px 12px;margin:4px auto;max-width:300px;border-radius:20px;font-size:13px;font-weight:600}
-.frame.fit .phys-badge,.frame.fit .phys-hint,.frame.fit .phys-traj,.frame.fit .end-badge{display:none}
 .phys-badge.ok{background:rgba(94,207,122,.12);color:var(--hit)}
 .phys-badge.mid{background:rgba(232,176,64,.12);color:var(--warn)}
 .phys-badge.hold{background:rgba(155,124,240,.1);color:var(--sight)}
@@ -229,11 +238,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
   .frame.fit .setup-mid{flex-direction:column}
   .frame.fit .wind-compass svg{width:96px;height:96px}
 }
-@media (max-height:520px){
-  .frame.fit .phase-arc svg{height:22px}
-  .frame.fit .hdr{min-height:26px;padding-bottom:2px}
-  .frame.fit .btn{padding:10px 8px;font-size:13px}
-  .frame.fit .dist-svg{width:min(160px,50vw);height:min(160px,50vw)}
+@media (max-height:480px){
+  .frame.fit .phase-arc svg{height:28px}
+  .frame.fit .hdr{min-height:32px}
+  .frame.fit .btn{padding:12px 10px;font-size:15px}
 }
 .gear-sep{height:1px;background:var(--line);margin:14px 0}
 </style>
@@ -250,7 +258,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 <script src="physics.js"></script>
 <script>
 "use strict";
-const KEY="archeryConverge.v1", APP_VER=8;
+const KEY="archeryConverge.v1", APP_VER=9;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const PHASES=["準備","記録","確認"];
@@ -311,15 +319,15 @@ function sugFromAdv(adv,j){
 }
 function mono(v,ax){const a=Math.abs(v).toFixed(1);return ax==="x"?(v>0?`+${a}`:v<0?`-${a}`:"0"):(v>0?`↑${a}`:v<0?`↓${a}`:"—");}
 
-function targetSvg(fd,id){
+function targetSvg(fd,id,overlays){
   const w=ringW(fd),R=fd/2,M=R*1.18;
   const z=[[10,"#f5f3ee"],[9,"#f5f3ee"],[8,"#222"],[7,"#222"],[6,"#3d8fd4"],[5,"#3d8fd4"],[4,"#c73e3a"],[3,"#c73e3a"],[2,"#d4a72c"],[1,"#d4a72c"]];
   let g="";z.forEach(([k,f])=>{g+=`<circle cx="0" cy="0" r="${k*w}" fill="${f}" stroke="${f==="#222"?"#3a3a32":"#222"}" stroke-width="${R/280}"/>`;});
   g+=`<circle cx="0" cy="0" r="${w/2}" fill="none" stroke="#222" stroke-width="${R/280}"/>`;
   g+=`<line x1="${-w/5}" y1="0" x2="${w/5}" y2="0" stroke="#222" stroke-width="${R/280}"/>`;
   g+=`<line x1="0" y1="${-w/5}" x2="0" y2="${w/5}" stroke="#222" stroke-width="${R/280}"/>`;
-  return `<svg class="face" id="${id}svg" viewBox="${-M} ${-M} ${2*M} ${2*M}" xmlns="http://www.w3.org/2000/svg">
-    <g id="${id}g"><g>${g}</g><g id="${id}marks"></g><g id="${id}cur"></g></g></svg>`;
+  return `<svg class="face" id="${id}svg" viewBox="${-M} ${-M} ${2*M} ${2*M}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+    <g id="${id}g"><g id="${id}face">${g}</g>${overlays||""}<g id="${id}marks"></g><g id="${id}cur"></g></g></svg>`;
 }
 function dot(a,fd,c,l){const r=arrR(fd);return `<g><circle cx="${a.x}" cy="${-a.y}" r="${r}" fill="${c}" stroke="#fff" stroke-width="${r/5}" opacity=".92"/>`
   +(l?`<text x="${a.x}" y="${-a.y}" font-size="${r*1.1}" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="bold">${l}</text>`:"")+`</g>`;}
@@ -405,22 +413,66 @@ function distRings(dist){
   return `<div class="dist-wrap"><svg class="dist-svg" viewBox="0 0 200 200">${rings}</svg></div>`;
 }
 
-function slotRing(cur,pe,fd){
-  const cx=50,cy=50,R=46,seg=360/pe,gap=4;
+function slotRingSvg(cur,pe,fd){
+  const M=fd/2*1.18,R=M*.93,seg=360/pe,gap=4,sw=fd/110,fs=fd/17;
   let s="";
   for(let i=0;i<pe;i++){
     const a0=(i*seg-90+gap/2)*Math.PI/180,a1=((i+1)*seg-90-gap/2)*Math.PI/180;
-    const x1=cx+R*Math.cos(a0),y1=cy+R*Math.sin(a0),x2=cx+R*Math.cos(a1),y2=cy+R*Math.sin(a1);
+    const x1=R*Math.cos(a0),y1=-R*Math.sin(a0),x2=R*Math.cos(a1),y2=-R*Math.sin(a1);
     const hit=cur[i],active=i===cur.length;
     const col=hit?(hit.s>=9?"var(--warn)":"var(--hit)"):(active?"var(--text)":"var(--line)");
-    const op=hit?.6:active?.35:.15;
-    s+=`<path d="M${x1} ${y1} A ${R} ${R} 0 0 1 ${x2} ${y2}" fill="none" stroke="${col}" stroke-width="${active?5:4}" opacity="${op}" stroke-linecap="round"/>`;
+    const op=hit?.75:active?.4:.18;
+    s+=`<path d="M${x1} ${y1} A ${R} ${R} 0 0 1 ${x2} ${y2}" fill="none" stroke="${col}" stroke-width="${active?sw*1.3:sw}" opacity="${op}" stroke-linecap="round"/>`;
+    if(active&&!hit){
+      const mid=(a0+a1)/2,ix=R*.86*Math.cos(mid),iy=-R*.86*Math.sin(mid);
+      s+=`<circle cx="${ix}" cy="${iy}" r="${fd/42}" fill="none" stroke="${col}" stroke-width="${sw*.7}" stroke-dasharray="${fd/55} ${fd/40}" opacity=".55"/>`;
+    }
     if(hit){
-      const mid=(a0+a1)/2,tx=cx+(R-8)*Math.cos(mid),ty=cy+(R-8)*Math.sin(mid);
-      s+=`<text x="${tx}" y="${ty}" font-size="7" fill="${col}" text-anchor="middle" dominant-baseline="central" font-weight="700">${lbl(hit)}</text>`;
+      const mid=(a0+a1)/2,tx=R*.84*Math.cos(mid),ty=-R*.84*Math.sin(mid);
+      s+=`<text x="${tx}" y="${ty}" font-size="${fs}" fill="${col}" text-anchor="middle" dominant-baseline="central" font-weight="700">${lbl(hit)}</text>`;
+    }else if(active){
+      const mid=(a0+a1)/2,tx=R*.84*Math.cos(mid),ty=-R*.84*Math.sin(mid);
+      s+=`<text x="${tx}" y="${ty}" font-size="${fs*.85}" fill="${col}" text-anchor="middle" dominant-baseline="central" font-weight="600" opacity=".7">${i+1}</text>`;
     }
   }
-  return `<div class="slot-ring"><svg viewBox="0 0 100 100">${s}</svg></div>`;
+  return s;
+}
+function recordGuideSvg(fd,n,pe){
+  if(n>=pe)return "";
+  const M=fd/2*1.18,y=M*.62,s=fd/22,g=fd/14;
+  return `<g class="rec-guide" opacity=".82" pointer-events="none">
+    <g transform="translate(${-g*2.2},${y})"><circle r="${s}" fill="none" stroke="var(--hit)" stroke-width="${fd/500}"/>
+      <circle r="${s*.32}" fill="var(--hit)"/><text y="${s*1.65}" font-size="${fd/34}" fill="var(--dim)" text-anchor="middle">タップ</text></g>
+    <g transform="translate(0,${y})"><circle r="${s}" fill="none" stroke="var(--warn)" stroke-width="${fd/500}" stroke-dasharray="${fd/70} ${fd/50}"/>
+      <circle r="${s*.55}" fill="none" stroke="var(--warn)" stroke-width="${fd/600}"/><text y="${s*1.65}" font-size="${fd/34}" fill="var(--dim)" text-anchor="middle">長押し</text></g>
+    <g transform="translate(${g*2.2},${y})"><path d="M${-s*.7} 0 A${s*.7} ${s*.7} 0 0 1 ${s*.7} 0" fill="none" stroke="var(--text)" stroke-width="${fd/450}" opacity=".6"/>
+      <text y="${s*1.65}" font-size="${fd/34}" fill="var(--dim)" text-anchor="middle">射順</text></g>
+  </g>`;
+}
+function geoLegend(kind,extra){
+  const items={
+    record:[
+      {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--hit)" stroke-width="2"/><circle cx="13" cy="13" r="3.5" fill="var(--hit)"/>',t:"タップで着弾"},
+      {svg:'<circle cx="13" cy="13" r="9" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="3 2"/><circle cx="13" cy="13" r="5" fill="none" stroke="var(--warn)"/>',t:"長押しで微調整"},
+      {svg:'<path d="M5 13 A8 8 0 0 1 21 13" fill="none" stroke="var(--text)" stroke-width="2.5" opacity=".7"/>',t:"外周=得点"}
+    ],
+    return:[
+      {svg:'<ellipse cx="13" cy="13" rx="10" ry="6.5" fill="none" stroke="var(--hit)" stroke-width="1.5" stroke-dasharray="3 2"/>',t:"散布"},
+      {svg:'<circle cx="13" cy="13" r="4" fill="var(--warn)" stroke="#fff" stroke-width="1"/>',t:"中心"},
+      {svg:'<line x1="5" y1="21" x2="21" y2="5" stroke="var(--sight)" stroke-width="2.5"/>',t:"サイト方向"},
+      {svg:'<circle cx="9" cy="13" r="3" fill="var(--dim)"/><circle cx="17" cy="13" r="4" fill="var(--sight)" stroke="#fff" stroke-width="1"/>',t:"灰=開始·紫=今"}
+    ],
+    setup:[
+      {svg:'<circle cx="13" cy="13" r="10" fill="none" stroke="var(--line2)" stroke-width="3"/><circle cx="13" cy="13" r="4" fill="var(--hit)"/>',t:"リング=距離"},
+      {svg:'<circle cx="13" cy="13" r="10" fill="none" stroke="var(--line)"/><line x1="13" y1="3" x2="13" y2="23" stroke="var(--line)"/><circle cx="13" cy="5" r="2.5" fill="var(--hit)"/>',t:"コンパス=風"}
+    ]
+  };
+  let list=items[kind]||[];
+  if(extra&&extra.j){
+    const c=extra.j.tone==="ok"?"var(--hit)":extra.j.tone==="warn"?"var(--beat)":extra.j.tone==="hold"?"var(--sight)":"var(--warn)";
+    list=[{svg:`<rect x="4" y="8" width="18" height="10" rx="5" fill="${c}" opacity=".25"/><text x="13" y="16" font-size="9" fill="${c}" text-anchor="middle" font-weight="700">${esc(extra.j.label).slice(0,4)}</text>`,t:extra.j.label},...list];
+  }
+  return `<div class="geo-legend">${list.map(it=>`<span class="gl"><svg viewBox="0 0 26 26">${it.svg}</svg>${it.t}</span>`).join("")}</div>`;
 }
 
 function sightDial(s0,now,sug,adv){
@@ -438,9 +490,9 @@ function sightDial(s0,now,sug,adv){
     sugLine=`<line class="sug" x1="${nx}" y1="${ny}" x2="${ex}" y2="${ey}"/>`;
     sugDot=`<circle cx="${ex}" cy="${ey}" r="5" fill="none" stroke="var(--warn)" stroke-width="2" stroke-dasharray="2 2"/>`;
   }
-  const rec=adv&&adv.moves.length?`<text class="lbl" x="${cx}" y="152" text-anchor="middle">推奨 ${adv.moves.map(m=>m.dir).join("·")}</text>`:
-    `<text class="lbl" x="${cx}" y="152" text-anchor="middle">開始 ${esc(s0.v||"—")} / ${esc(s0.h||"—")}</text>`;
-  return `<div class="sight-dial"><svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+  const rec=adv&&adv.moves.length?`<text class="lbl" x="${cx}" y="152" text-anchor="middle">→ ${adv.moves.map(m=>m.dir+m.cm.toFixed(1)+"cm").join(" · ")}</text>`:
+    `<text class="lbl" x="${cx}" y="152" text-anchor="middle">調整不要</text>`;
+  return `<div class="sight-dial"><svg viewBox="0 0 160 168" xmlns="http://www.w3.org/2000/svg">
     <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--warn)"/></marker></defs>
     ${ticks}
     <line class="axis" x1="${cx-R}" y1="${cy}" x2="${cx+R}" y2="${cy}"/>
@@ -448,7 +500,9 @@ function sightDial(s0,now,sug,adv){
     <circle class="start" cx="${sx}" cy="${sy}" r="5"/>
     <circle class="now" cx="${nx}" cy="${ny}" r="7"/>
     ${sugLine}${sugDot}
-    <text class="lbl" x="${cx}" y="14" text-anchor="middle">左右</text>
+    <g class="lbl" transform="translate(18,158)"><circle r="4" fill="var(--dim)"/><text x="10" y="4" font-size="9" fill="var(--dim)">開始</text></g>
+    <g class="lbl" transform="translate(58,158)"><circle r="5" fill="var(--sight)" stroke="#fff" stroke-width="1"/><text x="12" y="4" font-size="9" fill="var(--dim)">今</text></g>
+    <g class="lbl" transform="translate(92,158)"><line x1="0" y1="0" x2="10" y2="0" stroke="var(--warn)" stroke-width="2.5"/><text x="14" y="4" font-size="9" fill="var(--dim)">推奨</text></g>
     ${rec}
   </svg></div>`;
 }
@@ -461,8 +515,9 @@ function endPulse(n,cb){const p=$("#pulse"),pn=$("#pulseN");pn.textContent=n;p.c
 
 function shell(phaseIdx,title,back,bodyHtml,footHtml,fit){
   const el=$("#frame");
-  if(el)el.className=fit?"frame fit":"frame";
-  document.body.classList.toggle("noflow",!!fit);
+  const fitOn=!!fit;
+  if(el)el.className=fitOn?"frame fit"+(fit==="setup"?" setup-fit":""):"frame";
+  document.body.classList.toggle("noflow",fitOn&&fit!=="setup");
   el.innerHTML=`
     ${phaseIdx>=0?phaseArc(phaseIdx):""}
     <div class="hdr">
@@ -564,7 +619,7 @@ function renderSetup(){
         <input class="h-l" id="sh" inputmode="decimal" placeholder="左右" value="${esc(mk?.h||"")}">
       </div>
     </div>`,
-    `<button class="btn hit" id="start">射る</button>`,true);
+    `${geoLegend("setup")}<button class="btn hit" id="start">射る</button>`,"setup");
   document.querySelectorAll(".dist-svg .ring").forEach(c=>c.onclick=()=>{ui._dist=+c.dataset.d;renderSetup();});
   document.querySelectorAll(".wbtn").forEach(c=>c.onclick=()=>{ui._windDir=c.dataset.wd;renderSetup();});
   document.querySelectorAll(".wind-spd button").forEach(c=>c.onclick=()=>{ui._windSpd=+c.dataset.ws;renderSetup();});
@@ -591,17 +646,21 @@ function renderRecord(){
   const j=adv?Phy.judgementFor(adv,s):null;
   const sug=sugFromAdv(adv,j);
   const geoDefs=`<defs><marker id="geoArr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--sight)"/></marker></defs>`;
+  const overlays=geoDefs
+    +`<g class="slot-layer" pointer-events="none">${slotRingSvg(s.cur,pe,s.faceD)}</g>`
+    +(st?`<g class="geo-layer" pointer-events="none">${geoSvg(st,s.faceD,sug)}</g>`:"")
+    +recordGuideSvg(s.faceD,n,pe);
   shell(1,`E${s.ends.length+1} · ${n}/${pe}`,"",`
     <div class="tgt-stage">
       <div class="box sq-fit" id="tgBox">
-        ${slotRing(s.cur,pe,s.faceD)}
-        <div style="position:relative">${targetSvg(s.faceD,"tg")}
-          <div class="tgt-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}" id="geoLive">${geoDefs}${geoSvg(st,s.faceD,sug)}</svg></div>
-          <div class="lens" id="lens"><svg id="lensSvg" width="108" height="108" xmlns:xlink="http://www.w3.org/1999/xlink"><use href="#tgg" xlink:href="#tgg"/></svg></div>
+        <div class="tgt-stack">
+          ${targetSvg(s.faceD,"tg",overlays)}
+          <div class="lens" id="lens"><svg id="lensSvg" width="120" height="120" xmlns:xlink="http://www.w3.org/1999/xlink"><use href="#tgg" xlink:href="#tgg"/></svg></div>
           ${st?`<div class="geo-nums"><span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span></div>`:""}
         </div>
       </div>
-    </div>`,
+    </div>
+    ${geoLegend("record")}`,
     `<div class="row"><button class="btn ghost sm" id="undo">戻す</button><button class="btn beat" id="backLine"${n?"":" disabled"}>射線に戻った</button></div>`,true);
   paintMarks(s);
   bindTarget(s);
@@ -682,16 +741,16 @@ function renderReturn(){
   const sv=s.sightNow?.v??"",sh=s.sightNow?.h??"";
   const s0=s.sightStart||{};
   const geoDefs=`<defs><marker id="geoArr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--sight)"/></marker></defs>`;
+  const rtOver=geoDefs+(st?`<g class="geo-layer" pointer-events="none">${geoSvg(st,s.faceD,sug)}</g>`:"");
   shell(2,`E${s.ends.length} · ${tot}点 ${jtagHtml(j)}`,"",`
     <div class="ret-split">
-      <div class="cell"><div class="box sq-fit"><div style="position:relative;width:100%">${targetSvg(s.faceD,"rt")}
-        <div class="tgt-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}">${geoDefs}${geoSvg(st,s.faceD,sug)}</svg></div>
-      </div></div></div>
+      <div class="cell"><div class="box sq-fit"><div class="tgt-stack">${targetSvg(s.faceD,"rt",rtOver)}</div></div></div>
       <div class="cell">${ui.adj?`<div class="sight-adj" style="width:100%;margin:0">
         <input id="nv" inputmode="decimal" placeholder="上下" value="${esc(sv)}">
         <input id="nh" inputmode="decimal" placeholder="左右" value="${esc(sh)}">
       </div>`:sightDial(s0,{v:sv,h:sh},sug,adv)}</div>
     </div>
+    ${geoLegend("return",{j})}
     ${retBarHtml(st,adv,j)}`,`
     <div class="row3">
       <button class="btn ghost" id="adjBtn">${ui.adj?"保存":"調整"}</button>
@@ -743,10 +802,9 @@ function renderHistDetail(){
   if(!s){ui.histId=null;return renderHistory();}
   const st=stats(sessArr(s));
   const geoDefs=`<defs><marker id="geoArr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--sight)"/></marker></defs>`;
+  const hsOver=geoDefs+(st?`<g class="geo-layer" pointer-events="none">${geoSvg(st,s.faceD,null)}</g>`:"");
   shell(-1,`${fmtD(s.date)} · ${s.dist}m`,"←",`
-    <div class="tgt-stage" style="min-height:280px"><div class="box" style="transform:scale(.85)"><div style="position:relative">${targetSvg(s.faceD,"hs")}
-      <div class="tgt-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}">${geoDefs}${geoSvg(st,s.faceD,null)}</svg></div>
-    </div></div></div>
+    <div class="tgt-stage" style="min-height:300px"><div class="box sq-fit"><div class="tgt-stack">${targetSvg(s.faceD,"hs",hsOver)}</div></div></div>
     ${st?`<div class="geo-nums" style="position:static;justify-content:center"><span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span></div>`:""}`,
     `<button class="btn ghost" id="del">削除</button>`);
   const bb=$("#backBtn");if(bb)bb.onclick=()=>{ui.histId=null;render();};
