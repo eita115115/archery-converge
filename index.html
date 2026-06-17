@@ -17,26 +17,34 @@
   --hit:#5ecf7a;--warn:#e8b040;--beat:#e06050;--sight:#9b7cf0;
   --gold:#d4a72c;--red:#c73e3a;--blue:#3d8fd4;--ink:#161614;
   --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
+  --vh:1vh;--app-h:100vh;
+  --safe-top:constant(safe-area-inset-top);--safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:constant(safe-area-inset-bottom);--safe-bot:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 html,body{margin:0;padding:0;overflow-x:hidden;background:var(--void);color:var(--text);touch-action:manipulation;-ms-touch-action:manipulation}
 body{font-family:var(--sans);font-size:15px;-webkit-user-select:none;user-select:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body.noflow{overflow:hidden;height:100dvh;max-height:100dvh}
+body.noflow{overflow:hidden;height:calc(var(--vh,1vh)*100);max-height:calc(var(--vh,1vh)*100)}
 input,select,textarea{-webkit-user-select:auto;user-select:auto}
 button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-offset:2px}
 
-.frame{position:relative;min-height:100dvh;display:flex;flex-direction:column;max-width:520px;margin:0 auto}
-.frame.fit{height:100dvh;max-height:100dvh;min-height:0;overflow:hidden}
+.frame{position:relative;min-height:calc(var(--vh,1vh)*100);min-height:100vh;display:flex;flex-direction:column;max-width:520px;margin:0 auto;width:100%}
+.frame.fit{height:calc(var(--vh,1vh)*100);max-height:calc(var(--vh,1vh)*100);min-height:0;overflow:hidden}
+@supports (height:100dvh){
+  .frame{min-height:100dvh}
+  .frame.fit{height:100dvh;max-height:100dvh}
+  body.noflow{height:100dvh;max-height:100dvh}
+}
 .frame.fit .main{flex:1;min-height:0;display:flex;flex-direction:column}
-.frame.fit .phase-arc{padding:4px 10px 0;padding-top:calc(4px + env(safe-area-inset-top))}
+.frame.fit .phase-arc{padding:4px 10px 0;padding-top:calc(4px + var(--safe-top))}
 .frame.fit .phase-arc svg{height:26px}
 .frame.fit .hdr{padding:0 10px 4px;min-height:30px}
 .frame.fit .hdr .title{font-size:15px;color:var(--text)}
 .frame.fit .body{flex:1;min-height:0;overflow:hidden;padding:0 8px;display:flex;flex-direction:column}
-.frame.fit .foot{flex-shrink:0;padding:6px 10px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
+.frame.fit .foot{flex-shrink:0;padding:6px 10px;padding-bottom:calc(6px + var(--safe-bot))}
 .frame.fit .btn{padding:13px 12px;font-size:15px}
 .frame.fit .btn.sm{padding:10px 12px;font-size:12px;min-height:44px}
-.phase-arc{flex-shrink:0;padding:8px 12px 4px;padding-top:calc(8px + env(safe-area-inset-top))}
+.phase-arc{flex-shrink:0;padding:8px 12px 4px;padding-top:calc(8px + var(--safe-top))}
 .phase-arc svg{display:block;width:100%;height:36px}
 .phase-arc .lbl{font-size:11px;fill:var(--dim)}
 .phase-arc .lbl.on{fill:var(--text);font-weight:600}
@@ -49,7 +57,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .hdr .title{flex:1;text-align:center;font-size:13px;color:var(--mute)}
 .hdr .gap{min-width:44px}
 
-.body{flex:1;padding:0 12px 12px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.body{flex:1;padding:0 12px 12px;padding-bottom:calc(12px + var(--safe-bot))}
 .body.fill{display:flex;flex-direction:column;min-height:0}
 .body.tight{padding:0 6px 8px}
 
@@ -91,11 +99,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .tgt-stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:0;touch-action:none;-ms-touch-action:none}
 .frame.fit .tgt-stage{flex:1;width:100%;height:100%}
 .tgt-stage .box{position:relative;width:100%;max-width:min(100vw - 24px, 480px);transform-origin:center center}
-.frame.fit .tgt-stage .box{height:100%;width:auto;max-width:100%;aspect-ratio:1;margin:0 auto}
+.frame.fit .tgt-stage .box.sq-fit{margin:0 auto;flex-shrink:1}
 .tgt-stage .box svg.face{width:100%;display:block;touch-action:none;-ms-touch-action:none}
-.tgt-geo{position:absolute;inset:0;pointer-events:none}
+.tgt-geo{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}
 .tgt-geo svg{width:100%;height:100%;display:block}
-.slot-ring{position:absolute;inset:-8%;pointer-events:none}
+.slot-ring{position:absolute;top:-8%;right:-8%;bottom:-8%;left:-8%;pointer-events:none}
 .slot-ring svg{width:100%;height:100%;display:block}
 
 .lens{position:absolute;top:4px;width:108px;height:108px;border-radius:50%;border:2px solid var(--hit);
@@ -107,9 +115,15 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 
 /* return: grouping + sight dial */
 .ret-geo{display:flex;flex-direction:column;align-items:center;gap:8px}
-.ret-split{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:center;width:100%}
-.ret-split .cell{min-height:0;min-width:0;display:flex;align-items:center;justify-content:center;height:100%}
-.ret-split .cell .box{width:100%;max-height:100%;aspect-ratio:1}
+.ret-split{flex:1;min-height:0;display:flex;flex-direction:row;align-items:stretch;width:100%}
+.ret-split .cell{flex:1;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center;padding:0 2px}
+.ret-split .cell+.cell{margin-left:4px}
+.ret-split .cell .box.sq-fit{margin:0 auto}
+@media (max-width:360px),(max-height:580px){
+  .frame.fit .ret-split{flex-direction:column}
+  .frame.fit .ret-split .cell+.cell{margin-left:0;margin-top:4px}
+  .frame.fit .ret-split .cell{flex:1 1 0}
+}
 .ret-split .sight-dial{width:100%;max-width:100%;margin:0}
 .ret-bar{flex-shrink:0;text-align:center;font-size:11px;color:var(--dim);line-height:1.35;padding:2px 4px 4px}
 .ret-bar b{color:var(--mute);font-weight:600}
@@ -117,7 +131,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .ret-geo .mini .box{transform:scale(1)}
 
 .sight-dial{width:min(260px,80vw);margin:8px auto}
-.frame.fit .sight-dial svg{max-height:min(36dvh,200px)}
+.frame.fit .sight-dial svg{max-height:200px}
 .sight-dial svg{width:100%;display:block}
 .sight-dial .tick{stroke:var(--line2);stroke-width:1}
 .sight-dial .axis{stroke:var(--line);stroke-width:1.5;opacity:.6}
@@ -137,8 +151,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .hdr .jtag.mid{background:rgba(232,176,64,.15);color:var(--warn)}
 .hdr .jtag.hold{background:rgba(155,124,240,.12);color:var(--sight)}
 .hdr .jtag.warn{background:rgba(224,96,80,.12);color:var(--beat)}
-.frame.fit .foot .row3{display:grid;grid-template-columns:1fr 1.2fr .9fr;gap:6px}
-.frame.fit .foot .row3 .btn{margin-top:0;padding:11px 6px;font-size:12px}
+.frame.fit .foot .row3{display:flex;flex-direction:row;align-items:stretch}
+.frame.fit .foot .row3 .btn{flex:1;min-width:0;margin-top:0;padding:11px 4px;font-size:12px}
+.frame.fit .foot .row3 .btn+.btn{margin-left:6px}
+.frame.fit .foot .row3 .btn:nth-child(2){flex:1.15}
 
 .btn{
   display:block;width:100%;padding:16px;border-radius:50px;border:none;
@@ -149,10 +165,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .btn.ghost{background:transparent;color:var(--mute);border:1px solid var(--line)}
 .btn.sm{padding:10px 16px;font-size:13px;width:auto;border-radius:24px}
 .btn:disabled{opacity:.3}
-.foot{padding:8px 12px 0;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
-.foot .row{display:flex;gap:8px}.foot .row .btn{flex:1}
+.foot{padding:8px 12px 0;padding-bottom:calc(8px + var(--safe-bot))}
+.foot .row{display:flex;flex-direction:row}.foot .row .btn{flex:1;min-width:0}
+.foot .row .btn+.btn{margin-left:8px}
 
-.home-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100dvh - 80px);text-align:center;padding:20px}
+.home-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(var(--vh,1vh)*100 - 80px);text-align:center;padding:20px}
 .home-rings{width:120px;height:120px;margin-bottom:24px}
 .home-rings svg{width:100%;height:100%}
 .home-wrap p{margin:12px 0 0;font-size:13px;color:var(--dim);line-height:1.6}
@@ -173,7 +190,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .pulse svg{width:160px;height:160px}
 .pulse .val{font-size:40px;font-weight:700;fill:var(--warn)}
 
-.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:80;
+.toast{position:fixed;bottom:calc(20px + var(--safe-bot));left:50%;transform:translateX(-50%);z-index:80;
   background:var(--panel);border:1px solid var(--line);padding:8px 16px;border-radius:24px;
   font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
@@ -200,8 +217,24 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .phys-hint{text-align:center;font-size:11px;color:var(--dim);line-height:1.5;padding:0 12px;margin:4px 0}
 .phys-traj{text-align:center;font-size:10px;color:var(--dim);padding:2px 8px}
 
-.gear-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.gear-grid .full{grid-column:1/-1}
+.gear-grid{display:flex;flex-wrap:wrap;margin:-4px}
+.gear-grid>*{flex:1 1 calc(50% - 8px);min-width:128px;max-width:100%;margin:4px;box-sizing:border-box}
+.gear-grid .full{flex-basis:100%}
+@supports (display:grid){
+  .gear-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}
+  .gear-grid>*{min-width:0;margin:0}
+}
+@media (max-width:320px){
+  .gear-grid>*{flex-basis:100%}
+  .frame.fit .setup-mid{flex-direction:column}
+  .frame.fit .wind-compass svg{width:96px;height:96px}
+}
+@media (max-height:520px){
+  .frame.fit .phase-arc svg{height:22px}
+  .frame.fit .hdr{min-height:26px;padding-bottom:2px}
+  .frame.fit .btn{padding:10px 8px;font-size:13px}
+  .frame.fit .dist-svg{width:min(160px,50vw);height:min(160px,50vw)}
+}
 .gear-sep{height:1px;background:var(--line);margin:14px 0}
 </style>
 </head>
@@ -213,10 +246,12 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 <div class="updbar" id="updBar">更新あり</div>
 <div class="toast" id="toast"></div>
 
+<script src="compat.js"></script>
 <script src="physics.js"></script>
 <script>
 "use strict";
-const KEY="archeryConverge.v1", APP_VER=7;
+const KEY="archeryConverge.v1", APP_VER=8;
+const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const PHASES=["準備","記録","確認"];
 const DISTS=[70,50,30,18];
@@ -438,6 +473,10 @@ function shell(phaseIdx,title,back,bodyHtml,footHtml,fit){
     ${fit?`<div class="main"><div class="body" id="body">${bodyHtml}</div>${footHtml?`<div class="foot" id="foot">${footHtml}</div>`:""}</div>`
       :`<div class="body" id="body">${bodyHtml}</div>${footHtml?`<div class="foot" id="foot">${footHtml}</div>`:""}`}`;
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
+  afterRender();
+}
+function afterRender(){
+  if(Cx){Cx.setViewportVars();requestAnimationFrame(function(){Cx.layoutFit();});}
 }
 function jtagHtml(j){
   if(!j)return "";
@@ -469,6 +508,7 @@ function render(){
     shell(-1,"エラー",null,`<div class="empty">表示エラー: ${esc(e.message)}<br><br>
       <button class="btn hit" id="errReset">練習データをリセット</button></div>`,"");
     const er=$("#errReset");if(er)er.onclick=()=>{db.active=null;save();ui.screen="home";render();};
+    afterRender();
   }
 }
 
@@ -553,11 +593,11 @@ function renderRecord(){
   const geoDefs=`<defs><marker id="geoArr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--sight)"/></marker></defs>`;
   shell(1,`E${s.ends.length+1} · ${n}/${pe}`,"",`
     <div class="tgt-stage">
-      <div class="box" id="tgBox">
+      <div class="box sq-fit" id="tgBox">
         ${slotRing(s.cur,pe,s.faceD)}
         <div style="position:relative">${targetSvg(s.faceD,"tg")}
           <div class="tgt-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}" id="geoLive">${geoDefs}${geoSvg(st,s.faceD,sug)}</svg></div>
-          <div class="lens" id="lens"><svg id="lensSvg" width="108" height="108"><use href="#tgg"/></svg></div>
+          <div class="lens" id="lens"><svg id="lensSvg" width="108" height="108" xmlns:xlink="http://www.w3.org/1999/xlink"><use href="#tgg" xlink:href="#tgg"/></svg></div>
           ${st?`<div class="geo-nums"><span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span></div>`:""}
         </div>
       </div>
@@ -585,7 +625,7 @@ function bindTarget(s){
   const svg=$("#tgsvg"),lens=$("#lens"),lensSvg=$("#lensSvg"),cur=$("#tgcur");
   let drag=null;
   function pt(e){const t=e.changedTouches?.[0]||e.touches?.[0]||e;return t?.clientX!=null?{x:t.clientX,y:t.clientY,id:e.pointerId??t.identifier??"m"}:null;}
-  function toS(x,y){const c=svg.getScreenCTM();if(!c)return{x:0,y:0};const p=svg.createSVGPoint();p.x=x;p.y=y;const r=p.matrixTransform(c.inverse());return{x:r.x,y:-r.y};}
+  function toS(x,y){return Cx?Cx.svgClientToLocal(svg,x,y):{x:0,y:0};}
   function draw(p){const fine=drag?.fine,cut=fine&&lineCut(p.x,p.y,s.faceD);
     const col=fine?(cut?"var(--hit)":"var(--warn)"):"#fff";
     lens.classList.toggle("fine",!!fine);lens.classList.toggle("cut",!!cut);
@@ -644,7 +684,7 @@ function renderReturn(){
   const geoDefs=`<defs><marker id="geoArr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--sight)"/></marker></defs>`;
   shell(2,`E${s.ends.length} · ${tot}点 ${jtagHtml(j)}`,"",`
     <div class="ret-split">
-      <div class="cell"><div class="box"><div style="position:relative;width:100%">${targetSvg(s.faceD,"rt")}
+      <div class="cell"><div class="box sq-fit"><div style="position:relative;width:100%">${targetSvg(s.faceD,"rt")}
         <div class="tgt-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}">${geoDefs}${geoSvg(st,s.faceD,sug)}</svg></div>
       </div></div></div>
       <div class="cell">${ui.adj?`<div class="sight-adj" style="width:100%;margin:0">
@@ -763,6 +803,7 @@ function checkUp(){if(location.protocol==="file:")return;fetch("version.json?"+D
 $("#updBar").onclick=()=>location.reload();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkUp();});
 window.onerror=(msg,src,line)=>{toast("ERR:"+line);console.error(msg,src,line);};
+if(Cx)Cx.init();
 blockZoom();checkUp();render();
 </script>
 </body>
