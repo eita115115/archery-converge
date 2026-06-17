@@ -112,7 +112,7 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=49",
+  "APP_VER=50",
   "migrateV44Session",
   "home-backup-hint",
   "zenkinFaceIdx",

@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=49;
+const KEY="archeryConverge.v1", APP_VER=50;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -454,8 +454,8 @@ function renderHome(){
         </svg></div>
         <p class="home-eyebrow">${begOn()?"ARCHERY":"ARCHERY PRACTICE"}</p>
         <h1 class="home-title${begOn()?" is-ja":" is-en"}">${begOn()
-          ?`<span class="home-title-line">着弾が、</span><span class="home-title-line">収束する。</span>`
-          :`<span class="home-title-line">Hits</span><span class="home-title-line">converge.</span>`}</h1>
+          ?`<span class="home-title-line"><span class="home-title-body">着弾が</span><span class="home-title-punct">、</span></span><span class="home-title-line"><span class="home-title-body">収束する</span><span class="home-title-punct">。</span></span>`
+          :`<span class="home-title-line"><span class="home-title-body">Hits</span></span><span class="home-title-line"><span class="home-title-body">converge</span><span class="home-title-punct">.</span></span>`}</h1>
         <p class="home-tag">${begOn()?"的の前で記録。戻れば、次の一手が見える。":"Record at the face. Return. See the next move."}</p>
       </section>
       ${homeFlowHtml()}
