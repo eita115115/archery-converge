@@ -16,6 +16,15 @@
     return n + "本目 / あと" + (pe - n) + "本";
   }
 
+  /** Short label for beginner mode — no coordinates. */
+  function simpleGroup(st) {
+    if (!st || st.n < 1) return "記録しよう";
+    if (st.rr > 2.5) return "ばらけています";
+    if (st.rr < 1.2 && Math.abs(st.mx) <= 0.35 && Math.abs(st.my) <= 0.35) return "よく集まっています";
+    if (st.rr < 2) return "だいたい集まっています";
+    return "ばらけ気味です";
+  }
+
   /** Where the group landed vs center, in words a novice understands. */
   function plainGroup(st) {
     if (!st || st.n < 1) return "まだ矢がありません";
@@ -74,6 +83,10 @@
 
   function safetyNote() {
     return "サイトを動かす前に射形・安全・コーチの指示を優先してください。";
+  }
+
+  function safetyBanner() {
+    return "目安です。最終判断は指導者・ルール・安全を優先してください。";
   }
 
   /** Plain trust line for sight suggestions — shown on return screen. */
@@ -183,6 +196,7 @@
     isOn: isOn,
     endLabel: endLabel,
     arrowProgress: arrowProgress,
+    simpleGroup: simpleGroup,
     plainGroup: plainGroup,
     plainSightMove: plainSightMove,
     plainMoves: plainMoves,
@@ -194,6 +208,7 @@
     scoreExplain: scoreExplain,
     adviceDisclaimer: adviceDisclaimer,
     safetyNote: safetyNote,
+    safetyBanner: safetyBanner,
     trustLine: trustLine,
   };
 })(typeof window !== "undefined" ? window : this);

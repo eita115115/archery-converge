@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=51;
+const KEY="archeryConverge.v1", APP_VER=52;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -372,15 +372,38 @@ function adviceCardHtml(st,adv,j){
   if(!begOn()||!Beg)return "";
   const pj=Beg.plainJudgement(j)||{title:"",body:""};
   const moves=Beg.plainMoves(adv);
+  const move=moves[0]||"";
   return `<div class="advice-card${j?" tone-"+j.tone:""}">
-    <div class="advice-title">${esc(pj.title)}</div>
-    <div class="advice-group">矢の集まり：<b>${esc(Beg.plainGroup(st))}</b></div>
-    ${moves.map(m=>`<div class="advice-move">${esc(m)}</div>`).join("")}
-    <div class="advice-note">${esc(pj.body)}</div></div>`;
+    <div class="advice-title">${esc(pj.title||"確認")}</div>
+    <div class="advice-group">集まり：<b>${esc(Beg.simpleGroup(st))}</b></div>
+    ${move?`<div class="advice-move">${esc(move)}</div>`:""}
+    ${pj.body?`<div class="advice-note">${esc(pj.body)}</div>`:""}</div>`;
+}
+function adviceTechHtml(st,adv,j){
+  if(begOn()||!st)return "";
+  const parts=[`${mono(st.mx,"x")} ${mono(st.my,"y")} R${st.rr.toFixed(1)}`];
+  if(adv&&adv.moves.length)parts.push(adv.moves.map(m=>`${m.dir}${m.cm.toFixed(1)}cm`).join(" · "));
+  else if(j&&j.label==="維持")parts.push("調整不要");
+  if(adv&&adv.confidence!=null)parts.push(`conf ${Math.round(adv.confidence*100)}%`);
+  return `<div class="advice-tech">${parts.map(p=>`<span>${esc(p)}</span>`).join(" · ")}</div>`;
+}
+function safetyBannerHtml(){
+  const t=begOn()&&Beg?Beg.safetyBanner():"Estimate only — coach, safety, and range rules come first.";
+  return `<div class="safety-banner">${esc(t)}</div>`;
 }
 function adviceFootHtml(){
   const t=begOn()&&Beg?Beg.safetyNote():"Follow coach, safety, and range rules before adjusting sight.";
   return `<p class="advice-foot">${esc(t)}</p>`;
+}
+function backupBarHtml(id){
+  const b=begOn();
+  return `<div class="backup-bar">
+    <div class="backup-bar-copy">
+      <p class="backup-bar-warn">${b?"記録はこの端末のみ":"Data stays on this device"}</p>
+      <p class="backup-bar-sub">${b?"機種変更・削除で消えることがあります":"Export before switching phones or browsers"}</p>
+    </div>
+    <button type="button" class="btn ghost backup-bar-btn" id="${id}">${b?"バックアップする":"Export backup"}</button>
+  </div>`;
 }
 function sessCompareHint(s){
   if(!s||db.sessions.length<2)return "";
@@ -403,8 +426,8 @@ function recordTitle(s,n,pe){
   return begOn()?`記録 · ${core}`:core;
 }
 function returnTitle(s,tot,j){
-  const core=begOn()?`${Beg.endLabel(s.ends.length)} · ${tot}点`:`E${s.ends.length} · ${tot}点 ${jtagHtml(j)}`;
-  return begOn()?`確認 · ${core}`:core;
+  if(begOn())return `確認 · ${Beg.endLabel(s.ends.length)}`;
+  return `Return · E${s.ends.length} · ${tot}pt ${jtagHtml(j)}`;
 }
 
 function nav(screen){ui.screen=screen;ui.histId=null;ui.adj=false;ui._coachBump={};ui._legendBump={};render();}
@@ -428,6 +451,42 @@ function render(){
   }
 }
 
+function beginSession(dist,v,h,windDir,windSpd){
+  const g=getSetup();
+  db.active={
+    id:uid(),date:today(),setupId:g?.id||null,dist,faceD:Geo.faceDForDist(dist),perEnd:6,
+    sightStart:{v,h},sightNow:{v,h},note:"",
+    windDir:windDir??"",windSpeed:windSpd??0,
+    phase:"record",ends:[],cur:[],adjLog:[]
+  };
+  if(g&&(v||h))db.sightMarks.push({id:uid(),setupId:g.id,date:today(),dist,v,h,tag:"start"});
+  ui.zoom=1;save();ui.screen="record";render();
+}
+function quickStartDist(){
+  const last=db.sessions[db.sessions.length-1];
+  return last?.dist||70;
+}
+function quickStartSight(dist){
+  const g=getSetup();
+  const mk=db.sightMarks.filter(m=>g&&m.setupId===g.id&&m.dist===dist).sort((a,b)=>b.date.localeCompare(a.date))[0];
+  return {v:mk?.v||"",h:mk?.h||""};
+}
+function startQuickSession(){
+  const dist=quickStartDist(),last=db.sessions[db.sessions.length-1];
+  const {v,h}=quickStartSight(dist);
+  beginSession(dist,v,h,last?.windDir??"",last?.windSpeed??0);
+}
+function homePreviewHtml(){
+  const b=begOn();
+  const caps=b?["記録","確認","履歴"]:["Record","Return","History"];
+  const frames=[
+    `<svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="34" fill="#f5f3ee" stroke="#d8d5cd"/><circle cx="40" cy="40" r="22" fill="none" stroke="#1c1b19" opacity=".14"/><circle cx="33" cy="36" r="2.4" fill="#0f0f0e"/><circle cx="44" cy="41" r="2.4" fill="#0f0f0e"/><circle cx="37" cy="47" r="2.4" fill="#0f0f0e"/><circle cx="46" cy="35" r="2.4" fill="#0f0f0e"/><g fill="#d8d5cd"><circle cx="22" cy="68" r="2.5"/><circle cx="32" cy="68" r="2.5"/><circle cx="42" cy="68" r="2.5"/><circle cx="52" cy="68" r="2.5"/></g><circle cx="62" cy="68" r="2.5" fill="#0f0f0e"/></svg>`,
+    `<svg viewBox="0 0 80 80" aria-hidden="true"><rect x="4" y="10" width="32" height="60" rx="6" fill="#f5f3ee" stroke="#e6e4de"/><circle cx="20" cy="40" r="13" fill="none" stroke="#1c1b19" opacity=".18"/><circle cx="34" cy="36" r="2" fill="#0f0f0e"/><circle cx="28" cy="44" r="2" fill="#0f0f0e"/><rect x="44" y="10" width="32" height="60" rx="6" fill="#fff" stroke="#e6e4de"/><circle cx="60" cy="40" r="16" fill="none" stroke="#0f766e" opacity=".45"/><circle cx="60" cy="40" r="3" fill="#ea580c"/><text x="40" y="76" text-anchor="middle" font-size="7" fill="#8a877f">${b?"集まり":"Group"}</text></svg>`,
+    `<svg viewBox="0 0 80 80" aria-hidden="true"><rect x="8" y="14" width="64" height="13" rx="4" fill="#fff" stroke="#e6e4de"/><rect x="8" y="33" width="64" height="13" rx="4" fill="#fff" stroke="#e6e4de"/><rect x="8" y="52" width="64" height="13" rx="4" fill="#fff" stroke="#e6e4de"/><text x="16" y="23" font-size="7" fill="#5c5a54">6/12</text><text x="66" y="23" text-anchor="end" font-size="8" font-weight="700" fill="#0f0f0e">328</text><text x="16" y="42" font-size="7" fill="#5c5a54">5/28</text><text x="66" y="42" text-anchor="end" font-size="8" font-weight="700" fill="#0f0f0e">315</text></svg>`
+  ];
+  return `<div class="home-previews" aria-label="${b?"画面プレビュー":"Screen preview"}">${caps.map((c,i)=>`
+    <div class="home-preview"><div class="home-preview-cap">${c}</div><div class="home-preview-frame">${frames[i]}</div></div>`).join("")}</div>`;
+}
 function homeFlowHtml(){
   const steps=begOn()?[
     ["準備","距離・サイト"],
@@ -459,11 +518,15 @@ function renderHome(){
           :`<span class="home-title-line"><span class="home-title-body">Hits</span></span><span class="home-title-line"><span class="home-title-body">converge</span><span class="home-title-punct">.</span></span>`}</h1>
         <p class="home-tag">${begOn()?"的の前で記録。戻れば、次の一手が見える。":"Record at the face. Return. See the next move."}</p>
       </section>
+      ${homePreviewHtml()}
       ${homeFlowHtml()}
+      ${backupBarHtml("bkOutHome")}
       ${db.sessions.length?`<p class="home-prev">${begOn()?"前回":"Last"} · ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · <b>${sessTot(db.sessions[db.sessions.length-1])}</b></p>`:""}
-      <button class="btn hero" id="goSetup">${begOn()?"練習を始める":"Get started"}</button>
+      <div class="home-start">
+        <button class="btn hero" id="goQuick">${begOn()?"今すぐ記録":"Record now"}</button>
+        <button type="button" class="btn ghost home-setup-link" id="goSetup">${begOn()?"距離・サイトを設定":"Set dist & sight"}</button>
+      </div>
       <footer class="home-foot">
-        <p class="home-backup-hint">${begOn()?"記録はこの端末のみ。<b>書き出し</b>でバックアップを。":"Data stays on this device — <b>Export</b> after practice."}</p>
         <nav class="home-foot-nav">
           <button type="button" id="lnkHist">${begOn()?"履歴":"History"}</button>
           <button type="button" id="lnkGear">${begOn()?"設定":"Settings"}</button>
@@ -473,9 +536,11 @@ function renderHome(){
       </footer>
     </div>`,"");
   const fr=$("#frame");if(fr)fr.classList.add("home-mode");
+  $("#goQuick").onclick=()=>startQuickSession();
   $("#goSetup").onclick=()=>nav("setup");
   $("#lnkHist").onclick=()=>nav("history");
   $("#lnkGear").onclick=()=>nav("gear");
+  const bkHome=$("#bkOutHome");if(bkHome)bkHome.onclick=exportBackup;
   $("#bkOut").onclick=exportBackup;
   $("#bkIn").onclick=importBackup;
 }
@@ -535,15 +600,7 @@ function renderSetup(){
   document.querySelectorAll(".wind-spd button").forEach(c=>c.onclick=()=>{ui._windSpd=+c.dataset.ws;renderSetup();});
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
   $("#start").onclick=()=>{
-    const v=$("#sv").value.trim(),h=$("#sh").value.trim();
-    db.active={
-      id:uid(),date:today(),setupId:g?.id||null,dist,faceD:Geo.faceDForDist(dist),perEnd:6,
-      sightStart:{v,h},sightNow:{v,h},note:"",
-      windDir:ui._windDir??"",windSpeed:ui._windSpd??0,
-      phase:"record",ends:[],cur:[],adjLog:[]
-    };
-    if(g&&(v||h))db.sightMarks.push({id:uid(),setupId:g.id,date:today(),dist,v,h,tag:"start"});
-    ui.zoom=1;save();ui.screen="record";render();
+    beginSession(dist,$("#sv").value.trim(),$("#sh").value.trim(),ui._windDir??"",ui._windSpd??0);
   };
 }
 
@@ -769,10 +826,12 @@ function renderReturn(){
   const geoDefs=Geo.GEO_MARKER_DEFS;
   const rtOver=geoDefs+(st?`<g class="geo-layer" pointer-events="none">${Geo.geoSvg(st,s.faceD,sug)}</g>`:"");
   const moveLine=adv&&adv.moves.length&&Beg?Beg.plainSightMove(adv.moves[0]):"";
-  shell(2,returnTitle(s,tot,j)+(zenRet?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:"")+(begOn()&&j&&!zenRet?` <span class="jtag ${j.tone==="ok"?"ok":j.tone==="warn"?"warn":j.tone==="hold"?"hold":"mid"}">${esc((Beg.plainJudgement(j)||{}).title||j.label)}</span>`:""),"",`
-    ${coachCardHtml("return",{plainGroup:Beg.plainGroup(st),moveLine,zenkin:zenRet})}
-    ${trustLineHtml(adv,s)}
+  shell(2,returnTitle(s,tot,j)+(zenRet?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:"")+(!begOn()&&j?` ${jtagHtml(j)}`:""),"",`
+    ${safetyBannerHtml()}
+    ${coachCardHtml("return",{plainGroup:Beg&&Beg.plainGroup(st),moveLine,zenkin:zenRet})}
+    ${begOn()?"":trustLineHtml(adv,s)}
     ${adviceCardHtml(st,adv,j)}
+    ${adviceTechHtml(st,adv,j)}
     <div class="ret-split">
       <div class="cell"><div class="box sq-fit"><div class="tgt-stack">${Geo.targetSvg(s.faceD,"rt",rtOver,targetModeFor(end,pe),oiRet)}</div></div></div>
       <div class="cell">${ui.adj?`<div class="sight-adj" style="width:100%;margin:0">
@@ -780,9 +839,8 @@ function renderReturn(){
         <input id="nh" inputmode="decimal" placeholder="左右" value="${esc(sh)}">
       </div>`:sightDial(s0,{v:sv,h:sh},sug,adv)}</div>
     </div>
-    ${geoLegendHtml("return",{j})}
-    ${retBarHtml(st,adv,j)}
-    ${adviceFootHtml()}`,`
+    ${begOn()?"":geoLegendHtml("return",{j})}
+    ${begOn()?adviceFootHtml():""}`,`
     <div class="foot-undo">${reopenEndBtnHtml("reopenRet")}</div>
     <div class="row3">
       <button class="btn ghost" id="adjBtn">${ui.adj?"保存":begOn()?"サイトを直す":"調整"}</button>
@@ -832,12 +890,13 @@ function renderDone(){
 function renderHistory(){
   shell(-1,begOn()?"履歴":"History",backLbl(),(()=>{
     const ss=[...db.sessions].reverse();
-    return `<div class="app-page">${ss.length?ss.map(s=>`
+    return `${backupBarHtml("bkOutHist")}<div class="app-page">${ss.length?ss.map(s=>`
       <div class="hist-row" data-id="${s.id}"><div><div class="d">${fmtD(s.date)} · ${s.dist}m</div>
         <div class="m">${begOn()?s.ends.length+"回":s.ends.length+"E"}${s.note?" · "+esc(s.note):""}</div></div><div class="pts">${sessTot(s)}</div></div>`).join("")
       :`<div class="empty">${begOn()?"まだ記録がありません":"No sessions yet"}</div>`}</div>`;
   })(),"");
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
+  const bkHist=$("#bkOutHist");if(bkHist)bkHist.onclick=exportBackup;
   $("#body").querySelectorAll(".hist-row").forEach(r=>r.onclick=()=>{ui.histId=r.dataset.id;render();});
 }
 
@@ -861,7 +920,8 @@ function renderGear(){
   const gp=Phy.gearPrecisionProfile(g);
   shell(-1,begOn()?"設定":"Settings",backLbl(),`
     <div class="app-page">
-    <div class="beg-toggle"><label class="beg-lbl"><input type="checkbox" id="begMode" ${db.settings.beginnerMode!==false?"checked":""}> やさしい説明（初心者向け）</label></div>
+    <div class="beg-toggle"><label class="beg-lbl"><input type="checkbox" id="begMode" ${db.settings.beginnerMode!==false?"checked":""}> やさしい表示</label>
+    <p class="field-hint beg-mode-hint">オフにすると数値・信頼度・図例を表示します</p></div>
     <div class="gear-lbl">名前 / 弓</div>
     <div class="gear-grid">
       <input class="gear-inp" id="gn" placeholder="名前" value="${esc(g.name)}">

@@ -238,6 +238,24 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .home-title.is-ja .home-title-line{hanging-punctuation:allow-end}
 .home-title.is-en .home-title-line{letter-spacing:-.04em}
 .home-tag{margin:18px 0 0;max-width:19em;font-size:1.0625rem;font-weight:400;line-height:1.5;color:var(--mute);letter-spacing:-.01em}
+.home-previews{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%;max-width:360px;margin:28px 0 0}
+.home-preview{text-align:center;min-width:0}
+.home-preview-cap{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--dim);margin-bottom:8px}
+.home-preview-frame{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 8px 8px;box-shadow:0 1px 0 rgba(28,27,25,.04)}
+.home-preview-frame svg{display:block;width:100%;height:auto}
+.home-start{width:100%;max-width:320px;margin:20px auto 0}
+.home-start .btn.hero{margin:0}
+.home-setup-link{width:100%;margin-top:10px;padding:14px 18px;font-size:15px}
+.backup-bar{width:100%;max-width:360px;margin:24px 0 0;padding:14px 16px;border-radius:16px;background:var(--panel);border:1.5px solid var(--line2);
+  box-shadow:0 1px 0 rgba(28,27,25,.04);text-align:left}
+.backup-bar-warn{margin:0;font-size:14px;font-weight:600;color:var(--text);letter-spacing:-.02em}
+.backup-bar-sub{margin:6px 0 0;font-size:12px;color:var(--dim);line-height:1.45}
+.backup-bar-btn{width:100%;margin-top:12px;padding:13px 16px;font-size:14px}
+.safety-banner{flex-shrink:0;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:rgba(194,65,12,.08);border:1px solid rgba(194,65,12,.16);
+  font-size:12px;font-weight:600;line-height:1.45;color:#9a3412;text-align:center;letter-spacing:-.01em}
+.advice-tech{flex-shrink:0;text-align:center;font-size:12px;color:var(--dim);padding:6px 4px 2px;line-height:1.5;letter-spacing:-.01em}
+.advice-tech span{color:var(--text);font-weight:500}
+.beg-mode-hint{margin:6px 0 0}
 .home-steps{}
 .home-flow{display:flex;align-items:center;justify-content:center;gap:0;width:100%;max-width:360px;margin:36px 0 8px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .home-flow .flow-item{flex:1;min-width:0;padding:0 4px}
@@ -257,6 +275,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-of
 .home-foot{margin-top:auto;padding-top:32px;width:100%}
 .home-backup-hint{margin:0 0 14px;font-size:12px;color:var(--dim);line-height:1.5;letter-spacing:-.01em}
 .home-backup-hint b{color:var(--text);font-weight:600}
+.frame.home-mode .backup-bar{margin-left:auto;margin-right:auto}
+.frame.app-mode .backup-bar{margin:0 0 12px}
 .home-foot-nav{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
 .home-foot-nav button{background:var(--panel);border:1.5px solid var(--line2);border-radius:980px;
   padding:10px 16px;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;letter-spacing:-.01em;

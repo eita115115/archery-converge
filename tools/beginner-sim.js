@@ -52,6 +52,9 @@ const settings = { beginnerMode: true, eyeSight: 850 };
   const pg = Beg.plainGroup(st);
   if (!pg || pg.length < 4) fail("plainGroup empty for novice end");
   if (/R\d|mx|my/.test(pg)) fail("plainGroup contains jargon: " + pg);
+  const sg = Beg.simpleGroup(st);
+  if (!sg || sg.length < 3) fail("simpleGroup empty for novice end");
+  if (/R\d|mx|my|x|y/.test(sg)) fail("simpleGroup contains jargon: " + sg);
 
   const db = { setups: [{}], sessions: [], sightMarks: [], settings };
   const sess = { dist: 30, faceD: fd, setupId: null, sightNow: { v: "", h: "" } };
