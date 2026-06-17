@@ -143,6 +143,28 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .updbar{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:70;
   background:var(--hit);color:var(--void);padding:8px 16px;border-radius:24px;font-size:12px;font-weight:700;cursor:pointer;display:none}
 .empty{text-align:center;padding:40px 20px;color:var(--dim);font-size:14px}
+
+.wind-compass{display:flex;justify-content:center;padding:8px 0 4px}
+.wind-compass svg{width:min(200px,62vw);height:min(200px,62vw);touch-action:manipulation}
+.wind-compass .wbtn{cursor:pointer;fill:var(--line);stroke:none;transition:fill .2s}
+.wind-compass .wbtn.on{fill:var(--hit)}
+.wind-compass .wlbl{font-size:9px;fill:var(--dim);text-anchor:middle;pointer-events:none}
+.wind-compass .wlbl.on{fill:var(--text);font-weight:600}
+.wind-spd{display:flex;gap:6px;justify-content:center;margin:6px 0 4px}
+.wind-spd button{padding:8px 14px;border:1px solid var(--line);border-radius:20px;background:var(--panel);color:var(--mute);font-size:13px;cursor:pointer}
+.wind-spd button.on{border-color:var(--hit);color:var(--hit)}
+
+.phys-badge{text-align:center;padding:6px 12px;margin:4px auto;max-width:300px;border-radius:20px;font-size:13px;font-weight:600}
+.phys-badge.ok{background:rgba(94,207,122,.12);color:var(--hit)}
+.phys-badge.mid{background:rgba(232,176,64,.12);color:var(--warn)}
+.phys-badge.hold{background:rgba(155,124,240,.1);color:var(--sight)}
+.phys-badge.warn{background:rgba(224,96,80,.1);color:var(--beat)}
+.phys-hint{text-align:center;font-size:11px;color:var(--dim);line-height:1.5;padding:0 12px;margin:4px 0}
+.phys-traj{text-align:center;font-size:10px;color:var(--dim);padding:2px 8px}
+
+.gear-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gear-grid .full{grid-column:1/-1}
+.gear-sep{height:1px;background:var(--line);margin:14px 0}
 </style>
 </head>
 <body>
@@ -153,15 +175,17 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 <div class="updbar" id="updBar">更新あり</div>
 <div class="toast" id="toast"></div>
 
+<script src="physics.js"></script>
 <script>
 "use strict";
-const KEY="archeryConverge.v1", APP_VER=4;
+const KEY="archeryConverge.v1", APP_VER=5;
+const Phy=window.ArcheryPhysics;
 const PHASES=["準備","記録","確認"];
 const DISTS=[70,50,30,18];
 let db=load();
 const ui={screen:"home",histId:null,adj:false,_dist:70};
 
-function blankDb(){return{setups:[],sightMarks:[],sessions:[],active:null};}
+function blankDb(){return{setups:[],sightMarks:[],sessions:[],active:null,settings:{eyeSight:850}};}
 function normalizeActive(a){
   if(!a)return null;
   if(!Array.isArray(a.ends))a.ends=[];
@@ -178,6 +202,7 @@ function load(){
     const d=JSON.parse(localStorage.getItem(KEY));
     if(d){
       const out=Object.assign(blankDb(),d);
+      out.settings=Object.assign({eyeSight:850},out.settings||{});
       out.active=normalizeActive(out.active);
       (out.sessions||[]).forEach(s=>{if(!Array.isArray(s.ends))s.ends=[];});
       return out;
@@ -202,8 +227,15 @@ function rank(h){return h.s*2+(h.X?1:0);}
 function lineCut(x,y,fd){return rank(scoreAt(x,y,fd,lineR(fd)))>rank(scoreAt(x,y,fd,0));}
 function hitAt(x,y,fd){return Object.assign({x,y},scoreAt(x,y,fd,lineR(fd)));}
 function lbl(a){return a.s===0?"M":a.X?"X":String(a.s);}
-function stats(ar){const n=ar.length;if(!n)return null;const mx=ar.reduce((a,p)=>a+p.x,0)/n,my=ar.reduce((a,p)=>a+p.y,0)/n;
-  let vx=0,vy=0;ar.forEach(p=>{vx+=(p.x-mx)**2;vy+=(p.y-my)**2;});vx/=n;vy/=n;return{n,mx,my,rr:Math.sqrt(vx+vy)};}
+function stats(ar){return Phy.robustStats(ar);}
+function getSetup(){return db.setups[0]||{};}
+function sessForPhy(s){return{id:s.id,date:s.date,dist:s.dist,faceD:s.faceD,setupId:s.setupId,windDir:s.windDir,windSpeed:s.windSpeed,sightNow:s.sightNow,sightStart:s.sightStart};}
+function endAdvice(s,arrows){return Phy.adviceForEnd(db,db.settings,getSetup(),sessForPhy(s),arrows);}
+function sugFromAdv(adv,j){
+  if(!adv||!adv.vector)return null;
+  const sc=j&&j.scale!=null?j.scale:1;
+  return{h:adv.vector.h*sc,v:adv.vector.v*sc,mmH:adv.vector.mmH*sc,mmV:adv.vector.mmV*sc};
+}
 function mono(v,ax){const a=Math.abs(v).toFixed(1);return ax==="x"?(v>0?`+${a}`:v<0?`-${a}`:"0"):(v>0?`↑${a}`:v<0?`↓${a}`:"—");}
 
 function targetSvg(fd,id){
@@ -223,14 +255,56 @@ function geoSvg(st,fd,sug){
   const M=fd/2*1.18,w=fd/600;
   let h=`<line x1="${-M}" y1="0" x2="${M}" y2="0" stroke="var(--hit)" stroke-width="${w}" opacity=".25"/>`;
   h+=`<line x1="0" y1="${-M}" x2="0" y2="${M}" stroke="var(--hit)" stroke-width="${w}" opacity=".25"/>`;
+  if(st.major&&st.minor)h+=`<ellipse cx="${st.mx}" cy="${-st.my}" rx="${st.major}" ry="${st.minor}" transform="rotate(${-st.angleDeg} ${st.mx} ${-st.my})" fill="none" stroke="var(--hit)" stroke-width="${fd/450}" opacity=".35" stroke-dasharray="${fd/55} ${fd/85}"/>`;
   h+=`<circle cx="${st.mx}" cy="${-st.my}" r="${st.rr}" fill="none" stroke="var(--hit)" stroke-width="${fd/400}" opacity=".55" stroke-dasharray="${fd/45} ${fd/70}"/>`;
   h+=`<circle cx="${st.mx}" cy="${-st.my}" r="${fd/90}" fill="var(--warn)" stroke="#fff" stroke-width="${fd/800}"/>`;
   if(sug&&(sug.h||sug.v)){
-    const L=Math.min(M*.35,Math.hypot(sug.h,sug.v)*.14+8);
+    const L=Math.min(M*.38,Math.hypot(sug.h,sug.v)*.16+6);
     const ang=Math.atan2(-sug.v,sug.h),ex=Math.cos(ang)*L,ey=Math.sin(ang)*L;
-    h+=`<line x1="0" y1="0" x2="${ex}" y2="${ey}" stroke="var(--sight)" stroke-width="${fd/350}" marker-end="url(#geoArr)"/>`;
+    h+=`<line x1="0" y1="0" x2="${ex}" y2="${ey}" stroke="var(--sight)" stroke-width="${fd/320}" marker-end="url(#geoArr)"/>`;
   }
   return h;
+}
+
+const WIND_DIRS=[{id:"",lbl:"無風",a:0},{id:"向かい風",lbl:"向かい",a:-90},{id:"追い風",lbl:"追い",a:90},{id:"左から",lbl:"左",a:180},{id:"右から",lbl:"右",a:0}];
+const WIND_SPD=[0,2,4,6];
+function windCompass(dir,spd){
+  const cx=50,cy=50,R=38;
+  let btns="";
+  [{id:"向かい風",a:0},{id:"追い風",a:180},{id:"左から",a:270},{id:"右から",a:90}].forEach(w=>{
+    const rad=w.a*Math.PI/180,x=cx+R*Math.sin(rad),y=cy-R*Math.cos(rad);
+    const on=dir===w.id;
+    btns+=`<circle class="wbtn${on?" on":""}" data-wd="${w.id}" cx="${x}" cy="${y}" r="11"/>`;
+    btns+=`<text class="wlbl${on?" on":""}" x="${x}" y="${y+3}">${w.id==="向かい風"?"向":w.id==="追い風"?"追":w.id==="左から"?"左":"右"}</text>`;
+  });
+  btns+=`<circle class="wbtn${!dir?" on":""}" data-wd="" cx="${cx}" cy="${cy}" r="9" opacity="${dir?"":".9"}"/>`;
+  btns+=`<text class="wlbl${!dir?" on":""}" x="${cx}" y="${cy+3}">無</text>`;
+  const spdBtns=WIND_SPD.map(v=>`<button type="button" class="ws${v===spd?" on":""}" data-ws="${v}">${v||"—"}</button>`).join("");
+  return `<div class="wind-compass"><svg viewBox="0 0 100 100">
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--line)" stroke-width="1"/>
+    <line x1="${cx}" y1="${cy-R}" x2="${cx}" y2="${cy+R}" stroke="var(--line)" stroke-width=".5" opacity=".5"/>
+    <line x1="${cx-R}" y1="${cy}" x2="${cx+R}" y2="${cy}" stroke="var(--line)" stroke-width=".5" opacity=".5"/>
+    ${btns}</svg></div>
+    <div class="wind-spd">${spdBtns}<span style="font-size:11px;color:var(--dim);align-self:center">m/s</span></div>`;
+}
+function physBadgeHtml(j){
+  if(!j)return "";
+  const cls=j.tone==="ok"?"ok":j.tone==="warn"?"warn":j.tone==="hold"?"hold":"mid";
+  return `<div class="phys-badge ${cls}">${j.label}</div><div class="phys-hint">${esc(j.text)}</div>`;
+}
+function moveHintHtml(adv){
+  if(!adv||!adv.moves.length)return `<div class="phys-hint">中心は良好 — サイト調整不要</div>`;
+  return adv.moves.map(m=>{
+    let t=`${m.dir}へ ${m.cm.toFixed(1)}cm`;
+    if(m.mm)t+=` · ${m.mm.toFixed(1)}mm`;
+    if(m.clicks!=null)t+=` · ${m.clicks.toFixed(1)}目盛`;
+    return `<div class="phys-hint">${m.axis==="v"?"上下":"左右"}: ${t}</div>`;
+  }).join("");
+}
+function trajHintHtml(adv){
+  if(!adv||!adv.model||!adv.model.traj)return "";
+  const t=adv.model.traj,p=t.phys;
+  return `<div class="phys-traj">${t.engine} · ${p.speedFps.toFixed(0)}fps · ${p.massGr.toFixed(0)}gr · ${t.tof.toFixed(2)}s · 信頼${Math.round((adv.confidence||0)*100)}%</div>`;
 }
 
 function phaseArc(cur){
@@ -276,7 +350,7 @@ function slotRing(cur,pe,fd){
   return `<div class="slot-ring"><svg viewBox="0 0 100 100">${s}</svg></div>`;
 }
 
-function sightDial(s0,now,sug){
+function sightDial(s0,now,sug,adv){
   const cx=80,cy=80,R=55;
   let ticks="";
   for(let i=0;i<24;i++){const a=i*15*Math.PI/180,x1=cx+(R-4)*Math.cos(a),y1=cy+(R-4)*Math.sin(a),x2=cx+R*Math.cos(a),y2=cy+R*Math.sin(a);
@@ -285,11 +359,14 @@ function sightDial(s0,now,sug){
   const sv=parse(s0.v),sh=parse(s0.h),nv=parse(now.v),nh=parse(now.h);
   const scale=2.2;
   const sx=cx+sh*scale,sy=cy-sv*scale,nx=cx+nh*scale,ny=cy-nv*scale;
-  let sugLine="";
+  let sugLine="",sugDot="";
   if(sug&&(sug.h||sug.v)){
-    const ex=cx+sug.h*scale*.8,ey=cy-sug.v*scale*.8;
-    sugLine=`<line class="sug" x1="${cx}" y1="${cy}" x2="${ex}" y2="${ey}"/>`;
+    const ex=cx+sug.h*scale*.85,ey=cy-sug.v*scale*.85;
+    sugLine=`<line class="sug" x1="${nx}" y1="${ny}" x2="${ex}" y2="${ey}"/>`;
+    sugDot=`<circle cx="${ex}" cy="${ey}" r="5" fill="none" stroke="var(--warn)" stroke-width="2" stroke-dasharray="2 2"/>`;
   }
+  const rec=adv&&adv.moves.length?`<text class="lbl" x="${cx}" y="152" text-anchor="middle">推奨 ${adv.moves.map(m=>m.dir).join("·")}</text>`:
+    `<text class="lbl" x="${cx}" y="152" text-anchor="middle">開始 ${esc(s0.v||"—")} / ${esc(s0.h||"—")}</text>`;
   return `<div class="sight-dial"><svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
     <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--warn)"/></marker></defs>
     ${ticks}
@@ -297,10 +374,9 @@ function sightDial(s0,now,sug){
     <line class="axis" x1="${cx}" y1="${cy-R}" x2="${cx}" y2="${cy+R}"/>
     <circle class="start" cx="${sx}" cy="${sy}" r="5"/>
     <circle class="now" cx="${nx}" cy="${ny}" r="7"/>
-    ${sugLine}
+    ${sugLine}${sugDot}
     <text class="lbl" x="${cx}" y="14" text-anchor="middle">左右</text>
-    <text class="lbl" x="8" y="${cy+4}" text-anchor="middle" transform="rotate(-90 8 ${cy})">上下</text>
-    <text class="lbl" x="${cx}" y="152" text-anchor="middle">開始 ${esc(s0.v||"—")} / ${esc(s0.h||"—")}</text>
+    ${rec}
   </svg></div>`;
 }
 
@@ -377,11 +453,14 @@ function exportImport(){
 }
 
 function renderSetup(){
-  const g=db.setups[0],last=db.sessions[db.sessions.length-1];
+  const g=getSetup(),last=db.sessions[db.sessions.length-1];
   const dist=ui._dist||(last?.dist||70);
+  const wDir=ui._windDir??last?.windDir??"";
+  const wSpd=ui._windSpd??last?.windSpeed??0;
   const mk=db.sightMarks.filter(m=>g&&m.setupId===g.id&&m.dist===dist).sort((a,b)=>b.date.localeCompare(a.date))[0];
   shell(0,"距離とサイト","←",`
     ${distRings(dist)}
+    ${windCompass(wDir,wSpd)}
     <div class="sight-x">
       <span class="ax v-up">上下</span>
       <input class="v-up" id="sv" inputmode="decimal" placeholder="—" value="${esc(mk?.v||"")}">
@@ -397,12 +476,15 @@ function renderSetup(){
     <textarea class="note-inp" id="note" placeholder="メモ（任意）" rows="1"></textarea>`,
     `<button class="btn hit" id="start">射る</button>`);
   document.querySelectorAll(".dist-svg .ring").forEach(c=>c.onclick=()=>{ui._dist=+c.dataset.d;renderSetup();});
+  document.querySelectorAll(".wbtn").forEach(c=>c.onclick=()=>{ui._windDir=c.dataset.wd;renderSetup();});
+  document.querySelectorAll(".wind-spd button").forEach(c=>c.onclick=()=>{ui._windSpd=+c.dataset.ws;renderSetup();});
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
   $("#start").onclick=()=>{
     const v=$("#sv").value.trim(),h=$("#sh").value.trim();
     db.active={
       id:uid(),date:today(),setupId:g?.id||null,dist,faceD:dist>=60?122:dist<=18?40:80,perEnd:6,
       sightStart:{v,h},sightNow:{v,h},note:$("#note").value.trim(),
+      windDir:ui._windDir??"",windSpeed:ui._windSpd??0,
       phase:"record",ends:[],cur:[],adjLog:[]
     };
     if(g&&(v||h))db.sightMarks.push({id:uid(),setupId:g.id,date:today(),dist,v,h,tag:"start"});
@@ -415,7 +497,9 @@ function renderRecord(){
   s.phase="record";save();
   const n=s.cur.length,pe=s.perEnd,scale=.88+n/pe*.14;
   const st=stats(s.cur);
-  const sug=st&&st.n>=3?{h:Math.round(st.mx*1.2),v:Math.round(-st.my*1.2)}:null;
+  const adv=n>=3?endAdvice(s,s.cur):null;
+  const j=adv?Phy.judgementFor(adv,s):null;
+  const sug=sugFromAdv(adv,j);
   const geoDefs=`<defs><marker id="geoArr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--sight)"/></marker></defs>`;
   shell(1,`E${s.ends.length+1} · ${n}/${pe}`,"",`
     <div class="tgt-stage" style="min-height:calc(100dvh - 200px)">
@@ -482,19 +566,23 @@ function renderReturn(){
   const end=s.ends[s.ends.length-1]||[];
   const st=stats(end);
   const tot=end.reduce((a,x)=>a+x.s,0);
-  const sug=st?{h:Math.round(st.mx*1.2),v:Math.round(-st.my*1.2)}:null;
+  const adv=endAdvice(s,end);
+  const j=Phy.judgementFor(adv,s);
+  const sug=sugFromAdv(adv,j);
   const sv=s.sightNow?.v??"",sh=s.sightNow?.h??"";
   const s0=s.sightStart||{};
   const geoDefs=`<defs><marker id="geoArr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--sight)"/></marker></defs>`;
   shell(2,`E${s.ends.length}`,"",`
     <div class="end-badge"><div class="n">${tot}</div><div class="s">${end.map(lbl).join(" · ")}</div></div>
+    ${physBadgeHtml(j)}
     <div class="ret-geo">
       <div class="mini"><div class="box"><div style="position:relative">${targetSvg(s.faceD,"rt")}
         <div class="tgt-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}">${geoDefs}${geoSvg(st,s.faceD,sug)}</svg></div>
       </div></div></div>
-      ${sightDial(s0,{v:sv,h:sh},sug)}
+      ${sightDial(s0,{v:sv,h:sh},sug,adv)}
+      ${moveHintHtml(adv)}${trajHintHtml(adv)}
       ${st?`<div class="geo-nums" style="position:static;justify-content:center;margin:4px 0">
-        <span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span></div>`:""}
+        <span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span>${st.excluded&&st.excluded.length?`<span>外${st.excluded.length}</span>`:""}</div>`:""}
       ${ui.adj?`<div class="sight-adj">
         <input id="nv" inputmode="decimal" placeholder="上下" value="${esc(sv)}">
         <input id="nh" inputmode="decimal" placeholder="左右" value="${esc(sh)}">
@@ -562,14 +650,45 @@ function renderHistDetail(){
 }
 
 function renderGear(){
-  const g=db.setups[0]||{name:"",bow:""};
+  const g=getSetup();
+  const gp=Phy.gearPrecisionProfile(g);
   shell(-1,"装備","←",`
-    <div class="gear-lbl">名前</div><input class="gear-inp" id="gn" value="${esc(g.name)}">
-    <div class="gear-lbl">弓</div><input class="gear-inp" id="gb" value="${esc(g.bow)}">`,
+    <div class="gear-lbl">名前 / 弓</div>
+    <div class="gear-grid">
+      <input class="gear-inp" id="gn" placeholder="名前" value="${esc(g.name)}">
+      <input class="gear-inp" id="gb" placeholder="弓" value="${esc(g.bow)}">
+    </div>
+    <div class="phys-traj" style="margin:8px 0">物理入力 ${Math.round(gp.score*100)}% — RK4精度に影響</div>
+    <div class="gear-sep"></div>
+    <div class="gear-lbl">弓・矢（物理エンジン）</div>
+    <div class="gear-grid">
+      <input class="gear-inp" id="gp" inputmode="decimal" placeholder="ポンド" value="${esc(g.poundage||"")}">
+      <input class="gear-inp" id="gd" inputmode="decimal" placeholder="引き尺" value="${esc(g.drawLength||"")}">
+      <input class="gear-inp" id="gw" inputmode="decimal" placeholder="矢重量gr" value="${esc(g.arrowWeight||"")}">
+      <input class="gear-inp" id="gsp" inputmode="decimal" placeholder="初速fps" value="${esc(g.arrowSpeed||"")}">
+      <input class="gear-inp" id="gdi" inputmode="decimal" placeholder="矢径mm" value="${esc(g.arrowDia||"")}">
+      <input class="gear-inp" id="gt" inputmode="decimal" placeholder="気温℃" value="${esc(g.temperature||"")}">
+      <input class="gear-inp" id="ga" inputmode="decimal" placeholder="標高m" value="${esc(g.altitude||"")}">
+      <input class="gear-inp" id="gh" inputmode="decimal" placeholder="湿度%" value="${esc(g.humidity||"")}">
+    </div>
+    <div class="gear-lbl">サイト目盛り @70m（cm/クリック）</div>
+    <div class="gear-grid">
+      <input class="gear-inp" id="gcv" inputmode="decimal" placeholder="上下" value="${esc(g.calibV70||"")}">
+      <input class="gear-inp" id="gch" inputmode="decimal" placeholder="左右" value="${esc(g.calibH70||"")}">
+      <input class="gear-inp full" id="geye" inputmode="decimal" placeholder="アイサイト距離mm（850）" value="${esc(db.settings.eyeSight||850)}">
+    </div>`,
     `<button class="btn hit" id="gs">保存</button>`);
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
-  $("#gs").onclick=()=>{const d={id:g.id||uid(),name:$("#gn").value.trim()||"main",bow:$("#gb").value.trim()};
-    if(db.setups.length)db.setups[0]=d;else db.setups.push(d);save();toast("ok");};
+  $("#gs").onclick=()=>{
+    const d={id:g.id||uid(),name:$("#gn").value.trim()||"main",bow:$("#gb").value.trim(),
+      poundage:$("#gp").value.trim(),drawLength:$("#gd").value.trim(),arrowWeight:$("#gw").value.trim(),
+      arrowSpeed:$("#gsp").value.trim(),arrowDia:$("#gdi").value.trim(),temperature:$("#gt").value.trim(),
+      altitude:$("#ga").value.trim(),humidity:$("#gh").value.trim(),
+      calibV70:$("#gcv").value.trim(),calibH70:$("#gch").value.trim()};
+    if(db.setups.length)db.setups[0]=d;else db.setups.push(d);
+    const eye=parseFloat($("#geye").value);if(isFinite(eye)&&eye>0)db.settings.eyeSight=eye;
+    save();toast("保存した");
+  };
 }
 
 if("serviceWorker"in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){

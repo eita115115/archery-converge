@@ -1,5 +1,5 @@
-const CACHE = "archery-converge-v4";
-const ASSETS = ["./index.html", "./manifest.json", "./icon.svg", "./apple-touch-icon.png", "./version.json"];
+const CACHE = "archery-converge-v5";
+const ASSETS = ["./index.html", "./physics.js", "./manifest.json", "./icon.svg", "./apple-touch-icon.png", "./version.json"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
