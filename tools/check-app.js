@@ -95,6 +95,8 @@ requiredApp.forEach(s => {
 if (/\?\.onclick\s*=/.test(appSrc)) fail("optional chaining assignment found");
 if (appSrc.includes("function targetSvg(") || appSrc.includes("function hitAt("))
   fail("scoring must live in geometry.js only");
+if (!geometrySrc.includes("slotRadius") || !geometrySrc.includes("--geo-group"))
+  fail("geometry grouping/slot tokens missing");
 
 const scriptOrder = ["compat.js", "physics.js", "geometry.js", "beginner.js", "app.js"];
 let last = -1;
