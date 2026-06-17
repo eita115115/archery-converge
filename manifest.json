@@ -1,7 +1,7 @@
 {
-  "name": "Converge — 得点記録",
+  "name": "Converge — 得点記録 & サイト確認",
   "short_name": "Converge",
-  "description": "的の中心への収束だけで読む、アーチェリー記録",
+  "description": "弓を組み、エンドごとに記録し、戻ってサイト偏差を確認するアーチェリー練習帳",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

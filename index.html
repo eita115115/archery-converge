@@ -12,189 +12,144 @@
 <title>Converge</title>
 <style>
 :root{
-  --void:#141614; --panel:#1e1e1a; --line:#2e2e28; --line2:#3a3a32;
-  --text:#e6e4dc; --mute:#8a8878; --dim:#5a5848;
-  --hit:#4ade80; --warn:#f0b840; --miss:#6a6860;
-  --gold:#d4a72c; --red:#c73e3a; --blue:#3d8fd4; --ink:#1a1a18;
-  --mono:"SF Mono","Cascadia Mono","Consolas",monospace;
+  --void:#141614;--panel:#1e1e1a;--line:#2e2e28;--line2:#3a3a32;
+  --text:#e6e4dc;--mute:#8a8878;--dim:#5a5848;
+  --hit:#4ade80;--warn:#f0b840;--beat:#e85d4c;--sight:#a78bfa;
+  --gold:#d4a72c;--red:#c73e3a;--blue:#3d8fd4;--ink:#1a1a18;
+  --mono:"SF Mono","Cascadia Mono",Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;overflow-x:hidden;background:var(--void);color:var(--text)}
-body{
-  font-family:var(--sans);font-size:14px;
-  padding-bottom:64px;padding-bottom:calc(52px + env(safe-area-inset-bottom));
-  -webkit-user-select:none;user-select:none;
-}
+body{font-family:var(--sans);font-size:14px;-webkit-user-select:none;user-select:none}
 input,select,textarea{-webkit-user-select:auto;user-select:auto}
+button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-offset:2px}
 
-/* hud */
-.hud{
-  display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;
+.top{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
   padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));
-  border-bottom:1px solid var(--line);
+  border-bottom:1px solid var(--line);min-height:48px;
 }
-.ring{width:48px;height:48px}
-.hud-mid{min-width:0}
-.hud-dist{font-family:var(--mono);font-size:28px;font-weight:700;line-height:1;letter-spacing:-.02em}
-.hud-sub{font-size:11px;color:var(--mute);margin-top:2px}
-.hud-total{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--hit);text-align:right}
-.hud-total span{display:block;font-size:10px;color:var(--dim);font-weight:400}
+.top h1{margin:0;font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--mute)}
+.top .phase{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--text)}
+.top .phase small{font-size:12px;color:var(--mute);font-weight:400;margin-left:6px}
+.top button{background:none;border:none;color:var(--mute);font-size:12px;cursor:pointer;padding:6px 8px}
 
-/* stage */
-.stage{max-width:520px;margin:0 auto;padding:8px 10px 12px}
+.stage{max-width:520px;margin:0 auto;padding:12px 14px 20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));transition:padding .35s ease}
+.stage.tight{padding:6px 8px 14px}
+.stage.tighter{padding:2px 6px 10px}
+
+/* B: beat bar */
+.beats{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:10px}
+.beat{height:32px;border-radius:4px;background:var(--line);position:relative;overflow:hidden;transition:transform .2s}
+.beat.on{background:var(--beat);transform:scaleY(1.06)}
+.beat.on.hi{background:var(--warn)}
+.beat.cur{box-shadow:0 0 0 2px var(--text)}
+.beat span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700}
 
 /* target */
-.tg-stage{position:relative;touch-action:none}
-.tg-stage svg.face{width:100%;display:block;touch-action:none;border-radius:50%}
-.tg-overlay{position:absolute;inset:0;pointer-events:none}
-.tg-overlay svg{width:100%;height:100%;display:block}
-.lens{
-  position:absolute;top:6px;width:118px;height:118px;border-radius:50%;
-  border:2px solid var(--hit);background:#2a2a26;display:none;pointer-events:none;overflow:hidden;
-  box-shadow:0 0 24px rgba(0,0,0,.5);
-}
-.lens.fine{border-color:var(--warn)}
-.lens.fine.cut{border-color:var(--hit)}
+.tg-box{position:relative;touch-action:none;transition:transform .4s cubic-bezier(.2,.8,.2,1);transform-origin:center}
+.tg-box svg.face{width:100%;display:block;touch-action:none;border-radius:50%}
+.tg-geo{position:absolute;inset:0;pointer-events:none}
+.tg-geo svg{width:100%;height:100%;display:block}
+.lens{position:absolute;top:6px;width:116px;height:116px;border-radius:50%;border:2px solid var(--hit);
+  background:#2a2a26;display:none;pointer-events:none;overflow:hidden;box-shadow:0 0 20px rgba(0,0,0,.45)}
+.lens.fine{border-color:var(--warn)}.lens.cut{border-color:var(--hit)}
 
-/* score orbit */
-.orbit{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin:10px 0 6px;min-height:42px}
-.orbit .puck{
-  width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:16px;font-weight:700;border:2px solid transparent;cursor:pointer;
-}
-.orbit .puck.on{box-shadow:0 0 0 2px var(--text)}
-.orbit .hint{font-size:12px;color:var(--dim);align-self:center}
-
-/* drift readout — numbers only, no prose */
-.drift{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0;
-  font-family:var(--mono);font-size:12px;text-align:center;
-}
+/* A: drift nums */
+.drift{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0;font-family:var(--mono);text-align:center}
 .drift div{padding:8px 4px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
-.drift .k{font-size:9px;color:var(--dim);letter-spacing:.08em;margin-bottom:3px}
+.drift .k{font-size:9px;color:var(--dim);letter-spacing:.08em;margin-bottom:2px}
 .drift b{font-size:15px}
 
-/* actions */
-.act{display:flex;gap:8px;margin-top:8px}
-.btn{
-  flex:1;padding:13px 10px;border-radius:8px;border:1px solid var(--line2);
-  background:var(--panel);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;
+.sight-diff{
+  border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--panel);margin:10px 0;
+  font-family:var(--mono);
 }
-.btn.primary{background:var(--hit);border-color:var(--hit);color:var(--void)}
-.btn.ghost{color:var(--mute)}
-.btn.sm{flex:0 0 auto;padding:8px 12px;font-size:12px}
-.btn:active{opacity:.85}
+.sight-diff .row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
+.sight-diff .row .chg{color:var(--sight)}
+.sight-diff .note{font-size:11px;color:var(--dim);margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
 
-/* distance rings picker */
-.dist-rings{position:relative;width:min(100%,280px);margin:20px auto;aspect-ratio:1}
-.dist-rings svg{width:100%;height:100%}
-.dist-ring{cursor:pointer;transition:opacity .15s}
-.dist-ring.off{opacity:.35}
-.dist-ring.on{opacity:1}
-.dist-label{
-  position:absolute;left:50%;transform:translateX(-50%);
-  font-family:var(--mono);font-size:13px;color:var(--mute);pointer-events:none;
-}
-
-/* history */
-.s-row{
-  display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;
-  padding:12px 4px;border-bottom:1px solid var(--line);cursor:pointer;
-}
-.s-row .d{font-family:var(--mono);font-size:15px}
-.s-row .m{font-size:11px;color:var(--mute);margin-top:2px}
-.s-row .pts{font-family:var(--mono);font-size:20px;color:var(--hit)}
-
-/* sight vector panel */
-.vec-bar{
-  display:flex;align-items:center;gap:10px;padding:10px 12px;
-  border:1px solid var(--line);border-radius:8px;background:var(--panel);margin:10px 0;
-}
-.vec-bar svg{flex:0 0 48px}
-.vec-bar .nums{font-family:var(--mono);font-size:13px;line-height:1.5}
-.vec-bar .nums b{font-size:18px;color:var(--warn)}
-
-.inp{
+.inp,select.inp,textarea.inp{
   width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;
   background:var(--panel);color:var(--text);font-size:16px;
 }
-label.f{display:block;font-size:10px;color:var(--dim);letter-spacing:.1em;margin:10px 0 4px}
+textarea.inp{min-height:52px;font-size:14px;resize:vertical}
+label.f{display:block;font-size:10px;color:var(--dim);letter-spacing:.08em;margin:10px 0 4px}
 .row{display:flex;gap:8px}.row>*{flex:1}
 
-/* tabs */
-nav{
-  position:fixed;bottom:0;left:0;right:0;z-index:30;
-  display:flex;background:var(--panel);border-top:1px solid var(--line);
-  padding-bottom:env(safe-area-inset-bottom);
-}
-nav button{
-  flex:1;background:none;border:none;padding:12px 0 10px;
-  font-size:10px;color:var(--dim);letter-spacing:.12em;cursor:pointer;
-}
-nav button.on{color:var(--hit);font-weight:700}
-nav button .dot{
-  width:6px;height:6px;border-radius:50%;background:currentColor;
-  margin:0 auto 5px;opacity:.5;
-}
-nav button.on .dot{opacity:1;box-shadow:0 0 8px currentColor}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:8px 14px;border:1px solid var(--line);border-radius:6px;background:var(--panel);cursor:pointer;font-family:var(--mono)}
+.chip.on{border-color:var(--hit);color:var(--hit);background:rgba(74,222,128,.08)}
 
-.toast{
-  position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:60;
-  background:var(--panel);border:1px solid var(--line2);color:var(--text);
-  padding:8px 14px;border-radius:6px;font-family:var(--mono);font-size:12px;
-  opacity:0;transition:opacity .2s;pointer-events:none;
+.btn{
+  display:block;width:100%;padding:14px;border-radius:8px;border:none;
+  font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);
 }
+.btn.hit{background:var(--hit);color:var(--void)}
+.btn.beat{background:var(--beat);color:#fff}
+.btn.ghost{background:var(--panel);color:var(--mute);border:1px solid var(--line);margin-top:8px}
+.btn.sm{display:inline-block;width:auto;padding:8px 12px;font-size:12px}
+.btn:disabled{opacity:.35}
+.act{display:flex;gap:8px;margin-top:10px}.act .btn{flex:1;margin-top:0}
+
+.home-hero{text-align:center;padding:28px 0 20px}
+.home-hero .mark{width:72px;height:72px;margin:0 auto 16px;border-radius:50%;
+  border:2px solid var(--line);display:flex;align-items:center;justify-content:center}
+.home-hero .mark svg{width:56px;height:56px}
+.home-hero p{margin:8px 0 0;font-size:12px;color:var(--dim);line-height:1.55}
+.home-links{display:flex;justify-content:center;gap:16px;margin-top:20px}
+.home-links button{background:none;border:none;color:var(--mute);font-size:12px;cursor:pointer;text-decoration:underline}
+
+.end-sum{font-family:var(--mono);text-align:center;margin:8px 0}
+.end-sum b{font-size:28px;color:var(--warn)}
+.end-sum span{font-size:12px;color:var(--dim);margin-left:8px}
+
+.s-row{display:flex;justify-content:space-between;align-items:center;padding:12px 2px;border-bottom:1px solid var(--line);cursor:pointer}
+.s-row .d{font-family:var(--mono);font-size:14px}
+.s-row .m{font-size:11px;color:var(--dim);margin-top:2px}
+.s-row .pts{font-family:var(--mono);font-size:20px;color:var(--hit)}
+
+.breath{position:fixed;inset:0;z-index:90;background:rgba(20,22,20,.88);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  opacity:0;pointer-events:none;transition:opacity .28s}
+.breath.on{opacity:1;pointer-events:auto}
+.breath b{font-family:var(--mono);font-size:48px;color:var(--warn)}
+.breath span{font-size:11px;color:var(--dim);letter-spacing:.15em;margin-top:6px}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;
+  background:var(--panel);border:1px solid var(--line);padding:7px 14px;border-radius:6px;
+  font-family:var(--mono);font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
-.updbar{
-  position:fixed;left:50%;transform:translateX(-50%);bottom:68px;
-  bottom:calc(60px + env(safe-area-inset-bottom));
-  z-index:40;background:var(--hit);color:var(--void);padding:9px 16px;border-radius:6px;
-  font-size:12px;font-weight:700;cursor:pointer;display:none;
-}
-.empty{padding:32px 8px;text-align:center;color:var(--dim);font-size:13px}
-
-@keyframes ripple{
-  from{transform:scale(.4);opacity:.7}
-  to{transform:scale(2.2);opacity:0}
-}
-.ripple{
-  position:absolute;border-radius:50%;border:2px solid var(--hit);
-  width:40px;height:40px;margin:-20px 0 0 -20px;animation:ripple .5s ease-out forwards;
-  pointer-events:none;
-}
+.updbar{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:70;
+  background:var(--hit);color:var(--void);padding:8px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;display:none}
+.empty{text-align:center;padding:32px;color:var(--dim);font-size:13px}
 </style>
 </head>
 <body>
-<header class="hud" id="hud"></header>
+<div class="breath" id="breath"><b id="breathN">—</b><span>INTERVAL</span></div>
+<header class="top" id="top"></header>
 <main class="stage" id="main"></main>
-<nav id="tabs">
-  <button data-v="record" class="on"><div class="dot"></div>記録</button>
-  <button data-v="trace"><div class="dot"></div>軌跡</button>
-  <button data-v="sight"><div class="dot"></div>寄せ</button>
-  <button data-v="gear"><div class="dot"></div>弓</button>
-</nav>
 <div class="updbar" id="updBar">更新あり</div>
 <div class="toast" id="toast"></div>
 
 <script>
 "use strict";
-const KEY="archeryConverge.v1", APP_VER=1;
+const KEY="archeryConverge.v1", APP_VER=2;
 let db=load();
-const ui={view:"record",dist:70,sel:-1,traceId:null};
+const ui={screen:"home",histId:null,adj:false};
 
 function blankDb(){return{setups:[],sightMarks:[],sessions:[],active:null};}
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.sessions)return Object.assign(blankDb(),d);}catch(e){}return blankDb();}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d?.sessions)return Object.assign(blankDb(),d);}catch(e){}return blankDb();}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function $(s,r){return (r||document).querySelector(s);}
-function esc(s){return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function esc(s){return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;");}
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1800);}
 function today(){return new Date().toISOString().slice(0,10);}
 function fmtD(d){const x=new Date(d+"T12:00:00");return `${x.getMonth()+1}/${x.getDate()}`;}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 
-/* scoring */
 function ringW(fd){return fd/20;}
 function arrR(fd){return fd/85;}
 function lineR(fd){return arrR(fd)+fd/1200;}
@@ -203,20 +158,11 @@ function rank(h){return h.s*2+(h.X?1:0);}
 function lineCut(x,y,fd){return rank(scoreAt(x,y,fd,lineR(fd)))>rank(scoreAt(x,y,fd,0));}
 function hitAt(x,y,fd){return Object.assign({x,y},scoreAt(x,y,fd,lineR(fd)));}
 function lbl(a){return a.s===0?"M":a.X?"X":String(a.s);}
-function zc(s,X){if(s>=9)return{bg:"var(--gold)",fg:"var(--ink)"};if(s>=7)return{bg:"var(--red)",fg:"#fff"};if(s>=5)return{bg:"var(--blue)",fg:"#fff"};if(s>=3)return{bg:"#444",fg:"#fff"};if(s>=1)return{bg:"#ddd",fg:"var(--ink)"};return{bg:"var(--miss)",fg:"#888"};}
-
-function stats(arrows){
-  const n=arrows.length;if(!n)return null;
-  const mx=arrows.reduce((a,p)=>a+p.x,0)/n, my=arrows.reduce((a,p)=>a+p.y,0)/n;
-  let vx=0,vy=0;arrows.forEach(p=>{vx+=(p.x-mx)**2;vy+=(p.y-my)**2;});
-  vx/=n;vy/=n;return{n,mx,my,rr:Math.sqrt(vx+vy),sx:Math.sqrt(vx),sy:Math.sqrt(vy)};
-}
+function stats(ar){const n=ar.length;if(!n)return null;const mx=ar.reduce((a,p)=>a+p.x,0)/n,my=ar.reduce((a,p)=>a+p.y,0)/n;
+  let vx=0,vy=0;ar.forEach(p=>{vx+=(p.x-mx)**2;vy+=(p.y-my)**2;});vx/=n;vy/=n;return{n,mx,my,rr:Math.sqrt(vx+vy)};}
 function mono(v,ax){const a=Math.abs(v).toFixed(1);return ax==="x"?(v>0?`+${a}`:v<0?`-${a}`:"0.0"):(v>0?`↑${a}`:v<0?`↓${a}`:"—");}
 
-const ENDC=["#4ade80","#f0b840","#3d8fd4","#c73e3a","#a78bfa","#2dd4bf"];
-
-/* target SVG */
-function rings(fd,id){
+function targetSvg(fd,id){
   const w=ringW(fd),R=fd/2,M=R*1.18;
   const z=[[10,"#f5f3ee"],[9,"#f5f3ee"],[8,"#222"],[7,"#222"],[6,"#3d8fd4"],[5,"#3d8fd4"],[4,"#c73e3a"],[3,"#c73e3a"],[2,"#d4a72c"],[1,"#d4a72c"]];
   let g="";z.forEach(([k,f])=>{g+=`<circle cx="0" cy="0" r="${k*w}" fill="${f}" stroke="${f==="#222"?"#3a3a32":"#222"}" stroke-width="${R/280}"/>`;});
@@ -228,131 +174,150 @@ function rings(fd,id){
 }
 function dot(a,fd,c,l){const r=arrR(fd);return `<g><circle cx="${a.x}" cy="${-a.y}" r="${r}" fill="${c}" stroke="#fff" stroke-width="${r/5}" opacity=".92"/>`
   +(l?`<text x="${a.x}" y="${-a.y}" font-size="${r*1.1}" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="bold">${l}</text>`:"")+`</g>`;}
-
-/* geometry overlay: center cross, group centroid, vector to center, ellipse */
-function geoOverlay(st,fd,suggest){
+function geoSvg(st,fd,sug){
   if(!st)return "";
-  const w=ringW(fd), M=fd/2*1.18;
-  let h=`<line x1="${-M}" y1="0" x2="${M}" y2="0" stroke="var(--hit)" stroke-width="${fd/600}" opacity=".25"/>`;
-  h+=`<line x1="0" y1="${-M}" x2="0" y2="${M}" stroke="var(--hit)" stroke-width="${fd/600}" opacity=".25"/>`;
-  h+=`<circle cx="${st.mx}" cy="${-st.my}" r="${st.rr}" fill="none" stroke="var(--hit)" stroke-width="${fd/450}" opacity=".55" stroke-dasharray="${fd/50} ${fd/80}"/>`;
-  h+=`<circle cx="${st.mx}" cy="${-st.my}" r="${fd/120}" fill="var(--warn)" opacity=".9"/>`;
-  if(Math.hypot(st.mx,st.my)>.3){
-    const len=Math.min(Math.hypot(st.mx,st.my)*1.1, M*.4);
-    const ang=Math.atan2(-st.my,st.mx);
-    const ex=st.mx-Math.cos(ang)*len, ey=-st.my+Math.sin(ang)*len;
-    h+=`<line x1="${st.mx}" y1="${-st.my}" x2="${ex}" y2="${ey}" stroke="var(--warn)" stroke-width="${fd/400}" marker-end="url(#arr)"/>`;
-  }
-  if(suggest&&(Math.abs(suggest.h)||Math.abs(suggest.v))){
-    const sh=suggest.h*.15, sv=-suggest.v*.15;
-    h+=`<line x1="0" y1="0" x2="${sh}" y2="${sv}" stroke="#a78bfa" stroke-width="${fd/380}" opacity=".8"/>`;
-    h+=`<text x="${sh*1.1}" y="${sv*1.1}" font-size="${fd/14}" fill="#a78bfa" text-anchor="middle">サイト</text>`;
-  }
-  return `<defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--warn)"/></marker></defs>`+h;
+  const M=fd/2*1.18;
+  let h=`<line x1="${-M}" y1="0" x2="${M}" y2="0" stroke="var(--hit)" stroke-width="${fd/600}" opacity=".2"/>`;
+  h+=`<line x1="0" y1="${-M}" x2="0" y2="${M}" stroke="var(--hit)" stroke-width="${fd/600}" opacity=".2"/>`;
+  h+=`<circle cx="${st.mx}" cy="${-st.my}" r="${st.rr}" fill="none" stroke="var(--hit)" stroke-width="${fd/450}" opacity=".5" stroke-dasharray="${fd/50} ${fd/80}"/>`;
+  h+=`<circle cx="${st.mx}" cy="${-st.my}" r="${fd/100}" fill="var(--warn)"/>`;
+  if(sug&&(sug.h||sug.v))h+=`<line x1="0" y1="0" x2="${sug.h*.12}" y2="${-sug.v*.12}" stroke="var(--sight)" stroke-width="${fd/380}"/>`;
+  return h;
+}
+function beatHtml(cur,pe){let h="";for(let i=0;i<pe;i++){const a=cur[i];
+  if(a)h+=`<div class="beat on ${a.s>=9?"hi":""}"><span>${lbl(a)}</span></div>`;
+  else h+=`<div class="beat ${i===cur.length?"cur":""}"></div>`;}return h;}
+
+function sessArr(s){return [...s.ends.flat(),...s.cur];}
+function sessTot(s){return sessArr(s).reduce((a,x)=>a+x.s,0);}
+
+function breathPause(n,cb){const b=$("#breath"),bn=$("#breathN");bn.textContent=n;b.classList.add("on");
+  setTimeout(()=>{b.classList.remove("on");setTimeout(cb,180);},580);}
+
+function setTop(title,phase,back){
+  $("#top").innerHTML=`
+    ${back?`<button id="backBtn">${back}</button>`:`<span style="width:40px"></span>`}
+    <div style="text-align:center;min-width:0"><h1>${title}</h1><div class="phase">${phase||""}</div></div>
+    <span style="width:40px"></span>`;
+  $("#backBtn")?.addEventListener("click",()=>nav("home"));
 }
 
-function progressRing(cur,max,total){
-  const r=20,c=2*Math.PI*r;let dots="";
-  for(let i=0;i<max;i++){
-    const a=(i/max)*Math.PI*2-Math.PI/2;
-    const x=24+Math.cos(a)*16,y=24+Math.sin(a)*16;
-    const on=i<cur;
-    dots+=`<circle cx="${x}" cy="${y}" r="3" fill="${on?"var(--hit)":"var(--line2)"}"/>`;
-  }
-  return `<svg class="ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="${r}" fill="none" stroke="var(--line)" stroke-width="3"/>
-    <circle cx="24" cy="24" r="${r}" fill="none" stroke="var(--hit)" stroke-width="3"
-      stroke-dasharray="${c}" stroke-dashoffset="${c*(1-cur/max)}" stroke-linecap="round" transform="rotate(-90 24 24)"/>
-    ${dots}</svg>`;
-}
-
-function renderHud(opts){
-  opts=opts||{};
-  $("#hud").innerHTML=`
-    ${opts.ring||"<svg class='ring'></svg>"}
-    <div class="hud-mid"><div class="hud-dist">${opts.dist??"—"}<span style="font-size:14px;color:var(--mute)">m</span></div>
-      <div class="hud-sub">${opts.sub||""}</div></div>
-    <div class="hud-total">${opts.total??""}<span>${opts.avg??""}</span></div>`;
-}
-
-function showView(v){ui.view=v;ui.traceId=null;document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));render();}
+function nav(screen){ui.screen=screen;ui.histId=null;ui.adj=false;render();}
 
 function render(){
-  if(ui.view==="record")return db.active?renderLive():renderStart();
-  if(ui.view==="trace")return ui.traceId?renderTracePage():renderTraceList();
-  if(ui.view==="sight")return renderSight();
-  if(ui.view==="gear")return renderGear();
+  if(db.active&&ui.screen==="home")ui.screen=db.active.phase||"record";
+  if(ui.screen==="home")return renderHome();
+  if(ui.screen==="setup")return renderSetup();
+  if(ui.screen==="record")return renderRecord();
+  if(ui.screen==="return")return renderReturn();
+  if(ui.screen==="done")return renderDone();
+  if(ui.screen==="history")return ui.histId?renderHistDetail():renderHistory();
+  if(ui.screen==="gear")return renderGear();
 }
 
-/* ── START: distance as concentric rings ── */
-function renderStart(){
-  const d=ui.dist;
-  renderHud({dist:d,sub:"距離を選ぶ",total:"",avg:""});
-  const radii=[{d:70,r:46},{d:50,r:36},{d:30,r:26},{d:18,r:16}];
+/* ── HOME ── */
+function renderHome(){
+  setTop("CONVERGE","",null);
+  const last=db.sessions[db.sessions.length-1];
+  $("#main").className="stage";
   $("#main").innerHTML=`
-    <div class="dist-rings" id="distPick">
-      <svg viewBox="0 0 100 100">${radii.map(o=>`
-        <circle class="dist-ring ${o.d===d?"on":"off"}" data-d="${o.d}" cx="50" cy="50" r="${o.r}"
-          fill="none" stroke="${o.d===d?"var(--hit)":"var(--line2)"}" stroke-width="${o.d===d?3:1.5}"/>`).join("")}
-        <circle cx="50" cy="50" r="2" fill="var(--hit)"/>
-      </svg>
-      <div class="dist-label" style="top:42%">${d}m</div>
-    </div>
-    <div class="act"><button class="btn primary" id="go">記録開始</button></div>`;
-  document.querySelectorAll(".dist-ring").forEach(c=>c.onclick=()=>{ui.dist=+c.dataset.d;render();});
-  $("#go").onclick=()=>{
-    db.active={id:uid(),date:today(),setupId:db.setups[0]?.id||null,dist:ui.dist,faceD:ui.dist>=60?122:ui.dist<=18?40:80,perEnd:6,ends:[],cur:[]};
-    save();render();
+    <div class="home-hero">
+      <div class="mark"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="none" stroke="#3a3a32" stroke-width="1"/>
+        <circle cx="20" cy="20" r="10" fill="#c73e3a"/><circle cx="20" cy="20" r="4" fill="#d4a72c"/></svg></div>
+      <button class="btn hit" id="goSetup">練習を始める</button>
+      <p>弓を組み立ててサイトを確認し、<br>エンドごとに記録 → 戻って偏差を見る</p>
+      ${last?`<p style="margin-top:14px">前回 ${fmtD(last.date)} ${last.dist}m · ${sessTot(last)}点</p>`:""}
+      <div class="home-links">
+        <button id="lnkHist">過去</button>
+        <button id="lnkGear">装備</button>
+        <button id="lnkBk">backup</button>
+      </div>
+    </div>`;
+  $("#goSetup").onclick=()=>nav("setup");
+  $("#lnkHist").onclick=()=>nav("history");
+  $("#lnkGear").onclick=()=>nav("gear");
+  $("#lnkBk").onclick=exportImport;
+}
+
+function exportImport(){
+  const m=prompt("export と入力で保存、import で復元","export");
+  if(m==="export"){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db)]));a.download="converge-backup.json";a.click();}
+  if(m==="import"){const inp=document.createElement("input");inp.type="file";inp.accept=".json";inp.onchange=()=>{const f=inp.files[0];if(!f)return;
+    const r=new FileReader();r.onload=()=>{try{db=Object.assign(blankDb(),JSON.parse(r.result));save();toast("ok");render();}catch(e){toast("error");}};r.readAsText(f);};inp.click();}
+}
+
+/* ── SETUP: bow + sight before shooting ── */
+function renderSetup(){
+  const g=db.setups[0],last=db.sessions[db.sessions.length-1];
+  const dist=ui._dist||(last?.dist||70);
+  const mk=db.sightMarks.filter(m=>g&&m.setupId===g.id&&m.dist===dist).sort((a,b)=>b.date.localeCompare(a.date))[0];
+  setTop("準備",`<span>${dist}</span><small>m</small>`,"←");
+  $("#backBtn").onclick=()=>nav("home");
+  $("#main").className="stage";
+  $("#main").innerHTML=`
+    <label class="f">距離</label>
+    <div class="chips" id="dChips">${[70,50,30,18].map(d=>`<div class="chip ${d===dist?"on":""}" data-d="${d}">${d}m</div>`).join("")}</div>
+    <label class="f">サイト（射る前の数値）</label>
+    <div class="row"><input class="inp" id="sv" inputmode="decimal" placeholder="上下" value="${esc(mk?.v||"")}">
+      <input class="inp" id="sh" inputmode="decimal" placeholder="左右" value="${esc(mk?.h||"")}"></div>
+    <label class="f">メモ</label>
+    <textarea class="inp" id="note" placeholder="組み立て・コンディション（任意）"></textarea>
+    <button class="btn hit" id="start" style="margin-top:14px">射る</button>`;
+  document.querySelectorAll("#dChips .chip").forEach(c=>c.onclick=()=>{ui._dist=+c.dataset.d;renderSetup();});
+  $("#start").onclick=()=>{
+    const v=$("#sv").value.trim(),h=$("#sh").value.trim();
+    db.active={
+      id:uid(),date:today(),setupId:g?.id||null,dist,faceD:dist>=60?122:dist<=18?40:80,perEnd:6,
+      sightStart:{v,h},sightNow:{v,h},note:$("#note").value.trim(),
+      phase:"record",ends:[],cur:[],adjLog:[]
+    };
+    if(g&&v||h)db.sightMarks.push({id:uid(),setupId:g.id,date:today(),dist,v,h,tag:"start"});
+    save();ui.screen="record";render();
   };
 }
 
-function sessTotal(s){return [...s.ends.flat(),...s.cur].reduce((a,x)=>a+x.s,0);}
-function sessArr(s){return [...s.ends.flat(),...s.cur];}
-
-/* ── LIVE RECORDING ── */
-function renderLive(){
-  const s=db.active,all=sessArr(s),tot=sessTotal(s),st=stats(s.cur);
-  const avg=all.length?(tot/all.length).toFixed(1):"—";
-  renderHud({
-    ring:progressRing(s.cur.length,s.perEnd,tot),
-    dist:s.dist,sub:`E${s.ends.length+1}`,
-    total:tot,avg:`avg ${avg}`
-  });
+/* ── RECORD: at target pulling arrows (B rhythm + A geo) ── */
+function renderRecord(){
+  const s=db.active;if(!s){nav("home");return;}
+  s.phase="record";save();
+  const n=s.cur.length,pe=s.perEnd,scale=.86+n/pe*.16;
+  const tight=n>=3?"tighter":n>=1?"tight":"";
+  const st=stats(s.cur);
   const sug=st&&st.n>=3?{h:Math.round(st.mx*1.2),v:Math.round(-st.my*1.2)}:null;
+  setTop("記録",`E${s.ends.length+1}<small> · ${n}/${pe}</small>`,"");
+  $("#main").className="stage "+tight;
   $("#main").innerHTML=`
-    <div class="tg-stage" id="tg">
-      ${rings(s.faceD,"tg")}
-      <div class="tg-overlay"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}" id="geoSvg">${geoOverlay(st,s.faceD,sug)}</svg></div>
-      <div class="lens" id="lens"><svg id="lensSvg" width="118" height="118"><use href="#tgg"/></svg></div>
+    <div class="beats">${beatHtml(s.cur,pe)}</div>
+    <div class="tg-box" id="tgBox" style="transform:scale(${scale})">
+      <div style="position:relative">${targetSvg(s.faceD,"tg")}
+        <div class="tg-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}" id="geoLive">${geoSvg(st,s.faceD,sug)}</svg></div>
+        <div class="lens" id="lens"><svg id="lensSvg" width="116" height="116"><use href="#tgg"/></svg></div>
+      </div>
     </div>
-    <div class="orbit" id="orbit"></div>
-    <div class="drift" id="drift"></div>
-    <div class="act">
-      <button class="btn ghost sm" id="undo">戻す</button>
-      <button class="btn primary" id="end">E${s.ends.length+1} 確定</button>
-      <button class="btn ghost sm" id="done">終了</button>
-    </div>`;
-  paintLive(s,st);
+    <div class="drift">${st?`
+      <div><div class="k">X</div><b>${mono(st.mx,"x")}</b></div>
+      <div><div class="k">Y</div><b>${mono(st.my,"y")}</b></div>
+      <div><div class="k">R</div><b>${st.rr.toFixed(1)}</b></div>`:`
+      <div><div class="k">X</div><b>—</b></div><div><div class="k">Y</div><b>—</b></div><div><div class="k">R</div><b>—</b></div>`}
+    </div>
+    <button class="btn beat" id="backLine" ${n?``:`disabled`}>射線に戻った</button>
+    <div class="act"><button class="btn ghost sm" id="undo">1本戻す</button></div>`;
+  paintMarks(s);
   bindTarget(s);
-  $("#undo").onclick=()=>{if(s.cur.length){s.cur.pop();ui.sel=-1;save();render();}};
-  $("#end").onclick=()=>{if(!s.cur.length){toast("矢なし");return;}s.ends.push(s.cur);s.cur=[];ui.sel=-1;save();render();};
-  $("#done").onclick=()=>{if(s.cur.length)s.ends.push(s.cur);s.cur=[];db.sessions.push({...s,cur:[]});delete db.active;save();ui.view="trace";ui.traceId=db.sessions[db.sessions.length-1].id;render();};
+  $("#undo").onclick=()=>{if(s.cur.length){s.cur.pop();save();renderRecord();}};
+  $("#backLine").onclick=()=>{
+    if(!s.cur.length)return;
+    const t=s.cur.reduce((a,x)=>a+x.s,0);
+    s.ends.push(s.cur);s.cur=[];
+    save();
+    breathPause(t,()=>{ui.screen="return";render();});
+  };
 }
 
-function paintLive(s,st){
-  let mh="";
-  s.ends.forEach((e,i)=>e.forEach(a=>{mh+=dot(a,s.faceD,ENDC[i%ENDC.length]);}));
-  s.cur.forEach((a,i)=>{mh+=dot(a,s.faceD,i===ui.sel?"#fff":"var(--hit)",lbl(a));});
+function paintMarks(s){
+  let mh="";s.ends.forEach(e=>e.forEach(a=>{mh+=dot(a,s.faceD,"rgba(74,222,128,.25)");}));
+  s.cur.forEach(a=>{mh+=dot(a,s.faceD,"var(--hit)",lbl(a));});
   const mk=$("#tgmarks");if(mk)mk.innerHTML=mh;
-  const orb=$("#orbit");
-  if(orb)orb.innerHTML=s.cur.length?s.cur.map((a,i)=>{const z=zc(a.s,a.X);return `<div class="puck ${i===ui.sel?"on":""}" data-i="${i}" style="background:${z.bg};color:${z.fg}">${lbl(a)}</div>`;}).join("")
-    :`<span class="hint">タップで記録</span>`;
-  orb?.querySelectorAll(".puck").forEach(p=>p.onclick=()=>{ui.sel=ui.sel===+p.dataset.i?-1:+p.dataset.i;paintLive(s,st);});
-  const dr=$("#drift");
-  if(dr)dr.innerHTML=st?`
-    <div><div class="k">X</div><b>${mono(st.mx,"x")}</b></div>
-    <div><div class="k">Y</div><b>${mono(st.my,"y")}</b></div>
-    <div><div class="k">R</div><b>${st.rr.toFixed(1)}</b></div>`:`
-    <div><div class="k">X</div><b>—</b></div><div><div class="k">Y</div><b>—</b></div><div><div class="k">R</div><b>—</b></div>`;
 }
 
 function bindTarget(s){
@@ -360,133 +325,141 @@ function bindTarget(s){
   let drag=null;
   function pt(e){const t=e.changedTouches?.[0]||e.touches?.[0]||e;return t?.clientX!=null?{x:t.clientX,y:t.clientY,id:e.pointerId??t.identifier??"m"}:null;}
   function toS(x,y){const c=svg.getScreenCTM();if(!c)return{x:0,y:0};const p=svg.createSVGPoint();p.x=x;p.y=y;const r=p.matrixTransform(c.inverse());return{x:r.x,y:-r.y};}
-  function draw(p){
-    const w=ringW(s.faceD),fine=drag?.fine;
-    const cut=fine&&lineCut(p.x,p.y,s.faceD);
+  function draw(p){const w=ringW(s.faceD),fine=drag?.fine,cut=fine&&lineCut(p.x,p.y,s.faceD);
     const col=fine?(cut?"var(--hit)":"var(--warn)"):"#fff";
     lens.classList.toggle("fine",!!fine);lens.classList.toggle("cut",!!cut);
-    cur.innerHTML=`<g><line x1="${p.x-w}" y1="${-p.y}" x2="${p.x+w}" y2="${-p.y}" stroke="${col}" stroke-width="${s.faceD/500}"/>
-      <line x1="${p.x}" y1="${-p.y-w}" x2="${p.x}" y2="${-p.y+w}" stroke="${col}" stroke-width="${s.faceD/500}"/>
-      <circle cx="${p.x}" cy="${-p.y}" r="${arrR(s.faceD)}" fill="none" stroke="${col}" stroke-width="${s.faceD/400}"/></g>`;
+    cur.innerHTML=`<circle cx="${p.x}" cy="${-p.y}" r="${arrR(s.faceD)}" fill="none" stroke="${col}" stroke-width="${s.faceD/400}"/>`;
     const z=ringW(s.faceD)*2.2;lensSvg.setAttribute("viewBox",`${p.x-z} ${-p.y-z} ${2*z} ${2*z}`);
-    lens.style.left=p.x<0?"auto":"6px";lens.style.right=p.x<0?"6px":"auto";
-  }
+    lens.style.left=p.x<0?"auto":"6px";lens.style.right=p.x<0?"6px":"auto";}
   function reset(){if(drag?.tm)clearTimeout(drag.tm);drag=null;cur.innerHTML="";lens.style.display="none";}
   svg.oncontextmenu=e=>e.preventDefault();
-  function down(e){
-    if(s.cur.length>=s.perEnd){toast("E確定へ");return;}
-    const cp=pt(e);if(!cp)return;e.preventDefault();
-    try{svg.setPointerCapture(cp.id);}catch(_){}
-    const p=toS(cp.x,cp.y);
+  function down(e){if(s.cur.length>=s.perEnd){toast("6本 — 戻る");return;}const cp=pt(e);if(!cp)return;e.preventDefault();
+    try{svg.setPointerCapture(cp.id);}catch(_){}const p=toS(cp.x,cp.y);
     drag={p,raw:{x:cp.x,y:cp.y},fine:false,id:cp.id,tm:setTimeout(()=>{if(drag){drag.fine=true;draw(drag.p);}},400)};
-    lens.style.display="block";draw(p);
-  }
+    lens.style.display="block";draw(p);}
   function move(e){const cp=pt(e);if(!drag||cp.id!==drag.id)return;e.preventDefault();
     const a=toS(cp.x,cp.y),b=toS(drag.raw.x,drag.raw.y),k=drag.fine?.25:1;
     drag.p={x:drag.p.x+(a.x-b.x)*k,y:drag.p.y+(a.y-b.y)*k};drag.raw={x:cp.x,y:cp.y};draw(drag.p);}
   function up(e){const cp=pt(e);if(!drag||cp.id!==drag.id)return;e.preventDefault();clearTimeout(drag.tm);
     const M=s.faceD/2*1.18,p={x:clamp(drag.p.x,-M,M),y:clamp(drag.p.y,-M,M)};reset();
     const h=hitAt(p.x,p.y,s.faceD);s.cur.push({x:+h.x.toFixed(2),y:+h.y.toFixed(2),s:h.s,X:h.X});
-    save();render();toast(lbl(h));
-    const stage=$("#tg"),rip=document.createElement("div");rip.className="ripple";
-    const rect=svg.getBoundingClientRect(),ctm=svg.getScreenCTM();
-    const sx=(p.x*ctm.a+ctm.e)-rect.left, sy=(-p.y*ctm.d+ctm.f)-rect.top;
-    rip.style.left=sx+"px";rip.style.top=sy+"px";stage.appendChild(rip);setTimeout(()=>rip.remove(),500);
-  }
+    save();renderRecord();}
   svg.addEventListener("pointerdown",down);svg.addEventListener("pointermove",move);
   svg.addEventListener("pointerup",up);svg.addEventListener("pointercancel",reset);
 }
 
-/* ── TRACE: history as overlapping convergence ── */
-function renderTraceList(){
-  const ss=[...db.sessions].reverse();
-  renderHud({sub:"軌跡",total:ss.length,avg:"sessions"});
-  $("#main").innerHTML=ss.length?ss.map(s=>{
-    const n=sessArr(s).length;
-    return `<div class="s-row" data-id="${s.id}"><div><div class="d">${fmtD(s.date)} · ${s.dist}m</div>
-      <div class="m">${s.ends.length}E · ${n}本</div></div><div class="pts">${sessTotal(s)}</div></div>`;
-  }).join("")+`<div class="act" style="margin-top:14px"><button class="btn ghost sm" id="exp">export</button><button class="btn ghost sm" id="imp">import</button></div>`
-    :`<div class="empty">軌跡なし</div>`;
-  $("#main").querySelectorAll(".s-row").forEach(r=>r.onclick=()=>{ui.traceId=r.dataset.id;render();});
-  $("#exp")?.addEventListener("click",()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:"application/json"}));
-    a.download="converge-backup.json";a.click();});
-  $("#imp")?.addEventListener("click",()=>{const inp=document.createElement("input");inp.type="file";inp.accept=".json";
-    inp.onchange=()=>{const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{db=Object.assign(blankDb(),JSON.parse(r.result));save();render();}catch(e){toast("error");}};r.readAsText(f);};inp.click();});
-}
-
-function renderTracePage(){
-  const s=db.sessions.find(x=>x.id===ui.traceId);
-  if(!s){ui.traceId=null;return renderTraceList();}
-  const arrows=sessArr(s),st=stats(arrows);
-  const cents=s.ends.map(e=>stats(e)).filter(Boolean);
-  renderHud({dist:s.dist,sub:fmtD(s.date),total:sessTotal(s),avg:`${arrows.length}本`});
-  let path="";
-  if(cents.length>1){
-    path=`<polyline points="${cents.map((c,i)=>`${c.mx},${-c.my}`).join(" ")}" fill="none" stroke="var(--warn)" stroke-width="${s.faceD/400}" opacity=".7"/>`;
-    cents.forEach((c,i)=>{path+=`<circle cx="${c.mx}" cy="${-c.my}" r="${s.faceD/80}" fill="none" stroke="${ENDC[i%ENDC.length]}" stroke-width="${s.faceD/500}"/>`;});
-  }
+/* ── RETURN: sight deviation after walking back (core concept) ── */
+function renderReturn(){
+  const s=db.active;if(!s){nav("home");return;}
+  s.phase="return";save();
+  const end=s.ends[s.ends.length-1]||[];
+  const st=stats(end);
+  const tot=end.reduce((a,x)=>a+x.s,0);
+  const sug=st?{h:Math.round(st.mx*1.2),v:Math.round(-st.my*1.2)}:null;
+  const sv=s.sightNow?.v??"",sh=s.sightNow?.h??"";
+  const s0=s.sightStart||{};
+  setTop("サイト確認",`E${s.ends.length}`,"");
+  $("#main").className="stage";
   $("#main").innerHTML=`
-    <button class="btn ghost sm" id="back" style="margin-bottom:8px">←</button>
-    <div class="tg-stage">${rings(s.faceD,"tr")}
-      <div class="tg-overlay"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}">
-        ${geoOverlay(st,s.faceD,null)}${path}</svg></div>
+    <div class="end-sum"><b>${tot}</b><span>${end.map(lbl).join(" · ")}</span></div>
+    <div class="tg-box" style="transform:scale(.72)">
+      <div style="position:relative">${targetSvg(s.faceD,"rt")}
+        <div class="tg-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}">${geoSvg(st,s.faceD,sug)}</svg></div>
+      </div>
     </div>
     <div class="drift">${st?`
       <div><div class="k">X</div><b>${mono(st.mx,"x")}</b></div>
       <div><div class="k">Y</div><b>${mono(st.my,"y")}</b></div>
-      <div><div class="k">寄せ</div><b>${st.rr.toFixed(1)}</b></div>`:""}
+      <div><div class="k">R</div><b>${st.rr.toFixed(1)}</b></div>`:""}
     </div>
-    <div class="act"><button class="btn ghost" id="del">削除</button></div>`;
-  let mh="";
-  s.ends.forEach((e,i)=>e.forEach(a=>{mh+=dot(a,s.faceD,ENDC[i%ENDC.length]);}));
-  $("#trmarks").innerHTML=mh;
-  $("#back").onclick=()=>{ui.traceId=null;render();};
-  $("#del").onclick=()=>{if(confirm("削除？")){db.sessions=db.sessions.filter(x=>x.id!==s.id);save();ui.traceId=null;render();}};
-}
-
-/* ── SIGHT: vector readout, no prose cards ── */
-function renderSight(){
-  const recent=db.sessions.slice(-3);
-  const arrows=recent.flatMap(s=>s.ends.flat());
-  const st=stats(arrows);
-  const dist=recent.at(-1)?.dist||ui.dist;
-  const h=st?Math.round(st.mx*1.2):0, v=st?Math.round(-st.my*1.2):0;
-  renderHud({dist,sub:"寄せ",total:st?st.rr.toFixed(1):"—",avg:"radius"});
-  $("#main").innerHTML=`
-    <div class="vec-bar">
-      <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="none" stroke="var(--line)" stroke-width="2"/>
-        <line x1="24" y1="24" x2="${24+h*2}" y2="${24-v*2}" stroke="var(--warn)" stroke-width="2.5"/>
-        <circle cx="24" cy="24" r="2" fill="var(--hit)"/></svg>
-      <div class="nums">${st?`<div>左右 <b>${h>0?"+":""}${h}</b> · 上下 <b>${v>0?"+":""}${v}</b></div><div style="color:var(--dim);font-size:11px">目盛り · ${arrows.length}本から</div>`:`<div style="color:var(--dim)">データ不足</div>`}</div>
+    <div class="sight-diff">
+      <div class="row"><span>練習開始</span><span>上下 ${esc(s0.v||"—")} / 左右 ${esc(s0.h||"—")}</span></div>
+      <div class="row"><span>いま</span><span>上下 ${esc(sv||"—")} / 左右 ${esc(sh||"—")}</span></div>
+      ${sug&&(sug.h||sug.v)?`<div class="row"><span>目安</span><span class="chg">左右 ${sug.h>0?"+":""}${sug.h} · 上下 ${sug.v>0?"+":""}${sug.v}</span></div>`:""}
+      <div class="note">的の前で記録 → 戻ってサイトを見る、の流れです</div>
     </div>
-    <div class="tg-stage" style="margin-top:8px">${rings(80,"sg")}
-      <div class="tg-overlay"><svg viewBox="-47 -47 94 94">${geoOverlay(st,80,{h,v})}</svg></div>
+    ${ui.adj?`<label class="f">調整後のサイト</label><div class="row">
+      <input class="inp" id="nv" value="${esc(sv)}" placeholder="上下"><input class="inp" id="nh" value="${esc(sh)}" placeholder="左右"></div>
+      <textarea class="inp" id="adjNote" placeholder="調整メモ（任意）" style="margin-top:8px"></textarea>`:""}
+    <div class="act">
+      <button class="btn ghost" id="adjBtn">${ui.adj?"保存":"サイトを調整した"}</button>
+      <button class="btn hit" id="next">次のエンド</button>
     </div>
-    <label class="f">SITE MARK</label>
-    <div class="row"><input class="inp" id="sv" inputmode="decimal" placeholder="上下"><input class="inp" id="sh" inputmode="decimal" placeholder="左右"></div>
-    <div class="act"><button class="btn primary sm" id="mark">記録</button></div>`;
-  $("#mark").onclick=()=>{
-    if(!db.setups.length){toast("弓を登録");showView("gear");return;}
-    db.sightMarks.push({id:uid(),setupId:db.setups[0].id,date:today(),dist,v:$("#sv").value,h:$("#sh").value});
-    save();toast("ok");render();
+    <button class="btn ghost" id="fin">練習を終える</button>`;
+  let mh="";end.forEach(a=>{mh+=dot(a,s.faceD,"var(--hit)",lbl(a));});$("#rtmarks").innerHTML=mh;
+  $("#adjBtn").onclick=()=>{
+    if(!ui.adj){ui.adj=true;renderReturn();return;}
+    const nv=$("#nv").value.trim(),nh=$("#nh").value.trim();
+    s.sightNow={v:nv,h:nh};
+    s.adjLog.push({end:s.ends.length,date:Date.now(),v:nv,h:nh,note:$("#adjNote").value.trim()});
+    const g=db.setups[0];
+    if(g)db.sightMarks.push({id:uid(),setupId:g.id,date:today(),dist:s.dist,v:nv,h:nh,tag:"adj"});
+    ui.adj=false;save();toast("記録した");renderReturn();
+  };
+  $("#next").onclick=()=>{ui.screen="record";ui.adj=false;render();};
+  $("#fin").onclick=()=>{
+    db.sessions.push({...s,cur:[],total:sessTot(s)});delete db.active;save();ui.screen="done";render();
   };
 }
 
+/* ── DONE ── */
+function renderDone(){
+  const s=db.sessions[db.sessions.length-1];
+  setTop("終了","",null);
+  $("#main").className="stage";
+  $("#main").innerHTML=s?`
+    <div class="end-sum" style="padding:24px 0"><b>${sessTot(s)}</b><span>${s.ends.length}E · ${s.dist}m</span></div>
+    <div class="sight-diff">
+      <div class="row"><span>開始サイト</span><span>${esc(s.sightStart?.v||"—")} / ${esc(s.sightStart?.h||"—")}</span></div>
+      <div class="row"><span>最終</span><span>${esc(s.sightNow?.v||"—")} / ${esc(s.sightNow?.h||"—")}</span></div>
+      ${(s.adjLog||[]).length?`<div class="note">調整 ${s.adjLog.length} 回</div>`:""}
+    </div>
+    <button class="btn hit" id="home">ホームへ</button>`:`<div class="empty">—</div>`;
+  $("#home")?.onclick=()=>nav("home");
+}
+
+/* ── HISTORY ── */
+function renderHistory(){
+  setTop("過去","", "←");$("#backBtn").onclick=()=>nav("home");
+  const ss=[...db.sessions].reverse();
+  $("#main").className="stage";
+  $("#main").innerHTML=ss.length?ss.map(s=>`
+    <div class="s-row" data-id="${s.id}"><div><div class="d">${fmtD(s.date)} · ${s.dist}m</div>
+      <div class="m">${s.ends.length}E${s.note?` · ${esc(s.note)}`:""}</div></div><div class="pts">${sessTot(s)}</div></div>`).join("")
+    :`<div class="empty">なし</div>`;
+  $("#main").querySelectorAll(".s-row").forEach(r=>r.onclick=()=>{ui.histId=r.dataset.id;render();});
+}
+
+function renderHistDetail(){
+  const s=db.sessions.find(x=>x.id===ui.histId);
+  if(!s){ui.histId=null;return renderHistory();}
+  setTop(fmtD(s.date),`${s.dist}m`,"←");$("#backBtn").onclick=()=>{ui.histId=null;render();};
+  const st=stats(sessArr(s));
+  $("#main").className="stage";
+  $("#main").innerHTML=`
+    <div class="tg-box" style="transform:scale(.8)"><div style="position:relative">${targetSvg(s.faceD,"hs")}
+      <div class="tg-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}">${geoSvg(st,s.faceD,null)}</svg></div>
+    </div></div>
+    <div class="drift">${st?`<div><div class="k">X</div><b>${mono(st.mx,"x")}</b></div><div><div class="k">Y</div><b>${mono(st.my,"y")}</b></div><div><div class="k">R</div><b>${st.rr.toFixed(1)}</b></div>`:""}
+    </div>
+    <button class="btn ghost" id="del">削除</button>`;
+  let mh="";s.ends.forEach((e,i)=>e.forEach(a=>{mh+=dot(a,s.faceD,`hsl(${120+i*30},50%,45%)`);}));$("#hsmarks").innerHTML=mh;
+  $("#del").onclick=()=>{if(confirm("削除？")){db.sessions=db.sessions.filter(x=>x.id!==s.id);save();ui.histId=null;render();}};
+}
+
+/* ── GEAR ── */
 function renderGear(){
   const g=db.setups[0]||{name:"",bow:""};
-  renderHud({sub:"弓",total:"",avg:""});
+  setTop("装備","", "←");$("#backBtn").onclick=()=>nav("home");
+  $("#main").className="stage";
   $("#main").innerHTML=`
-    <label class="f">NAME</label><input class="inp" id="gn" value="${esc(g.name)}" placeholder="main">
-    <label class="f">BOW</label><input class="inp" id="gb" value="${esc(g.bow)}" placeholder="handle / limbs">
-    <div class="act"><button class="btn primary" id="gs">保存</button></div>`;
-  $("#gs").onclick=()=>{
-    const d={id:g.id||uid(),name:$("#gn").value.trim()||"main",bow:$("#gb").value.trim()};
-    if(db.setups.length)db.setups[0]=d;else db.setups.push(d);
-    save();toast("ok");
-  };
+    <label class="f">NAME</label><input class="inp" id="gn" value="${esc(g.name)}">
+    <label class="f">BOW</label><input class="inp" id="gb" value="${esc(g.bow)}">
+    <button class="btn hit" id="gs" style="margin-top:12px">保存</button>`;
+  $("#gs").onclick=()=>{const d={id:g.id||uid(),name:$("#gn").value.trim()||"main",bow:$("#gb").value.trim()};
+    if(db.setups.length)db.setups[0]=d;else db.setups.push(d);save();toast("ok");};
 }
 
-document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>showView(b.dataset.v));
 if("serviceWorker"in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
