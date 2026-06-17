@@ -66,6 +66,10 @@ const requiredHtml = [
   'property="og:description"',
   "static-landing",
   "home-steps",
+  "home-faq",
+  "og-image.png",
+  'application/ld+json',
+  "summary_large_image",
 ];
 requiredHtml.forEach(s => {
   if (!html.includes(s)) fail("missing in index.html: " + s);
@@ -78,8 +82,10 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=25",
+  "APP_VER=26",
   "homeStepsHtml",
+  "homeFaqHtml",
+  "HOME_FAQ",
   "clearStaticLanding",
   "applyRecordZoom",
   "zoomChips",

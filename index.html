@@ -15,11 +15,35 @@
 <meta property="og:title" content="Converge — アーチェリー得点記録 &amp; サイト確認">
 <meta property="og:description" content="的でタップ記録 → 戻って散布とサイト偏差を確認。スマホだけで完結するアーチェリー練習帳。">
 <meta property="og:url" content="https://eita115115.github.io/archery-converge/">
-<meta property="og:image" content="https://eita115115.github.io/archery-converge/apple-touch-icon.png">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://eita115115.github.io/archery-converge/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Converge — アーチェリー得点記録アプリの紹介画像">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Converge — アーチェリー得点記録 &amp; サイト確認">
 <meta name="twitter:description" content="的でタップ記録 → 戻って散布とサイト偏差を確認。スマホだけで完結するアーチェリー練習帳。">
-<meta name="twitter:image" content="https://eita115115.github.io/archery-converge/apple-touch-icon.png">
+<meta name="twitter:image" content="https://eita115115.github.io/archery-converge/og-image.png">
+<script type="application/ld+json">{
+  "@context":"https://schema.org",
+  "@type":"WebApplication",
+  "name":"Converge",
+  "description":"アーチェリー練習用の得点記録アプリ。的の前でタップ記録し、射線に戻ってグルーピングとサイト調整の方向を確認できます。",
+  "applicationCategory":"SportsApplication",
+  "operatingSystem":"Web",
+  "url":"https://eita115115.github.io/archery-converge/",
+  "inLanguage":"ja",
+  "offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"}
+}</script>
+<script type="application/ld+json">{
+  "@context":"https://schema.org",
+  "@type":"FAQPage",
+  "mainEntity":[
+    {"@type":"Question","name":"スマホだけで使えますか？","acceptedAnswer":{"@type":"Answer","text":"ブラウザで開くだけで使えます。ホーム画面に追加するとアプリのように全画面で起動します。"}},
+    {"@type":"Question","name":"データはどこに保存されますか？","acceptedAnswer":{"@type":"Answer","text":"端末のブラウザ内に保存され、サーバーには送信しません。JSONでバックアップできます。"}},
+    {"@type":"Question","name":"線かみ（ラインカッター）とは？","acceptedAnswer":{"@type":"Answer","text":"矢印の丸がリング境界にかかり内側の得点になる状態。点線の金いろ輪で表示します。"}},
+    {"@type":"Question","name":"オフラインでも使えますか？","acceptedAnswer":{"@type":"Answer","text":"一度開けば記録と確認はオフラインでも動作します。"}}
+  ]
+}</script>
 <link rel="canonical" href="https://eita115115.github.io/archery-converge/">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -313,6 +337,18 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
   font-size:12px;display:flex;align-items:center;justify-content:center}
 .home-steps li span{flex:1;color:var(--dim)}
 .home-prev{margin:8px 0 0;font-size:12px;color:var(--dim)}
+.home-faq{width:100%;max-width:340px;margin:20px 0 8px;text-align:left}
+.home-faq h2{margin:0 0 10px;font-size:15px;font-weight:700;color:var(--text)}
+.faq-item{border:1px solid var(--line);border-radius:12px;background:var(--panel);margin-bottom:8px;overflow:hidden}
+.faq-item summary{padding:12px 14px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;list-style:none}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:"+";float:right;color:var(--dim);font-weight:400}
+.faq-item[open] summary::after{content:"−"}
+.faq-item[open] summary{border-bottom:1px solid var(--line)}
+.faq-item p{margin:0;padding:10px 14px 12px;font-size:12px;color:var(--dim);line-height:1.55}
+.static-landing .faq-static{margin-top:1.25rem}
+.static-landing .faq-static dt{font-weight:600;color:var(--text);margin-top:.75rem}
+.static-landing .faq-static dd{margin:.25rem 0 0;color:var(--mute)}
 .static-landing{padding:24px 16px 32px;max-width:520px;margin:0 auto;line-height:1.6}
 .static-landing h1{font-size:1.5rem;margin:0 0 .5rem}
 .static-landing p,.static-landing li{color:var(--mute);font-size:.95rem}
@@ -354,6 +390,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
       <li>的の前で刺さった場所をタップして6本記録する</li>
       <li>射線に戻り、グルーピングとサイト提案を確認する</li>
     </ol>
+    <dl class="faq-static">
+      <dt>スマホだけで使えますか？</dt><dd>ブラウザで開くだけ。ホーム画面に追加もできます。</dd>
+      <dt>データはどこに？</dt><dd>端末内に保存。サーバー送信なし。</dd>
+      <dt>オフラインは？</dt><dd>一度開けば記録・確認はオフライン可。</dd>
+    </dl>
     <p><a href="https://eita115115.github.io/archery-converge/">https://eita115115.github.io/archery-converge/</a></p>
   </div>
 </noscript>
@@ -369,6 +410,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
       <li><strong>記録</strong> — 的の上で着弾位置をタップ（6本）</li>
       <li><strong>確認</strong> — 散布の中心とサイトを動かす方向を見る</li>
     </ol>
+    <dl class="faq-static">
+      <dt>スマホだけで使えますか？</dt><dd>ブラウザで開くだけ。ホーム画面に追加もできます。</dd>
+      <dt>線かみとは？</dt><dd>リング境界にかかって内側の得点になる状態です。</dd>
+      <dt>オフラインは？</dt><dd>一度開けば記録・確認はオフラインで動きます。</dd>
+    </dl>
     <p>読み込み中…</p>
   </main>
 </div>

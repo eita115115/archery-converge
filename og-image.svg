@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#faf9f6"/>
+      <stop offset="100%" stop-color="#ebe8e0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="48" y="48" width="1104" height="534" rx="28" fill="#fff" stroke="#e6e4de" stroke-width="2"/>
+
+  <text x="88" y="128" font-family="-apple-system,BlinkMacSystemFont,Hiragino Sans,sans-serif" font-size="72" font-weight="800" fill="#1c1b19">Converge</text>
+  <text x="88" y="188" font-family="-apple-system,BlinkMacSystemFont,Hiragino Sans,sans-serif" font-size="32" font-weight="600" fill="#0f766e">アーチェリー得点記録 &amp; サイト確認</text>
+  <text x="88" y="248" font-family="-apple-system,BlinkMacSystemFont,Hiragino Sans,sans-serif" font-size="26" fill="#5c5a54">的でタップ記録 → 戻ってグルーピングとサイト偏差を確認</text>
+
+  <g font-family="-apple-system,BlinkMacSystemFont,Hiragino Sans,sans-serif" font-size="22" fill="#5c5a54">
+    <circle cx="104" cy="310" r="18" fill="rgba(15,118,110,.12)"/><text x="104" y="317" text-anchor="middle" font-size="18" font-weight="700" fill="#0f766e">1</text>
+    <text x="140" y="317">距離・サイトを決める</text>
+    <circle cx="104" cy="370" r="18" fill="rgba(15,118,110,.12)"/><text x="104" y="377" text-anchor="middle" font-size="18" font-weight="700" fill="#0f766e">2</text>
+    <text x="140" y="377">的の前で6本タップ記録</text>
+    <circle cx="104" cy="430" r="18" fill="rgba(15,118,110,.12)"/><text x="104" y="437" text-anchor="middle" font-size="18" font-weight="700" fill="#0f766e">3</text>
+    <text x="140" y="437">射線に戻って結果を見る</text>
+  </g>
+
+  <text x="88" y="520" font-family="-apple-system,BlinkMacSystemFont,Hiragino Sans,sans-serif" font-size="20" fill="#8a877f">スマホ完結 · 初心者向け説明 · オフライン対応</text>
+
+  <g transform="translate(820 315)">
+    <circle r="200" fill="#f5f3ee" stroke="#222" stroke-width="3"/>
+    <circle r="160" fill="#f5f3ee" stroke="#222" stroke-width="3"/>
+    <circle r="120" fill="#222"/>
+    <circle r="80" fill="#3d8fd4" stroke="#222" stroke-width="2"/>
+    <circle r="40" fill="#c73e3a" stroke="#222" stroke-width="2"/>
+    <circle r="20" fill="#d4a72c" stroke="#222" stroke-width="2"/>
+    <line x1="-16" y1="0" x2="16" y2="0" stroke="#222" stroke-width="2"/>
+    <line x1="0" y1="-16" x2="0" y2="16" stroke="#222" stroke-width="2"/>
+    <circle cx="-55" cy="-70" r="14" fill="#0f766e" opacity=".85"/><text x="-55" y="-65" text-anchor="middle" font-size="14" fill="#fff" font-weight="700">10</text>
+    <circle cx="40" cy="50" r="14" fill="#0f766e" opacity=".85"/><text x="40" y="55" text-anchor="middle" font-size="14" fill="#fff" font-weight="700">9</text>
+    <circle cx="-30" cy="90" r="14" fill="rgba(60,60,60,.45)"/><text x="-30" y="95" text-anchor="middle" font-size="14" fill="#fff" font-weight="700">8</text>
+  </g>
+</svg>
