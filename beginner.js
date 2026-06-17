@@ -85,19 +85,23 @@
       record: {
         icon: "②",
         title: "的の前に立って記録",
-        body:
-          (ctx.n === 0
+        body: ctx.zenkin
+          ? "全金おめでとう！6本すべて金（9〜10点）です。特別な的が出ました。下のボタンで戻って結果を見ましょう。"
+          : ctx.n === 0
             ? "矢が刺さった場所を的の上でタップ。ズレたときは0.4秒以上押し続けると細かく動かせます。"
             : ctx.n < ctx.pe - 1
               ? "あと" + (ctx.pe - ctx.n) + "本タップしたら、下のボタンで射線に戻れます。"
-              : "6本そろいました。下のボタンを押して戻りましょう。"),
+              : "6本そろいました。下のボタンを押して戻りましょう。",
       },
       return: {
         icon: "③",
-        title: "戻ってから確認",
-        body: ctx.plainGroup
-          ? "集まり：" + ctx.plainGroup + (ctx.moveLine ? "。" + ctx.moveLine : "")
-          : "左の的で矢の集まりを、右の円でサイトの位置を確認します。間違えたら下の「記録に戻る」で的の前に戻れます。",
+        title: ctx.zenkin ? "全金！おつかれさま" : "戻ってから確認",
+        body: ctx.zenkin
+          ? "6本すべて金ゾーン！的がお祝いモードになっています。" +
+            (ctx.plainGroup ? " 集まり：" + ctx.plainGroup : "")
+          : ctx.plainGroup
+            ? "集まり：" + ctx.plainGroup + (ctx.moveLine ? "。" + ctx.moveLine : "")
+            : "左の的で矢の集まりを、右の円でサイトの位置を確認します。間違えたら下の「記録に戻る」で的の前に戻れます。",
       },
       done: {
         icon: "✓",
@@ -138,6 +142,10 @@
     return null;
   }
 
+  function zenkinExplain() {
+    return "6本すべてが金（黄色リング＝9点か10点）のときだけ、的が特別な見た目になります。";
+  }
+
   function scoreExplain() {
     return "中心の黄点に近いほど高得点。外側の数字が低くなります。";
   }
@@ -153,6 +161,7 @@
     coachCard: coachCard,
     phaseSubtitles: phaseSubtitles,
     firstArrowToast: firstArrowToast,
+    zenkinExplain: zenkinExplain,
     scoreExplain: scoreExplain,
   };
 })(typeof window !== "undefined" ? window : this);

@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=18;
+const KEY="archeryConverge.v1", APP_VER=19;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -181,8 +181,15 @@ function sightDial(s0,now,sug,adv){
 function sessArr(s){return [...s.ends.flat(),...s.cur];}
 function sessTot(s){return sessArr(s).reduce((a,x)=>a+x.s,0);}
 
-function endPulse(n,cb){const p=$("#pulse"),pn=$("#pulseN");pn.textContent=n;p.classList.add("on");
-  setTimeout(()=>{p.classList.remove("on");setTimeout(cb,200);},520);}
+function endPulse(n,cb,opts){
+  opts=opts||{};
+  const p=$("#pulse"),pn=$("#pulseN");
+  pn.textContent=opts.zenkin?"全金":n;
+  p.classList.toggle("zenkin",!!opts.zenkin);
+  p.classList.add("on");
+  setTimeout(()=>{p.classList.remove("on","zenkin");setTimeout(cb,200);},opts.zenkin?820:520);
+}
+function targetModeFor(arrows,pe){return Geo.isZenkinEnd(arrows,pe)?"oppai":"sport";}
 
 function reopenLastEnd(s){
   if(!s||!s.ends.length||s.cur.length)return false;
@@ -360,12 +367,13 @@ function renderRecord(){
   const s=db.active;if(!s){nav("home");return;}
   s.phase="record";save();
   const n=s.cur.length,pe=s.perEnd;
-  shell(1,recordTitle(s,n,pe),"",`
-    ${begOn()&&Beg?Beg.coachCard("record",{n,pe}):""}
+  const zenRec=Geo.isZenkinEnd(s.cur,pe);
+  shell(1,recordTitle(s,n,pe)+(zenRec?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:""),"",`
+    ${begOn()&&Beg?Beg.coachCard("record",{n,pe,zenkin:zenRec}):""}
     <div class="tgt-stage">
       <div class="box sq-fit" id="tgBox">
         <div class="tgt-stack">
-          ${Geo.targetSvg(s.faceD,"tg","")}
+          ${Geo.targetSvg(s.faceD,"tg","",targetModeFor(s.cur,pe))}
           <div class="lens" id="lens"><svg id="lensSvg" width="120" height="120" xmlns:xlink="http://www.w3.org/1999/xlink"><use href="#tgg" xlink:href="#tgg"/></svg></div>
         </div>
       </div>
@@ -384,7 +392,8 @@ function renderRecord(){
     const t=s.cur.reduce((a,x)=>a+x.s,0);
     s.ends.push(s.cur);s.cur=[];
     save();
-    endPulse(t,()=>{ui.screen="return";render();});
+    const zen=Geo.isZenkinEnd(s.ends[s.ends.length-1],pe);
+    endPulse(t,()=>{ui.screen="return";render();},{zenkin:zen});
   };
 }
 
@@ -424,7 +433,11 @@ function bindTarget(s){
     const p=Geo.clampMathXY(s.faceD,drag.p.x,drag.p.y);reset();
     const h=Geo.hitAt(p.x,p.y,s.faceD);s.cur.push({x:+h.x.toFixed(2),y:+h.y.toFixed(2),s:h.s,X:h.X});
     const hint=begOn()&&Beg?Beg.firstArrowToast(s.cur.length,s.perEnd,h.s):null;
-    save();if(hint)toast(hint);renderRecord();}
+    const zen=Geo.isZenkinEnd(s.cur,s.perEnd);
+    save();
+    if(zen)toast(begOn()?"全金！！おめでとう！":"全金 — 金ゾーン6本");
+    else if(hint)toast(hint);
+    renderRecord();}
   function cancel(e){const cp=pt(e);if(!drag||!cp||cp.id===drag.id)reset();}
   if(window.PointerEvent){
     svg.addEventListener("pointerdown",down);svg.addEventListener("pointermove",move);
@@ -451,7 +464,8 @@ function blockZoom(){
 function renderReturn(){
   const s=db.active;if(!s){nav("home");return;}
   s.phase="return";save();
-  const end=s.ends[s.ends.length-1]||[];
+  const end=s.ends[s.ends.length-1]||[],pe=s.perEnd||6;
+  const zenRet=Geo.isZenkinEnd(end,pe);
   const st=stats(end);
   const tot=end.reduce((a,x)=>a+x.s,0);
   const adv=endAdvice(s,end);
@@ -462,11 +476,11 @@ function renderReturn(){
   const geoDefs=Geo.GEO_MARKER_DEFS;
   const rtOver=geoDefs+(st?`<g class="geo-layer" pointer-events="none">${Geo.geoSvg(st,s.faceD,sug)}</g>`:"");
   const moveLine=adv&&adv.moves.length&&Beg?Beg.plainSightMove(adv.moves[0]):"";
-  shell(2,returnTitle(s,tot,j)+(begOn()&&j?` <span class="jtag ${j.tone==="ok"?"ok":j.tone==="warn"?"warn":j.tone==="hold"?"hold":"mid"}">${esc((Beg.plainJudgement(j)||{}).title||j.label)}</span>`:""),"",`
-    ${begOn()&&Beg?Beg.coachCard("return",{plainGroup:Beg.plainGroup(st),moveLine}):""}
+  shell(2,returnTitle(s,tot,j)+(zenRet?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:"")+(begOn()&&j&&!zenRet?` <span class="jtag ${j.tone==="ok"?"ok":j.tone==="warn"?"warn":j.tone==="hold"?"hold":"mid"}">${esc((Beg.plainJudgement(j)||{}).title||j.label)}</span>`:""),"",`
+    ${begOn()&&Beg?Beg.coachCard("return",{plainGroup:Beg.plainGroup(st),moveLine,zenkin:zenRet}):""}
     ${adviceCardHtml(st,adv,j)}
     <div class="ret-split">
-      <div class="cell"><div class="box sq-fit"><div class="tgt-stack">${Geo.targetSvg(s.faceD,"rt",rtOver)}</div></div></div>
+      <div class="cell"><div class="box sq-fit"><div class="tgt-stack">${Geo.targetSvg(s.faceD,"rt",rtOver,targetModeFor(end,pe))}</div></div></div>
       <div class="cell">${ui.adj?`<div class="sight-adj" style="width:100%;margin:0">
         <input id="nv" inputmode="decimal" placeholder="上下" value="${esc(sv)}">
         <input id="nh" inputmode="decimal" placeholder="左右" value="${esc(sh)}">

@@ -73,7 +73,9 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=18",
+  "APP_VER=19",
+  "isZenkinEnd",
+  "targetModeFor",
   "rec-progress",
   "reopenLastEnd",
   "undoFinishSession",
@@ -219,7 +221,16 @@ const stack = Geo.targetSvg(
 if (!stack.includes('id="chksvg"') || !stack.includes('id="chkmarks"')) fail("targetSvg structure broken");
 if (!stack.includes("slot-layer") || !stack.includes("geo-layer")) fail("target overlays missing");
 
+const zenEnd = end;
+if (!Geo.isZenkinEnd(zenEnd, 6)) fail("zenkin end should pass");
+if (Geo.isZenkinEnd(zenEnd.slice(0, 5), 6)) fail("incomplete end is not zenkin");
+if (Geo.isZenkinEnd(zenEnd.map((a, i) => (i === 0 ? { s: 8 } : a)), 6)) fail("8 ring is not zenkin");
+const oppai = Geo.targetSvg(122, "opp", "", "oppai");
+if (!oppai.includes('class="face oppai"') || !oppai.includes("#FEE7D9") || !oppai.includes("oppnip"))
+  fail("oppai target face missing");
+
 const Beg = loadModule(beginnerSrc).ConvergeBeginner;
 if (!Beg || typeof Beg.plainGroup !== "function" || !Beg.coachCard("home")) fail("ConvergeBeginner export failed");
+if (!Beg.zenkinExplain || !Beg.zenkinExplain().includes("金")) fail("zenkinExplain missing");
 
 console.log("check-app OK");
