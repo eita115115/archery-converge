@@ -219,75 +219,18 @@
     );
   }
 
-  var MARK_FILL_OP = 0.72;
-  var MARK_STROKE_OP = 0.88;
-
-  function markRadius(fd) {
-    return arrR(fd) * 1.1;
-  }
-  function markStroke(fd) {
-    return Math.max(fd / 220, 1.4);
-  }
-  function markFontSize(fd, label) {
-    var r = arrR(fd);
-    return label.length > 1 ? r * 1.18 : r * 1.38;
-  }
-  function markLabelSvg(x, y, fd, l) {
-    var fs = markFontSize(fd, l),
-      sw = Math.max(fs * 0.11, fd / 900);
-    return (
-      '<text x="' +
-      x +
-      '" y="' +
-      y +
-      '" font-size="' +
-      fs +
-      '" fill="#fff" fill-opacity=".96" stroke="#0f172a" stroke-width="' +
-      sw +
-      '" paint-order="stroke fill" text-anchor="middle" dominant-baseline="central" font-weight="800">' +
-      l +
-      "</text>"
-    );
+  /** archery-note markCircle — arrowMarkRadius = faceD/85 (= arrR) */
+  function arrowMarkRadius(fd) {
+    return arrR(fd);
   }
 
   function dot(a, fd, c, l) {
-    var r = arrR(fd),
+    var r = arrowMarkRadius(fd),
       p = mathToSvg(a.x, a.y),
-      sw = markStroke(fd);
-    if (l) {
-      var br = markRadius(fd);
-      return (
-        '<g class="mark-scored" opacity=".94">' +
-        '<circle cx="' +
-        p.x +
-        '" cy="' +
-        p.y +
-        '" r="' +
-        (br + sw * 0.6) +
-        '" fill="none" stroke="#fff" stroke-width="' +
-        (sw * 1.4) +
-        '" opacity=".85"/>' +
-        '<circle cx="' +
-        p.x +
-        '" cy="' +
-        p.y +
-        '" r="' +
-        br +
-        '" fill="' +
-        c +
-        '" fill-opacity="' +
-        MARK_FILL_OP +
-        '" stroke="#1e293b" stroke-width="' +
-        (sw * 0.55) +
-        '" stroke-opacity="' +
-        MARK_STROKE_OP +
-        '"/>' +
-        markLabelSvg(p.x, p.y, fd, l) +
-        "</g>"
-      );
-    }
+      sw = r / 4;
     return (
-      '<g class="mark-dot"><circle cx="' +
+      '<g class="mark-scored" opacity=".92">' +
+      '<circle cx="' +
       p.x +
       '" cy="' +
       p.y +
@@ -295,46 +238,54 @@
       r +
       '" fill="' +
       c +
-      '" fill-opacity="' +
-      MARK_FILL_OP +
       '" stroke="#fff" stroke-width="' +
       sw +
-      '" stroke-opacity=".9" opacity=".9"/></g>'
+      '"/>' +
+      (l
+        ? '<text x="' +
+          p.x +
+          '" y="' +
+          p.y +
+          '" font-size="' +
+          r * 1.2 +
+          '" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="bold">' +
+          l +
+          "</text>"
+        : "") +
+      "</g>"
     );
   }
 
-  /** Live preview while dragging — always visible on any ring color. */
+  /** Live preview while dragging — same footprint as dot(). */
   function previewMark(x, y, fd, fine) {
     var h = hitAt(x, y, fd),
       p = mathToSvg(x, y),
-      br = markRadius(fd),
-      sw = markStroke(fd),
+      r = arrowMarkRadius(fd),
+      sw = r / 4,
       lab = lbl(h),
       inner = fine ? "var(--preview-fine)" : "var(--preview-fill)";
     return (
-      '<g class="preview-mark" pointer-events="none">' +
+      '<g class="preview-mark" pointer-events="none" opacity=".92">' +
       '<circle cx="' +
       p.x +
       '" cy="' +
       p.y +
       '" r="' +
-      (br + sw * 0.85) +
-      '" fill="none" stroke="#fff" stroke-width="' +
-      (sw * 1.6) +
-      '"/>' +
-      '<circle cx="' +
-      p.x +
-      '" cy="' +
-      p.y +
-      '" r="' +
-      br +
+      r +
       '" fill="' +
       inner +
-      '" fill-opacity=".78" stroke="#1e293b" stroke-width="' +
+      '" stroke="#fff" stroke-width="' +
       sw +
-      '" stroke-opacity=".9"/>' +
-      markLabelSvg(p.x, p.y, fd, lab) +
-      "</g>"
+      '"/>' +
+      '<text x="' +
+      p.x +
+      '" y="' +
+      p.y +
+      '" font-size="' +
+      r * 1.2 +
+      '" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="bold">' +
+      lab +
+      "</text></g>"
     );
   }
 
@@ -599,7 +550,7 @@
     targetFaceSvg: targetFaceSvg,
     dot: dot,
     previewMark: previewMark,
-    markRadius: markRadius,
+    arrowMarkRadius: arrowMarkRadius,
     geoSvg: geoSvg,
     slotRingSvg: slotRingSvg,
     recordGuideSvg: recordGuideSvg,
