@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=42;
+const KEY="archeryConverge.v1", APP_VER=43;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -818,7 +818,7 @@ function renderHistDetail(){
   shell(-1,`${fmtD(s.date)} · ${s.dist}m`,backLbl(),`
     <div class="tgt-stage" style="min-height:300px"><div class="box sq-fit"><div class="tgt-stack">${Geo.targetSvg(s.faceD,"hs",hsOver)}</div></div></div>
     ${st?`<div class="geo-nums" style="position:static;justify-content:center"><span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span></div>`:""}`,
-    `<button class="btn ghost" id="del">削除</button>`);
+    `<button class="btn ghost danger" id="del">削除</button>`);
   const bb=$("#backBtn");if(bb)bb.onclick=()=>{ui.histId=null;render();};
   let mh="";s.ends.forEach((e,i)=>e.forEach(a=>{mh+=Geo.dot(a,s.faceD,`hsl(${120+i*30},50%,45%)`);}));const hm=$("#hsmarks");if(hm)hm.innerHTML=mh;
   $("#del").onclick=()=>{if(confirm("削除？")){db.sessions=db.sessions.filter(x=>x.id!==s.id);save();ui.histId=null;render();}};

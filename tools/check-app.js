@@ -70,6 +70,7 @@ const requiredHtml = [
   "app-mode",
   "mark-pop",
   "trust-line",
+  "btn.ghost.danger",
 ];
 requiredHtml.forEach(s => {
   if (!html.includes(s)) fail("missing in index.html: " + s);
@@ -82,7 +83,7 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=42",
+  "APP_VER=43",
   "exportBackup",
   "importBackup",
   "home-foot-nav",
