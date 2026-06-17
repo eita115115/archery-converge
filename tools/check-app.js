@@ -24,7 +24,7 @@ const required = [
   "function renderReturn",
   "射線に戻った",
   "練習を始める",
-  "APP_VER=3",
+  "APP_VER=4",
   "normalizeActive",
 ];
 required.forEach(s => { if (!html.includes(s)) fail("missing: " + s); });

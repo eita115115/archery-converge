@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#141614">
+<meta name="theme-color" content="#121412">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Converge">
 <link rel="manifest" href="manifest.json">
@@ -12,130 +12,152 @@
 <title>Converge</title>
 <style>
 :root{
-  --void:#141614;--panel:#1e1e1a;--line:#2e2e28;--line2:#3a3a32;
-  --text:#e6e4dc;--mute:#8a8878;--dim:#5a5848;
-  --hit:#4ade80;--warn:#f0b840;--beat:#e85d4c;--sight:#a78bfa;
-  --gold:#d4a72c;--red:#c73e3a;--blue:#3d8fd4;--ink:#1a1a18;
-  --mono:"SF Mono","Cascadia Mono",Consolas,monospace;
+  --void:#121412;--panel:#1a1c18;--line:#2a2c26;--line2:#383a32;
+  --text:#e8e6dc;--mute:#8a8878;--dim:#5c5a4e;
+  --hit:#5ecf7a;--warn:#e8b040;--beat:#e06050;--sight:#9b7cf0;
+  --gold:#d4a72c;--red:#c73e3a;--blue:#3d8fd4;--ink:#161614;
   --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;overflow-x:hidden;background:var(--void);color:var(--text)}
-body{font-family:var(--sans);font-size:14px;-webkit-user-select:none;user-select:none}
+body{font-family:var(--sans);font-size:15px;-webkit-user-select:none;user-select:none}
 input,select,textarea{-webkit-user-select:auto;user-select:auto}
 button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-offset:2px}
 
-.top{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));
-  border-bottom:1px solid var(--line);min-height:48px;
-}
-.top h1{margin:0;font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--mute)}
-.top .phase{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--text)}
-.top .phase small{font-size:12px;color:var(--mute);font-weight:400;margin-left:6px}
-.top button{background:none;border:none;color:var(--mute);font-size:12px;cursor:pointer;padding:6px 8px}
+.frame{position:relative;min-height:100dvh;display:flex;flex-direction:column;max-width:520px;margin:0 auto}
+.phase-arc{flex-shrink:0;padding:8px 12px 4px;padding-top:calc(8px + env(safe-area-inset-top))}
+.phase-arc svg{display:block;width:100%;height:36px}
+.phase-arc .lbl{font-size:11px;fill:var(--dim)}
+.phase-arc .lbl.on{fill:var(--text);font-weight:600}
+.phase-arc .seg{fill:none;stroke:var(--line);stroke-width:6;stroke-linecap:round}
+.phase-arc .seg.on{stroke:var(--hit)}
+.phase-arc .seg.cur{stroke:var(--warn)}
 
-.stage{max-width:520px;margin:0 auto;padding:12px 14px 20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));transition:padding .35s ease}
-.stage.tight{padding:6px 8px 14px}
-.stage.tighter{padding:2px 6px 10px}
+.hdr{display:flex;align-items:center;gap:10px;padding:4px 14px 8px;min-height:40px}
+.hdr .back{background:none;border:none;color:var(--mute);font-size:13px;cursor:pointer;padding:8px 4px;min-width:44px}
+.hdr .title{flex:1;text-align:center;font-size:13px;color:var(--mute)}
+.hdr .gap{min-width:44px}
 
-/* B: beat bar */
-.beats{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:10px}
-.beat{height:32px;border-radius:4px;background:var(--line);position:relative;overflow:hidden;transition:transform .2s}
-.beat.on{background:var(--beat);transform:scaleY(1.06)}
-.beat.on.hi{background:var(--warn)}
-.beat.cur{box-shadow:0 0 0 2px var(--text)}
-.beat span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700}
+.body{flex:1;padding:0 12px 12px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.body.fill{display:flex;flex-direction:column;min-height:0}
+.body.tight{padding:0 6px 8px}
 
-/* target */
-.tg-box{position:relative;touch-action:none;transition:transform .4s cubic-bezier(.2,.8,.2,1);transform-origin:center}
-.tg-box svg.face{width:100%;display:block;touch-action:none;border-radius:50%}
-.tg-geo{position:absolute;inset:0;pointer-events:none}
-.tg-geo svg{width:100%;height:100%;display:block}
-.lens{position:absolute;top:6px;width:116px;height:116px;border-radius:50%;border:2px solid var(--hit);
-  background:#2a2a26;display:none;pointer-events:none;overflow:hidden;box-shadow:0 0 20px rgba(0,0,0,.45)}
+/* distance rings */
+.dist-wrap{display:flex;justify-content:center;padding:20px 0 12px}
+.dist-svg{width:min(280px,88vw);height:min(280px,88vw);touch-action:manipulation}
+.dist-svg .ring{cursor:pointer;fill:none;stroke:var(--line2);stroke-width:14;transition:stroke .2s,stroke-width .2s}
+.dist-svg .ring.on{stroke:var(--hit);stroke-width:18}
+.dist-svg .ring.lab{stroke:none;fill:var(--dim);font-size:11px;text-anchor:middle}
+.dist-svg .center{fill:none;stroke:var(--line);stroke-width:1}
+.dist-val{text-align:center;font-size:42px;font-weight:700;color:var(--text);line-height:1}
+.dist-val small{font-size:16px;color:var(--mute);font-weight:400}
+
+/* sight crosshair setup */
+.sight-x{display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:auto auto auto;gap:6px;align-items:center;max-width:300px;margin:16px auto}
+.sight-x .ax{font-size:10px;color:var(--dim);text-align:center;letter-spacing:.06em}
+.sight-x .core{width:72px;height:72px;position:relative}
+.sight-x .core svg{width:100%;height:100%}
+.sight-x input{width:100%;padding:12px 8px;border:1px solid var(--line);border-radius:50px;
+  background:var(--panel);color:var(--text);font-size:18px;text-align:center}
+.sight-x .v-up{grid-column:2}.sight-x .v-dn{grid-column:2}
+.sight-x .h-l{grid-column:1;grid-row:2}.sight-x .h-r{grid-column:3;grid-row:2}
+.sight-x .core{grid-column:2;grid-row:2}
+
+.note-inp{width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:24px;
+  background:var(--panel);color:var(--text);font-size:14px;min-height:44px;resize:none;margin-top:12px}
+
+/* target hero */
+.tgt-stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:0;touch-action:none}
+.tgt-stage .box{position:relative;width:100%;max-width:min(100vw - 24px, 480px);transition:transform .35s cubic-bezier(.2,.8,.2,1);transform-origin:center}
+.tgt-stage .box svg.face{width:100%;display:block;touch-action:none}
+.tgt-geo{position:absolute;inset:0;pointer-events:none}
+.tgt-geo svg{width:100%;height:100%;display:block}
+.slot-ring{position:absolute;inset:-8%;pointer-events:none}
+.slot-ring svg{width:100%;height:100%;display:block}
+
+.lens{position:absolute;top:4px;width:108px;height:108px;border-radius:50%;border:2px solid var(--hit);
+  background:#222420;display:none;pointer-events:none;overflow:hidden;box-shadow:0 0 16px rgba(0,0,0,.5)}
 .lens.fine{border-color:var(--warn)}.lens.cut{border-color:var(--hit)}
 
-/* A: drift nums */
-.drift{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0;font-family:var(--mono);text-align:center}
-.drift div{padding:8px 4px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
-.drift .k{font-size:9px;color:var(--dim);letter-spacing:.08em;margin-bottom:2px}
-.drift b{font-size:15px}
+.geo-nums{position:absolute;bottom:4px;right:4px;display:flex;gap:6px;font-size:10px;color:var(--dim);pointer-events:none}
+.geo-nums b{color:var(--mute);font-weight:600}
 
-.sight-diff{
-  border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--panel);margin:10px 0;
-  font-family:var(--mono);
-}
-.sight-diff .row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
-.sight-diff .row .chg{color:var(--sight)}
-.sight-diff .note{font-size:11px;color:var(--dim);margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+/* return: grouping + sight dial */
+.ret-geo{display:flex;flex-direction:column;align-items:center;gap:8px}
+.ret-geo .mini{width:min(240px,70vw)}
+.ret-geo .mini .box{transform:scale(1)}
 
-.inp,select.inp,textarea.inp{
-  width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;
-  background:var(--panel);color:var(--text);font-size:16px;
-}
-textarea.inp{min-height:52px;font-size:14px;resize:vertical}
-label.f{display:block;font-size:10px;color:var(--dim);letter-spacing:.08em;margin:10px 0 4px}
-.row{display:flex;gap:8px}.row>*{flex:1}
+.sight-dial{width:min(260px,80vw);margin:8px auto}
+.sight-dial svg{width:100%;display:block}
+.sight-dial .tick{stroke:var(--line2);stroke-width:1}
+.sight-dial .axis{stroke:var(--line);stroke-width:1.5;opacity:.6}
+.sight-dial .start{fill:var(--dim)}
+.sight-dial .now{fill:var(--sight);stroke:#fff;stroke-width:1.5}
+.sight-dial .sug{stroke:var(--warn);stroke-width:2.5;marker-end:url(#arr)}
+.sight-dial .lbl{font-size:9px;fill:var(--dim)}
+.sight-dial input{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+.sight-adj{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.sight-adj input{padding:12px;border:1px solid var(--line);border-radius:50px;background:var(--panel);color:var(--text);font-size:17px;text-align:center;width:100%}
 
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{padding:8px 14px;border:1px solid var(--line);border-radius:6px;background:var(--panel);cursor:pointer;font-family:var(--mono)}
-.chip.on{border-color:var(--hit);color:var(--hit);background:rgba(74,222,128,.08)}
+.end-badge{text-align:center;padding:6px 0}
+.end-badge .n{font-size:32px;font-weight:700;color:var(--warn)}
+.end-badge .s{font-size:12px;color:var(--dim);margin-top:2px}
 
 .btn{
-  display:block;width:100%;padding:14px;border-radius:8px;border:none;
-  font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);
+  display:block;width:100%;padding:16px;border-radius:50px;border:none;
+  font-size:16px;font-weight:700;cursor:pointer;font-family:var(--sans);
 }
 .btn.hit{background:var(--hit);color:var(--void)}
 .btn.beat{background:var(--beat);color:#fff}
-.btn.ghost{background:var(--panel);color:var(--mute);border:1px solid var(--line);margin-top:8px}
-.btn.sm{display:inline-block;width:auto;padding:8px 12px;font-size:12px}
-.btn:disabled{opacity:.35}
-.act{display:flex;gap:8px;margin-top:10px}.act .btn{flex:1;margin-top:0}
+.btn.ghost{background:transparent;color:var(--mute);border:1px solid var(--line)}
+.btn.sm{padding:10px 16px;font-size:13px;width:auto;border-radius:24px}
+.btn:disabled{opacity:.3}
+.foot{padding:8px 12px 0;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+.foot .row{display:flex;gap:8px}.foot .row .btn{flex:1}
 
-.home-hero{text-align:center;padding:28px 0 20px}
-.home-hero .mark{width:72px;height:72px;margin:0 auto 16px;border-radius:50%;
-  border:2px solid var(--line);display:flex;align-items:center;justify-content:center}
-.home-hero .mark svg{width:56px;height:56px}
-.home-hero p{margin:8px 0 0;font-size:12px;color:var(--dim);line-height:1.55}
-.home-links{display:flex;justify-content:center;gap:16px;margin-top:20px}
-.home-links button{background:none;border:none;color:var(--mute);font-size:12px;cursor:pointer;text-decoration:underline}
+.home-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100dvh - 80px);text-align:center;padding:20px}
+.home-rings{width:120px;height:120px;margin-bottom:24px}
+.home-rings svg{width:100%;height:100%}
+.home-wrap p{margin:12px 0 0;font-size:13px;color:var(--dim);line-height:1.6}
+.home-links{display:flex;gap:20px;margin-top:24px}
+.home-links button{background:none;border:none;color:var(--mute);font-size:13px;cursor:pointer;text-decoration:underline;padding:8px}
 
-.end-sum{font-family:var(--mono);text-align:center;margin:8px 0}
-.end-sum b{font-size:28px;color:var(--warn)}
-.end-sum span{font-size:12px;color:var(--dim);margin-left:8px}
+.hist-row{display:flex;justify-content:space-between;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.hist-row .d{font-size:15px}
+.hist-row .m{font-size:12px;color:var(--dim);margin-top:2px}
+.hist-row .pts{font-size:22px;font-weight:700;color:var(--hit)}
 
-.s-row{display:flex;justify-content:space-between;align-items:center;padding:12px 2px;border-bottom:1px solid var(--line);cursor:pointer}
-.s-row .d{font-family:var(--mono);font-size:14px}
-.s-row .m{font-size:11px;color:var(--dim);margin-top:2px}
-.s-row .pts{font-family:var(--mono);font-size:20px;color:var(--hit)}
+.gear-inp{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font-size:16px;margin-bottom:10px}
+.gear-lbl{font-size:11px;color:var(--dim);margin:12px 0 4px}
 
-.breath{position:fixed;inset:0;z-index:90;background:rgba(20,22,20,.88);
-  display:flex;align-items:center;justify-content:center;flex-direction:column;
-  opacity:0;pointer-events:none;transition:opacity .28s}
-.breath.on{opacity:1;pointer-events:auto}
-.breath b{font-family:var(--mono);font-size:48px;color:var(--warn)}
-.breath span{font-size:11px;color:var(--dim);letter-spacing:.15em;margin-top:6px}
+.pulse{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;background:rgba(18,20,18,.85)}
+.pulse.on{opacity:1;pointer-events:auto}
+.pulse svg{width:160px;height:160px}
+.pulse .val{font-size:40px;font-weight:700;fill:var(--warn)}
 
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;
-  background:var(--panel);border:1px solid var(--line);padding:7px 14px;border-radius:6px;
-  font-family:var(--mono);font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:80;
+  background:var(--panel);border:1px solid var(--line);padding:8px 16px;border-radius:24px;
+  font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
 .updbar{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:70;
-  background:var(--hit);color:var(--void);padding:8px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;display:none}
-.empty{text-align:center;padding:32px;color:var(--dim);font-size:13px}
+  background:var(--hit);color:var(--void);padding:8px 16px;border-radius:24px;font-size:12px;font-weight:700;cursor:pointer;display:none}
+.empty{text-align:center;padding:40px 20px;color:var(--dim);font-size:14px}
 </style>
 </head>
 <body>
-<div class="breath" id="breath"><b id="breathN">—</b><span>INTERVAL</span></div>
-<header class="top" id="top"></header>
-<main class="stage" id="main"></main>
+<div class="pulse" id="pulse"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="var(--hit)" stroke-width="3" opacity=".4"/>
+  <circle cx="50" cy="50" r="28" fill="none" stroke="var(--warn)" stroke-width="2" opacity=".6"/>
+  <text x="50" y="54" class="val" id="pulseN" text-anchor="middle">—</text></svg></div>
+<div class="frame" id="frame"></div>
 <div class="updbar" id="updBar">更新あり</div>
 <div class="toast" id="toast"></div>
 
 <script>
 "use strict";
-const KEY="archeryConverge.v1", APP_VER=3;
+const KEY="archeryConverge.v1", APP_VER=4;
+const PHASES=["準備","記録","確認"];
+const DISTS=[70,50,30,18];
 let db=load();
 const ui={screen:"home",histId:null,adj:false,_dist:70};
 
@@ -182,7 +204,7 @@ function hitAt(x,y,fd){return Object.assign({x,y},scoreAt(x,y,fd,lineR(fd)));}
 function lbl(a){return a.s===0?"M":a.X?"X":String(a.s);}
 function stats(ar){const n=ar.length;if(!n)return null;const mx=ar.reduce((a,p)=>a+p.x,0)/n,my=ar.reduce((a,p)=>a+p.y,0)/n;
   let vx=0,vy=0;ar.forEach(p=>{vx+=(p.x-mx)**2;vy+=(p.y-my)**2;});vx/=n;vy/=n;return{n,mx,my,rr:Math.sqrt(vx+vy)};}
-function mono(v,ax){const a=Math.abs(v).toFixed(1);return ax==="x"?(v>0?`+${a}`:v<0?`-${a}`:"0.0"):(v>0?`↑${a}`:v<0?`↓${a}`:"—");}
+function mono(v,ax){const a=Math.abs(v).toFixed(1);return ax==="x"?(v>0?`+${a}`:v<0?`-${a}`:"0"):(v>0?`↑${a}`:v<0?`↓${a}`:"—");}
 
 function targetSvg(fd,id){
   const w=ringW(fd),R=fd/2,M=R*1.18;
@@ -198,30 +220,107 @@ function dot(a,fd,c,l){const r=arrR(fd);return `<g><circle cx="${a.x}" cy="${-a.
   +(l?`<text x="${a.x}" y="${-a.y}" font-size="${r*1.1}" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="bold">${l}</text>`:"")+`</g>`;}
 function geoSvg(st,fd,sug){
   if(!st)return "";
-  const M=fd/2*1.18;
-  let h=`<line x1="${-M}" y1="0" x2="${M}" y2="0" stroke="var(--hit)" stroke-width="${fd/600}" opacity=".2"/>`;
-  h+=`<line x1="0" y1="${-M}" x2="0" y2="${M}" stroke="var(--hit)" stroke-width="${fd/600}" opacity=".2"/>`;
-  h+=`<circle cx="${st.mx}" cy="${-st.my}" r="${st.rr}" fill="none" stroke="var(--hit)" stroke-width="${fd/450}" opacity=".5" stroke-dasharray="${fd/50} ${fd/80}"/>`;
-  h+=`<circle cx="${st.mx}" cy="${-st.my}" r="${fd/100}" fill="var(--warn)"/>`;
-  if(sug&&(sug.h||sug.v))h+=`<line x1="0" y1="0" x2="${sug.h*.12}" y2="${-sug.v*.12}" stroke="var(--sight)" stroke-width="${fd/380}"/>`;
+  const M=fd/2*1.18,w=fd/600;
+  let h=`<line x1="${-M}" y1="0" x2="${M}" y2="0" stroke="var(--hit)" stroke-width="${w}" opacity=".25"/>`;
+  h+=`<line x1="0" y1="${-M}" x2="0" y2="${M}" stroke="var(--hit)" stroke-width="${w}" opacity=".25"/>`;
+  h+=`<circle cx="${st.mx}" cy="${-st.my}" r="${st.rr}" fill="none" stroke="var(--hit)" stroke-width="${fd/400}" opacity=".55" stroke-dasharray="${fd/45} ${fd/70}"/>`;
+  h+=`<circle cx="${st.mx}" cy="${-st.my}" r="${fd/90}" fill="var(--warn)" stroke="#fff" stroke-width="${fd/800}"/>`;
+  if(sug&&(sug.h||sug.v)){
+    const L=Math.min(M*.35,Math.hypot(sug.h,sug.v)*.14+8);
+    const ang=Math.atan2(-sug.v,sug.h),ex=Math.cos(ang)*L,ey=Math.sin(ang)*L;
+    h+=`<line x1="0" y1="0" x2="${ex}" y2="${ey}" stroke="var(--sight)" stroke-width="${fd/350}" marker-end="url(#geoArr)"/>`;
+  }
   return h;
 }
-function beatHtml(cur,pe){let h="";for(let i=0;i<pe;i++){const a=cur[i];
-  if(a)h+=`<div class="beat on ${a.s>=9?"hi":""}"><span>${lbl(a)}</span></div>`;
-  else h+=`<div class="beat ${i===cur.length?"cur":""}"></div>`;}return h;}
+
+function phaseArc(cur){
+  const w=360,paths=DISTS.length;
+  const segs=PHASES.map((p,i)=>{
+    const x1=20+i*(w-40)/3,x2=20+(i+1)*(w-40)/3,mid=(x1+x2)/2;
+    const on=i<=cur,active=i===cur;
+    return `<path class="seg${on?" on":""}${active?" cur":""}" d="M${x1+8} 22 A 40 40 0 0 1 ${x2-8} 22"/>
+      <text class="lbl${active?" on":""}" x="${mid}" y="14" text-anchor="middle">${p}</text>`;
+  }).join("");
+  return `<div class="phase-arc"><svg viewBox="0 0 ${w} 36" xmlns="http://www.w3.org/2000/svg">${segs}</svg></div>`;
+}
+
+function distRings(dist){
+  const cx=100,cy=100,radii=[88,66,44,22];
+  let rings="";
+  DISTS.forEach((d,i)=>{
+    const r=radii[i],on=d===dist;
+    rings+=`<circle class="ring${on?" on":""}" data-d="${d}" cx="${cx}" cy="${cy}" r="${r}"/>`;
+    rings+=`<text class="ring lab" x="${cx}" y="${cy-r+5}" font-size="10" fill="${on?"var(--hit)":"var(--dim)"}">${d}</text>`;
+  });
+  rings+=`<circle class="center" cx="${cx}" cy="${cy}" r="6"/>`;
+  rings+=`<text x="${cx}" y="${cy+6}" text-anchor="middle" font-size="28" font-weight="700" fill="var(--text)">${dist}</text>`;
+  rings+=`<text x="${cx}" y="${cy+22}" text-anchor="middle" font-size="12" fill="var(--mute)">m</text>`;
+  return `<div class="dist-wrap"><svg class="dist-svg" viewBox="0 0 200 200">${rings}</svg></div>`;
+}
+
+function slotRing(cur,pe,fd){
+  const cx=50,cy=50,R=46,seg=360/pe,gap=4;
+  let s="";
+  for(let i=0;i<pe;i++){
+    const a0=(i*seg-90+gap/2)*Math.PI/180,a1=((i+1)*seg-90-gap/2)*Math.PI/180;
+    const x1=cx+R*Math.cos(a0),y1=cy+R*Math.sin(a0),x2=cx+R*Math.cos(a1),y2=cy+R*Math.sin(a1);
+    const hit=cur[i],active=i===cur.length;
+    const col=hit?(hit.s>=9?"var(--warn)":"var(--hit)"):(active?"var(--text)":"var(--line)");
+    const op=hit?.6:active?.35:.15;
+    s+=`<path d="M${x1} ${y1} A ${R} ${R} 0 0 1 ${x2} ${y2}" fill="none" stroke="${col}" stroke-width="${active?5:4}" opacity="${op}" stroke-linecap="round"/>`;
+    if(hit){
+      const mid=(a0+a1)/2,tx=cx+(R-8)*Math.cos(mid),ty=cy+(R-8)*Math.sin(mid);
+      s+=`<text x="${tx}" y="${ty}" font-size="7" fill="${col}" text-anchor="middle" dominant-baseline="central" font-weight="700">${lbl(hit)}</text>`;
+    }
+  }
+  return `<div class="slot-ring"><svg viewBox="0 0 100 100">${s}</svg></div>`;
+}
+
+function sightDial(s0,now,sug){
+  const cx=80,cy=80,R=55;
+  let ticks="";
+  for(let i=0;i<24;i++){const a=i*15*Math.PI/180,x1=cx+(R-4)*Math.cos(a),y1=cy+(R-4)*Math.sin(a),x2=cx+R*Math.cos(a),y2=cy+R*Math.sin(a);
+    ticks+=`<line class="tick" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;}
+  const parse=n=>{const v=parseFloat(String(n).replace(/[^\d.-]/g,""));return isNaN(v)?0:clamp(v,-20,20);};
+  const sv=parse(s0.v),sh=parse(s0.h),nv=parse(now.v),nh=parse(now.h);
+  const scale=2.2;
+  const sx=cx+sh*scale,sy=cy-sv*scale,nx=cx+nh*scale,ny=cy-nv*scale;
+  let sugLine="";
+  if(sug&&(sug.h||sug.v)){
+    const ex=cx+sug.h*scale*.8,ey=cy-sug.v*scale*.8;
+    sugLine=`<line class="sug" x1="${cx}" y1="${cy}" x2="${ex}" y2="${ey}"/>`;
+  }
+  return `<div class="sight-dial"><svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--warn)"/></marker></defs>
+    ${ticks}
+    <line class="axis" x1="${cx-R}" y1="${cy}" x2="${cx+R}" y2="${cy}"/>
+    <line class="axis" x1="${cx}" y1="${cy-R}" x2="${cx}" y2="${cy+R}"/>
+    <circle class="start" cx="${sx}" cy="${sy}" r="5"/>
+    <circle class="now" cx="${nx}" cy="${ny}" r="7"/>
+    ${sugLine}
+    <text class="lbl" x="${cx}" y="14" text-anchor="middle">左右</text>
+    <text class="lbl" x="8" y="${cy+4}" text-anchor="middle" transform="rotate(-90 8 ${cy})">上下</text>
+    <text class="lbl" x="${cx}" y="152" text-anchor="middle">開始 ${esc(s0.v||"—")} / ${esc(s0.h||"—")}</text>
+  </svg></div>`;
+}
 
 function sessArr(s){return [...s.ends.flat(),...s.cur];}
 function sessTot(s){return sessArr(s).reduce((a,x)=>a+x.s,0);}
 
-function breathPause(n,cb){const b=$("#breath"),bn=$("#breathN");bn.textContent=n;b.classList.add("on");
-  setTimeout(()=>{b.classList.remove("on");setTimeout(cb,180);},580);}
+function endPulse(n,cb){const p=$("#pulse"),pn=$("#pulseN");pn.textContent=n;p.classList.add("on");
+  setTimeout(()=>{p.classList.remove("on");setTimeout(cb,200);},520);}
 
-function setTop(title,phase,back){
-  $("#top").innerHTML=`
-    ${back?`<button id="backBtn">${back}</button>`:`<span style="width:40px"></span>`}
-    <div style="text-align:center;min-width:0"><h1>${title}</h1><div class="phase">${phase||""}</div></div>
-    <span style="width:40px"></span>`;
-  $("#backBtn")?.addEventListener("click",()=>nav("home"));
+function shell(phaseIdx,title,back,bodyHtml,footHtml){
+  $("#frame").innerHTML=`
+    ${phaseIdx>=0?phaseArc(phaseIdx):""}
+    <div class="hdr">
+      ${back?`<button class="back" id="backBtn">${back}</button>`:`<span class="gap"></span>`}
+      <div class="title">${title||""}</div>
+      <span class="gap"></span>
+    </div>
+    <div class="body" id="body">${bodyHtml}</div>
+    ${footHtml?`<div class="foot" id="foot">${footHtml}</div>`:""}`;
+  const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
 }
 
 function nav(screen){ui.screen=screen;ui.histId=null;ui.adj=false;render();}
@@ -238,32 +337,32 @@ function render(){
     if(ui.screen==="gear")return renderGear();
   }catch(e){
     console.error(e);
-    setTop("ERROR","",null);
-    $("#main").className="stage";
-    $("#main").innerHTML=`<div class="empty">表示エラー: ${esc(e.message)}<br><br>
-      <button class="btn hit" id="errReset">練習データをリセット</button></div>`;
-    $("#errReset").onclick=()=>{db.active=null;save();ui.screen="home";render();};
+    shell(-1,"エラー",null,`<div class="empty">表示エラー: ${esc(e.message)}<br><br>
+      <button class="btn hit" id="errReset">練習データをリセット</button></div>`,"");
+    const er=$("#errReset");if(er)er.onclick=()=>{db.active=null;save();ui.screen="home";render();};
   }
 }
 
-/* ── HOME ── */
 function renderHome(){
-  setTop("CONVERGE","",null);
-  const last=db.sessions[db.sessions.length-1];
-  $("#main").className="stage";
-  $("#main").innerHTML=`
-    <div class="home-hero">
-      <div class="mark"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="none" stroke="#3a3a32" stroke-width="1"/>
-        <circle cx="20" cy="20" r="10" fill="#c73e3a"/><circle cx="20" cy="20" r="4" fill="#d4a72c"/></svg></div>
-      <button class="btn hit" id="goSetup">練習を始める</button>
-      <p>弓を組み立ててサイトを確認し、<br>エンドごとに記録 → 戻って偏差を見る</p>
-      ${last?`<p style="margin-top:14px">前回 ${fmtD(last.date)} ${last.dist}m · ${sessTot(last)}点</p>`:""}
+  shell(-1,"",null,`
+    <div class="home-wrap">
+      <div class="home-rings"><svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="44" fill="none" stroke="var(--line2)" stroke-width="2"/>
+        <circle cx="50" cy="50" r="32" fill="none" stroke="var(--line2)" stroke-width="2"/>
+        <circle cx="50" cy="50" r="20" fill="none" stroke="var(--line2)" stroke-width="2"/>
+        <circle cx="50" cy="50" r="8" fill="var(--red)"/>
+        <line x1="50" y1="6" x2="50" y2="94" stroke="var(--hit)" stroke-width=".5" opacity=".4"/>
+        <line x1="6" y1="50" x2="94" y2="50" stroke="var(--hit)" stroke-width=".5" opacity=".4"/>
+      </svg></div>
+      <button class="btn hit" id="goSetup" style="max-width:280px">練習を始める</button>
+      <p>弓を組み立ててサイトを確認し、<br>的の前で記録 → 戻って偏差を見る</p>
+      ${db.sessions.length?`<p>前回 ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · ${sessTot(db.sessions[db.sessions.length-1])}点</p>`:""}
       <div class="home-links">
         <button id="lnkHist">過去</button>
         <button id="lnkGear">装備</button>
         <button id="lnkBk">backup</button>
       </div>
-    </div>`;
+    </div>`,"");
   $("#goSetup").onclick=()=>nav("setup");
   $("#lnkHist").onclick=()=>nav("history");
   $("#lnkGear").onclick=()=>nav("gear");
@@ -277,24 +376,28 @@ function exportImport(){
     const r=new FileReader();r.onload=()=>{try{db=Object.assign(blankDb(),JSON.parse(r.result));save();toast("ok");render();}catch(e){toast("error");}};r.readAsText(f);};inp.click();}
 }
 
-/* ── SETUP: bow + sight before shooting ── */
 function renderSetup(){
   const g=db.setups[0],last=db.sessions[db.sessions.length-1];
   const dist=ui._dist||(last?.dist||70);
   const mk=db.sightMarks.filter(m=>g&&m.setupId===g.id&&m.dist===dist).sort((a,b)=>b.date.localeCompare(a.date))[0];
-  setTop("準備",`<span>${dist}</span><small>m</small>`,"←");
-  $("#backBtn").onclick=()=>nav("home");
-  $("#main").className="stage";
-  $("#main").innerHTML=`
-    <label class="f">距離</label>
-    <div class="chips" id="dChips">${[70,50,30,18].map(d=>`<div class="chip ${d===dist?"on":""}" data-d="${d}">${d}m</div>`).join("")}</div>
-    <label class="f">サイト（射る前の数値）</label>
-    <div class="row"><input class="inp" id="sv" inputmode="decimal" placeholder="上下" value="${esc(mk?.v||"")}">
-      <input class="inp" id="sh" inputmode="decimal" placeholder="左右" value="${esc(mk?.h||"")}"></div>
-    <label class="f">メモ</label>
-    <textarea class="inp" id="note" placeholder="組み立て・コンディション（任意）"></textarea>
-    <button class="btn hit" id="start" style="margin-top:14px">射る</button>`;
-  document.querySelectorAll("#dChips .chip").forEach(c=>c.onclick=()=>{ui._dist=+c.dataset.d;renderSetup();});
+  shell(0,"距離とサイト","←",`
+    ${distRings(dist)}
+    <div class="sight-x">
+      <span class="ax v-up">上下</span>
+      <input class="v-up" id="sv" inputmode="decimal" placeholder="—" value="${esc(mk?.v||"")}">
+      <div class="core"><svg viewBox="0 0 72 72"><circle cx="36" cy="36" r="34" fill="none" stroke="var(--line)" stroke-width="1"/>
+        <line x1="36" y1="4" x2="36" y2="68" stroke="var(--hit)" stroke-width="1" opacity=".5"/>
+        <line x1="4" y1="36" x2="68" y2="36" stroke="var(--hit)" stroke-width="1" opacity=".5"/>
+        <circle cx="36" cy="36" r="4" fill="var(--red)"/></svg></div>
+      <input class="h-l" id="sh" inputmode="decimal" placeholder="—" value="${esc(mk?.h||"")}">
+      <span class="ax h-l">左右</span>
+      <span class="ax v-dn"></span>
+      <span class="ax h-r"></span>
+    </div>
+    <textarea class="note-inp" id="note" placeholder="メモ（任意）" rows="1"></textarea>`,
+    `<button class="btn hit" id="start">射る</button>`);
+  document.querySelectorAll(".dist-svg .ring").forEach(c=>c.onclick=()=>{ui._dist=+c.dataset.d;renderSetup();});
+  const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
   $("#start").onclick=()=>{
     const v=$("#sv").value.trim(),h=$("#sh").value.trim();
     db.active={
@@ -302,37 +405,31 @@ function renderSetup(){
       sightStart:{v,h},sightNow:{v,h},note:$("#note").value.trim(),
       phase:"record",ends:[],cur:[],adjLog:[]
     };
-    if(g&&v||h)db.sightMarks.push({id:uid(),setupId:g.id,date:today(),dist,v,h,tag:"start"});
+    if(g&&(v||h))db.sightMarks.push({id:uid(),setupId:g.id,date:today(),dist,v,h,tag:"start"});
     save();ui.screen="record";render();
   };
 }
 
-/* ── RECORD: at target pulling arrows (B rhythm + A geo) ── */
 function renderRecord(){
   const s=db.active;if(!s){nav("home");return;}
   s.phase="record";save();
-  const n=s.cur.length,pe=s.perEnd,scale=.86+n/pe*.16;
-  const tight=n>=3?"tighter":n>=1?"tight":"";
+  const n=s.cur.length,pe=s.perEnd,scale=.88+n/pe*.14;
   const st=stats(s.cur);
   const sug=st&&st.n>=3?{h:Math.round(st.mx*1.2),v:Math.round(-st.my*1.2)}:null;
-  setTop("記録",`E${s.ends.length+1}<small> · ${n}/${pe}</small>`,"");
-  $("#main").className="stage "+tight;
-  $("#main").innerHTML=`
-    <div class="beats">${beatHtml(s.cur,pe)}</div>
-    <div class="tg-box" id="tgBox" style="transform:scale(${scale})">
-      <div style="position:relative">${targetSvg(s.faceD,"tg")}
-        <div class="tg-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}" id="geoLive">${geoSvg(st,s.faceD,sug)}</svg></div>
-        <div class="lens" id="lens"><svg id="lensSvg" width="116" height="116"><use href="#tgg"/></svg></div>
+  const geoDefs=`<defs><marker id="geoArr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--sight)"/></marker></defs>`;
+  shell(1,`E${s.ends.length+1} · ${n}/${pe}`,"",`
+    <div class="tgt-stage" style="min-height:calc(100dvh - 200px)">
+      <div class="box" id="tgBox" style="transform:scale(${scale})">
+        ${slotRing(s.cur,pe,s.faceD)}
+        <div style="position:relative">${targetSvg(s.faceD,"tg")}
+          <div class="tgt-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}" id="geoLive">${geoDefs}${geoSvg(st,s.faceD,sug)}</svg></div>
+          <div class="lens" id="lens"><svg id="lensSvg" width="108" height="108"><use href="#tgg"/></svg></div>
+          ${st?`<div class="geo-nums"><span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span></div>`:""}
+        </div>
       </div>
-    </div>
-    <div class="drift">${st?`
-      <div><div class="k">X</div><b>${mono(st.mx,"x")}</b></div>
-      <div><div class="k">Y</div><b>${mono(st.my,"y")}</b></div>
-      <div><div class="k">R</div><b>${st.rr.toFixed(1)}</b></div>`:`
-      <div><div class="k">X</div><b>—</b></div><div><div class="k">Y</div><b>—</b></div><div><div class="k">R</div><b>—</b></div>`}
-    </div>
-    <button class="btn beat" id="backLine"${n?"":" disabled"}>射線に戻った</button>
-    <div class="act"><button class="btn ghost sm" id="undo">1本戻す</button></div>`;
+    </div>`,
+    `<button class="btn beat" id="backLine"${n?"":" disabled"}>射線に戻った</button>
+     <div class="row" style="margin-top:8px"><button class="btn ghost sm" id="undo">1本戻す</button></div>`);
   paintMarks(s);
   bindTarget(s);
   $("#undo").onclick=()=>{if(s.cur.length){s.cur.pop();save();renderRecord();}};
@@ -341,12 +438,12 @@ function renderRecord(){
     const t=s.cur.reduce((a,x)=>a+x.s,0);
     s.ends.push(s.cur);s.cur=[];
     save();
-    breathPause(t,()=>{ui.screen="return";render();});
+    endPulse(t,()=>{ui.screen="return";render();});
   };
 }
 
 function paintMarks(s){
-  let mh="";s.ends.forEach(e=>e.forEach(a=>{mh+=dot(a,s.faceD,"rgba(74,222,128,.25)");}));
+  let mh="";s.ends.forEach(e=>e.forEach(a=>{mh+=dot(a,s.faceD,"rgba(94,207,122,.22)");}));
   s.cur.forEach(a=>{mh+=dot(a,s.faceD,"var(--hit)",lbl(a));});
   const mk=$("#tgmarks");if(mk)mk.innerHTML=mh;
 }
@@ -361,7 +458,7 @@ function bindTarget(s){
     lens.classList.toggle("fine",!!fine);lens.classList.toggle("cut",!!cut);
     cur.innerHTML=`<circle cx="${p.x}" cy="${-p.y}" r="${arrR(s.faceD)}" fill="none" stroke="${col}" stroke-width="${s.faceD/400}"/>`;
     const z=ringW(s.faceD)*2.2;lensSvg.setAttribute("viewBox",`${p.x-z} ${-p.y-z} ${2*z} ${2*z}`);
-    lens.style.left=p.x<0?"auto":"6px";lens.style.right=p.x<0?"6px":"auto";}
+    lens.style.left=p.x<0?"auto":"4px";lens.style.right=p.x<0?"4px":"auto";}
   function reset(){if(drag?.tm)clearTimeout(drag.tm);drag=null;cur.innerHTML="";lens.style.display="none";}
   svg.oncontextmenu=e=>e.preventDefault();
   function down(e){if(s.cur.length>=s.perEnd){toast("6本 — 戻る");return;}const cp=pt(e);if(!cp)return;e.preventDefault();
@@ -379,7 +476,6 @@ function bindTarget(s){
   svg.addEventListener("pointerup",up);svg.addEventListener("pointercancel",reset);
 }
 
-/* ── RETURN: sight deviation after walking back (core concept) ── */
 function renderReturn(){
   const s=db.active;if(!s){nav("home");return;}
   s.phase="return";save();
@@ -389,35 +485,27 @@ function renderReturn(){
   const sug=st?{h:Math.round(st.mx*1.2),v:Math.round(-st.my*1.2)}:null;
   const sv=s.sightNow?.v??"",sh=s.sightNow?.h??"";
   const s0=s.sightStart||{};
-  setTop("サイト確認",`E${s.ends.length}`,"");
-  $("#main").className="stage";
-  $("#main").innerHTML=`
-    <div class="end-sum"><b>${tot}</b><span>${end.map(lbl).join(" · ")}</span></div>
-    <div class="tg-box" style="transform:scale(.72)">
-      <div style="position:relative">${targetSvg(s.faceD,"rt")}
-        <div class="tg-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}">${geoSvg(st,s.faceD,sug)}</svg></div>
-      </div>
-    </div>
-    <div class="drift">${st?`
-      <div><div class="k">X</div><b>${mono(st.mx,"x")}</b></div>
-      <div><div class="k">Y</div><b>${mono(st.my,"y")}</b></div>
-      <div><div class="k">R</div><b>${st.rr.toFixed(1)}</b></div>`:""}
-    </div>
-    <div class="sight-diff">
-      <div class="row"><span>練習開始</span><span>上下 ${esc(s0.v||"—")} / 左右 ${esc(s0.h||"—")}</span></div>
-      <div class="row"><span>いま</span><span>上下 ${esc(sv||"—")} / 左右 ${esc(sh||"—")}</span></div>
-      ${sug&&(sug.h||sug.v)?`<div class="row"><span>目安</span><span class="chg">左右 ${sug.h>0?"+":""}${sug.h} · 上下 ${sug.v>0?"+":""}${sug.v}</span></div>`:""}
-      <div class="note">的の前で記録 → 戻ってサイトを見る、の流れです</div>
-    </div>
-    ${ui.adj?`<label class="f">調整後のサイト</label><div class="row">
-      <input class="inp" id="nv" value="${esc(sv)}" placeholder="上下"><input class="inp" id="nh" value="${esc(sh)}" placeholder="左右"></div>
-      <textarea class="inp" id="adjNote" placeholder="調整メモ（任意）" style="margin-top:8px"></textarea>`:""}
-    <div class="act">
+  const geoDefs=`<defs><marker id="geoArr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--sight)"/></marker></defs>`;
+  shell(2,`E${s.ends.length}`,"",`
+    <div class="end-badge"><div class="n">${tot}</div><div class="s">${end.map(lbl).join(" · ")}</div></div>
+    <div class="ret-geo">
+      <div class="mini"><div class="box"><div style="position:relative">${targetSvg(s.faceD,"rt")}
+        <div class="tgt-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}">${geoDefs}${geoSvg(st,s.faceD,sug)}</svg></div>
+      </div></div></div>
+      ${sightDial(s0,{v:sv,h:sh},sug)}
+      ${st?`<div class="geo-nums" style="position:static;justify-content:center;margin:4px 0">
+        <span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span></div>`:""}
+      ${ui.adj?`<div class="sight-adj">
+        <input id="nv" inputmode="decimal" placeholder="上下" value="${esc(sv)}">
+        <input id="nh" inputmode="decimal" placeholder="左右" value="${esc(sh)}">
+      </div><textarea class="note-inp" id="adjNote" placeholder="調整メモ（任意）" rows="1"></textarea>`:""}
+    </div>`,
+    `<div class="row">
       <button class="btn ghost" id="adjBtn">${ui.adj?"保存":"サイトを調整した"}</button>
       <button class="btn hit" id="next">次のエンド</button>
     </div>
-    <button class="btn ghost" id="fin">練習を終える</button>`;
-  let mh="";end.forEach(a=>{mh+=dot(a,s.faceD,"var(--hit)",lbl(a));});$("#rtmarks").innerHTML=mh;
+    <button class="btn ghost" id="fin" style="margin-top:8px">練習を終える</button>`);
+  let mh="";end.forEach(a=>{mh+=dot(a,s.faceD,"var(--hit)",lbl(a));});const rm=$("#rtmarks");if(rm)rm.innerHTML=mh;
   $("#adjBtn").onclick=()=>{
     if(!ui.adj){ui.adj=true;renderReturn();return;}
     const nv=$("#nv").value.trim(),nh=$("#nh").value.trim();
@@ -433,60 +521,53 @@ function renderReturn(){
   };
 }
 
-/* ── DONE ── */
 function renderDone(){
   const s=db.sessions[db.sessions.length-1];
-  setTop("終了","",null);
-  $("#main").className="stage";
-  $("#main").innerHTML=s?`
-    <div class="end-sum" style="padding:24px 0"><b>${sessTot(s)}</b><span>${s.ends.length}E · ${s.dist}m</span></div>
-    <div class="sight-diff">
-      <div class="row"><span>開始サイト</span><span>${esc(s.sightStart?.v||"—")} / ${esc(s.sightStart?.h||"—")}</span></div>
-      <div class="row"><span>最終</span><span>${esc(s.sightNow?.v||"—")} / ${esc(s.sightNow?.h||"—")}</span></div>
-      ${(s.adjLog||[]).length?`<div class="note">調整 ${s.adjLog.length} 回</div>`:""}
-    </div>
-    <button class="btn hit" id="home">ホームへ</button>`:`<div class="empty">—</div>`;
+  shell(-1,"終了",null,s?`
+    <div class="end-badge" style="padding:32px 0"><div class="n">${sessTot(s)}</div>
+      <div class="s">${s.ends.length}E · ${s.dist}m</div></div>
+    ${sightDial(s.sightStart||{},s.sightNow||{},null)}
+    ${(s.adjLog||[]).length?`<p style="text-align:center;font-size:12px;color:var(--dim)">調整 ${s.adjLog.length} 回</p>`:""}`:
+    `<div class="empty">—</div>`,
+    s?`<button class="btn hit" id="home">ホームへ</button>`:"");
   const homeBtn=$("#home");if(homeBtn)homeBtn.onclick=()=>nav("home");
 }
 
-/* ── HISTORY ── */
 function renderHistory(){
-  setTop("過去","", "←");$("#backBtn").onclick=()=>nav("home");
-  const ss=[...db.sessions].reverse();
-  $("#main").className="stage";
-  $("#main").innerHTML=ss.length?ss.map(s=>`
-    <div class="s-row" data-id="${s.id}"><div><div class="d">${fmtD(s.date)} · ${s.dist}m</div>
-      <div class="m">${s.ends.length}E${s.note?" · "+esc(s.note):""}</div></div><div class="pts">${sessTot(s)}</div></div>`).join("")
-    :`<div class="empty">なし</div>`;
-  $("#main").querySelectorAll(".s-row").forEach(r=>r.onclick=()=>{ui.histId=r.dataset.id;render();});
+  shell(-1,"過去","←",(()=>{
+    const ss=[...db.sessions].reverse();
+    return ss.length?ss.map(s=>`
+      <div class="hist-row" data-id="${s.id}"><div><div class="d">${fmtD(s.date)} · ${s.dist}m</div>
+        <div class="m">${s.ends.length}E${s.note?" · "+esc(s.note):""}</div></div><div class="pts">${sessTot(s)}</div></div>`).join("")
+      :`<div class="empty">なし</div>`;
+  })(),"");
+  const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
+  $("#body").querySelectorAll(".hist-row").forEach(r=>r.onclick=()=>{ui.histId=r.dataset.id;render();});
 }
 
 function renderHistDetail(){
   const s=db.sessions.find(x=>x.id===ui.histId);
   if(!s){ui.histId=null;return renderHistory();}
-  setTop(fmtD(s.date),`${s.dist}m`,"←");$("#backBtn").onclick=()=>{ui.histId=null;render();};
   const st=stats(sessArr(s));
-  $("#main").className="stage";
-  $("#main").innerHTML=`
-    <div class="tg-box" style="transform:scale(.8)"><div style="position:relative">${targetSvg(s.faceD,"hs")}
-      <div class="tg-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}">${geoSvg(st,s.faceD,null)}</svg></div>
-    </div></div>
-    <div class="drift">${st?`<div><div class="k">X</div><b>${mono(st.mx,"x")}</b></div><div><div class="k">Y</div><b>${mono(st.my,"y")}</b></div><div><div class="k">R</div><b>${st.rr.toFixed(1)}</b></div>`:""}
-    </div>
-    <button class="btn ghost" id="del">削除</button>`;
-  let mh="";s.ends.forEach((e,i)=>e.forEach(a=>{mh+=dot(a,s.faceD,`hsl(${120+i*30},50%,45%)`);}));$("#hsmarks").innerHTML=mh;
+  const geoDefs=`<defs><marker id="geoArr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--sight)"/></marker></defs>`;
+  shell(-1,`${fmtD(s.date)} · ${s.dist}m`,"←",`
+    <div class="tgt-stage" style="min-height:280px"><div class="box" style="transform:scale(.85)"><div style="position:relative">${targetSvg(s.faceD,"hs")}
+      <div class="tgt-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}">${geoDefs}${geoSvg(st,s.faceD,null)}</svg></div>
+    </div></div></div>
+    ${st?`<div class="geo-nums" style="position:static;justify-content:center"><span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span></div>`:""}`,
+    `<button class="btn ghost" id="del">削除</button>`);
+  const bb=$("#backBtn");if(bb)bb.onclick=()=>{ui.histId=null;render();};
+  let mh="";s.ends.forEach((e,i)=>e.forEach(a=>{mh+=dot(a,s.faceD,`hsl(${120+i*30},50%,45%)`);}));const hm=$("#hsmarks");if(hm)hm.innerHTML=mh;
   $("#del").onclick=()=>{if(confirm("削除？")){db.sessions=db.sessions.filter(x=>x.id!==s.id);save();ui.histId=null;render();}};
 }
 
-/* ── GEAR ── */
 function renderGear(){
   const g=db.setups[0]||{name:"",bow:""};
-  setTop("装備","", "←");$("#backBtn").onclick=()=>nav("home");
-  $("#main").className="stage";
-  $("#main").innerHTML=`
-    <label class="f">NAME</label><input class="inp" id="gn" value="${esc(g.name)}">
-    <label class="f">BOW</label><input class="inp" id="gb" value="${esc(g.bow)}">
-    <button class="btn hit" id="gs" style="margin-top:12px">保存</button>`;
+  shell(-1,"装備","←",`
+    <div class="gear-lbl">名前</div><input class="gear-inp" id="gn" value="${esc(g.name)}">
+    <div class="gear-lbl">弓</div><input class="gear-inp" id="gb" value="${esc(g.bow)}">`,
+    `<button class="btn hit" id="gs">保存</button>`);
+  const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
   $("#gs").onclick=()=>{const d={id:g.id||uid(),name:$("#gn").value.trim()||"main",bow:$("#gb").value.trim()};
     if(db.setups.length)db.setups[0]=d;else db.setups.push(d);save();toast("ok");};
 }
