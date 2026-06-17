@@ -90,29 +90,28 @@
     [1, "#d4a72c", "#222"],
   ];
 
-  /** Zenkin face rasters — refs/oppai 由来9枚（oppai/1〜9） */
+  /** Zenkin face rasters — おっぱいクローズアップのみ（fx/fy=焦点, zoom=拡大） */
   var OPPAI_VARIANTS = [
     { id: "v1", file: "oppai/1.png", label: "①" },
     { id: "v2", file: "oppai/2.png", label: "②" },
     { id: "v3", file: "oppai/3.png", label: "③" },
-    { id: "v4", file: "oppai/4.jpg", label: "④" },
-    { id: "v5", file: "oppai/5.jpg", label: "⑤" },
-    { id: "v6", file: "oppai/6.jpg", label: "⑥" },
-    { id: "v7", file: "oppai/7.jpg", label: "⑦" },
-    { id: "v8", file: "oppai/8.jpg", label: "⑧" },
-    { id: "v9", file: "oppai/9.jpg", label: "⑨" },
+    { id: "v4", file: "oppai/4.jpg", label: "④", fx: 0.3, fy: 0.62, zoom: 2.4 },
+    { id: "v5", file: "oppai/5.jpg", label: "⑤", fx: 0.38, fy: 0.52, zoom: 2.2 },
+    { id: "v6", file: "oppai/6.jpg", label: "⑥", fx: 0.35, fy: 0.58, zoom: 2.3 },
+    { id: "v7", file: "oppai/7.jpg", label: "⑦", fx: 0.5, fy: 0.44, zoom: 1.15 },
   ];
 
+  function oppaiVariantAt(idx) {
+    return OPPAI_VARIANTS[idx == null ? 0 : ((idx % OPPAI_VARIANTS.length) + OPPAI_VARIANTS.length) % OPPAI_VARIANTS.length];
+  }
   function pickOppaiIdx() {
     return Math.floor(Math.random() * OPPAI_VARIANTS.length);
   }
   function oppaiImgAt(idx) {
-    var v = OPPAI_VARIANTS[idx == null ? 0 : idx % OPPAI_VARIANTS.length];
-    return v ? v.file : OPPAI_VARIANTS[0].file;
+    return oppaiVariantAt(idx).file;
   }
   function oppaiLabelAt(idx) {
-    var v = OPPAI_VARIANTS[idx == null ? 0 : idx % OPPAI_VARIANTS.length];
-    return v ? v.label : "";
+    return oppaiVariantAt(idx).label;
   }
 
   function targetFaceSvg(fd, id, mode, oppaiIdx) {
@@ -126,21 +125,29 @@
       f,
       st;
     if (mode === "oppai") {
+      var ov = oppaiVariantAt(oppaiIdx),
+        fx = ov.fx == null ? 0.5 : ov.fx,
+        fy = ov.fy == null ? 0.5 : ov.fy,
+        oz = ov.zoom == null ? 1.15 : ov.zoom,
+        iw = fd * oz,
+        ih = fd * oz,
+        ix = -fx * iw,
+        iy = -fy * ih;
       return (
         "<defs><clipPath id=\"" +
         id +
         'clip"><circle cx="0" cy="0" r="' +
         R +
         '"/></clipPath></defs><image href="' +
-        oppaiImgAt(oppaiIdx) +
+        ov.file +
         '" x="' +
-        -R +
+        ix +
         '" y="' +
-        -R +
+        iy +
         '" width="' +
-        fd +
+        iw +
         '" height="' +
-        fd +
+        ih +
         '" preserveAspectRatio="xMidYMid slice" clip-path="url(#' +
         id +
         'clip)"/>'

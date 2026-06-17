@@ -1,4 +1,4 @@
-const CACHE = "archery-converge-v32";
+const CACHE = "archery-converge-v33";
 const ASSETS = [
   "./index.html",
   "./compat.js",
@@ -16,8 +16,6 @@ const ASSETS = [
   "./oppai/5.jpg",
   "./oppai/6.jpg",
   "./oppai/7.jpg",
-  "./oppai/8.jpg",
-  "./oppai/9.jpg",
   "./version.json",
 ];
 
