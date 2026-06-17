@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=26;
+const KEY="archeryConverge.v1", APP_VER=27;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -311,20 +311,6 @@ function render(){
   }
 }
 
-const HOME_FAQ=[
-  {q:"スマホだけで使えますか？",a:"はい。ブラウザで開くだけで使えます。ホーム画面に追加するとアプリのように全画面で起動します。"},
-  {q:"データはどこに保存されますか？",a:"お使いの端末のブラウザ内（localStorage）に保存されます。サーバーには送りません。バックアップから JSON でエクスポートできます。"},
-  {q:"線かみ（ラインカッター）とは？",a:"矢印の丸がリング境界にかかっている状態です。点線の金いろ輪が付きます。長押しで位置を直すとき、緑＝かみ・赤＝かみなしで確認できます。"},
-  {q:"全金すると的が変わる？",a:"6本すべてが金ゾーン（9〜10点）のときだけ、お祝い用の特別な的が表示されます。通常は競技用の的です。"},
-  {q:"サイトは自動で動きますか？",a:"いいえ。矢の集まりから「動かす方向」を提案しますが、実際にサイトを回すのはあなた自身です。戻ったあとの画面で目盛りをメモできます。"},
-  {q:"オフラインでも使えますか？",a:"一度開けば練習の記録・確認はオフラインでも動きます。初回読み込みと更新確認だけネットワークが必要です。"}
-];
-function homeFaqHtml(){
-  return `<section class="home-faq" aria-labelledby="homeFaqTitle">
-    <h2 id="homeFaqTitle">${begOn()?"よくある質問":"FAQ"}</h2>
-    ${HOME_FAQ.map((it,i)=>`<details class="faq-item"${i===0?" open":""}><summary>${esc(it.q)}</summary><p>${esc(it.a)}</p></details>`).join("")}
-  </section>`;
-}
 function homeStepsHtml(){
   const steps=begOn()?[
     ["1","距離とサイトを決める","リングでメートルを選び、照準の数字をメモ"],
@@ -354,7 +340,6 @@ function renderHome(){
       <button class="btn hit" id="goSetup" style="max-width:280px">${begOn()?"練習を始める":"Start"}</button>
       ${begOn()&&Beg?Beg.coachCard("home"):""}
       ${db.sessions.length?`<p class="home-prev">前回 ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · ${sessTot(db.sessions[db.sessions.length-1])}点</p>`:""}
-      ${homeFaqHtml()}
       <div class="home-links">
         <button id="lnkHist">過去</button>
         <button id="lnkGear">装備</button>
