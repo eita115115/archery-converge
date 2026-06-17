@@ -90,25 +90,13 @@
     [1, "#d4a72c", "#222"],
   ];
 
-  /** Oppai: ring fills only (strokes hidden); smooth peach → pink core */
-  var OPPAI_FACE = [
-    [10, "#FFF9F6", "#FFF9F6"],
-    [9, "#FEE7D9", "#FEE7D9"],
-    [8, "#FFE4DA", "#FFE4DA"],
-    [7, "#FFD6CC", "#FFD6CC"],
-    [6, "#FFC4BC", "#FFC4BC"],
-    [5, "#F5A8A8", "#F5A8A8"],
-    [4, "#E89098", "#E89098"],
-    [3, "#DC7888", "#DC7888"],
-    [2, "#D06878", "#D06878"],
-    [1, "#C05868", "#C05868"],
-  ];
+  /** Zenkin face: reference raster (refs/oppai → oppai-face.png); scoring math unchanged */
+  var OPPAI_FACE_IMG = "oppai-face.png";
 
   function targetFaceSvg(fd, id, mode) {
     var w = ringW(fd),
       R = fd / 2,
       sw = R / 280,
-      rings = mode === "oppai" ? OPPAI_FACE : SPORT_FACE,
       g = "",
       i,
       pair,
@@ -116,62 +104,28 @@
       f,
       st;
     if (mode === "oppai") {
-      g +=
-        "<defs>" +
-        '<radialGradient id="' +
+      return (
+        "<defs><clipPath id=\"" +
         id +
-        'skin" cx="46%" cy="40%" r="54%">' +
-        '<stop offset="0%" stop-color="#c85868"/>' +
-        '<stop offset="14%" stop-color="#d87888"/>' +
-        '<stop offset="32%" stop-color="#eca0a0"/>' +
-        '<stop offset="52%" stop-color="#ffd0c8"/>' +
-        '<stop offset="78%" stop-color="#fff0ea"/>' +
-        '<stop offset="100%" stop-color="#fff9f6"/>' +
-        "</radialGradient>" +
-        '<radialGradient id="' +
+        'clip"><circle cx="0" cy="0" r="' +
+        R +
+        '"/></clipPath></defs><image href="' +
+        OPPAI_FACE_IMG +
+        '" x="' +
+        -R +
+        '" y="' +
+        -R +
+        '" width="' +
+        fd +
+        '" height="' +
+        fd +
+        '" preserveAspectRatio="xMidYMid slice" clip-path="url(#' +
         id +
-        'are" cx="50%" cy="42%" r="62%">' +
-        '<stop offset="0%" stop-color="#a84858"/>' +
-        '<stop offset="22%" stop-color="#c06070"/>' +
-        '<stop offset="48%" stop-color="#d88090"/>' +
-        '<stop offset="72%" stop-color="#eca8b0" stop-opacity=".92"/>' +
-        '<stop offset="92%" stop-color="#f8c8c8" stop-opacity=".45"/>' +
-        '<stop offset="100%" stop-color="#ffd8d8" stop-opacity="0"/>' +
-        "</radialGradient>" +
-        '<radialGradient id="' +
-        id +
-        'nip" cx="46%" cy="32%" r="72%">' +
-        '<stop offset="0%" stop-color="#8a3848"/>' +
-        '<stop offset="35%" stop-color="#a85060"/>' +
-        '<stop offset="68%" stop-color="#c06878"/>' +
-        '<stop offset="100%" stop-color="#904858"/>' +
-        "</radialGradient>" +
-        '<radialGradient id="' +
-        id +
-        'vol" cx="64%" cy="22%" r="82%">' +
-        '<stop offset="0%" stop-color="#fff" stop-opacity=".68"/>' +
-        '<stop offset="18%" stop-color="#fff" stop-opacity=".38"/>' +
-        '<stop offset="38%" stop-color="#fff" stop-opacity=".12"/>' +
-        '<stop offset="62%" stop-color="#fff" stop-opacity=".03"/>' +
-        '<stop offset="100%" stop-color="#d87888" stop-opacity=".1"/>' +
-        "</radialGradient>" +
-        '<radialGradient id="' +
-        id +
-        'shd" cx="50%" cy="92%" r="50%">' +
-        '<stop offset="0%" stop-color="#7a4858" stop-opacity=".32"/>' +
-        '<stop offset="55%" stop-color="#9a6878" stop-opacity=".12"/>' +
-        '<stop offset="100%" stop-color="#9a6878" stop-opacity="0"/>' +
-        "</radialGradient>" +
-        '<radialGradient id="' +
-        id +
-        'edge" cx="50%" cy="50%" r="50%">' +
-        '<stop offset="78%" stop-color="#fff" stop-opacity="0"/>' +
-        '<stop offset="94%" stop-color="#c87888" stop-opacity=".18"/>' +
-        '<stop offset="100%" stop-color="#a85868" stop-opacity=".28"/>' +
-        "</radialGradient></defs>";
+        'clip)"/>'
+      );
     }
-    for (i = 0; i < rings.length; i++) {
-      pair = rings[i];
+    for (i = 0; i < SPORT_FACE.length; i++) {
+      pair = SPORT_FACE[i];
       k = pair[0];
       f = pair[1];
       st = pair[2];
@@ -181,192 +135,12 @@
         '" fill="' +
         f +
         '" stroke="' +
-        (mode === "oppai" ? "none" : st) +
+        st +
         '" stroke-width="' +
-        (mode === "oppai" ? 0 : sw) +
+        sw +
         '"/>';
     }
-    if (mode === "oppai") {
-      var Rf = 10 * w,
-        ar = w * 4.35,
-        ar2 = w * 5.1;
-      g +=
-        '<circle cx="0" cy="0" r="' +
-        Rf +
-        '" fill="url(#' +
-        id +
-        'skin)" opacity=".94" pointer-events="none"/>' +
-        '<circle cx="0" cy="0" r="' +
-        Rf +
-        '" fill="url(#' +
-        id +
-        'shd)" pointer-events="none"/>' +
-        '<circle cx="0" cy="0" r="' +
-        Rf +
-        '" fill="url(#' +
-        id +
-        'edge)" pointer-events="none"/>' +
-        '<ellipse cx="' +
-        -w * 7.8 +
-        '" cy="' +
-        w * 0.4 +
-        '" rx="' +
-        w * 2.4 +
-        '" ry="' +
-        w * 6.2 +
-        '" fill="#b86878" opacity=".14" pointer-events="none"/>' +
-        '<ellipse cx="' +
-        w * 7.8 +
-        '" cy="' +
-        w * 0.4 +
-        '" rx="' +
-        w * 2.4 +
-        '" ry="' +
-        w * 6.2 +
-        '" fill="#b86878" opacity=".14" pointer-events="none"/>' +
-        '<circle cx="0" cy="0" r="' +
-        ar2 +
-        '" fill="url(#' +
-        id +
-        'are)" opacity=".38" pointer-events="none"/>' +
-        '<circle cx="0" cy="0" r="' +
-        ar +
-        '" fill="url(#' +
-        id +
-        'are)" opacity=".97" pointer-events="none"/>' +
-        '<ellipse cx="0" cy="' +
-        -w * 0.04 +
-        '" rx="' +
-        w * 0.46 +
-        '" ry="' +
-        w * 0.72 +
-        '" fill="url(#' +
-        id +
-        'nip)"/>' +
-        '<line x1="0" y1="' +
-        -w * 0.42 +
-        '" x2="0" y2="' +
-        -w * 0.12 +
-        '" stroke="#6a2838" stroke-width="' +
-        sw * 0.42 +
-        '" stroke-linecap="round" opacity=".5" pointer-events="none"/>' +
-        '<ellipse cx="' +
-        w * 0.09 +
-        '" cy="' +
-        -w * 0.28 +
-        '" rx="' +
-        w * 0.13 +
-        '" ry="' +
-        w * 0.09 +
-        '" fill="#fff" opacity=".72" pointer-events="none"/>' +
-        '<circle cx="0" cy="0" r="' +
-        Rf +
-        '" fill="url(#' +
-        id +
-        'vol)" pointer-events="none"/>' +
-        '<ellipse cx="' +
-        w * 3.1 +
-        '" cy="' +
-        -w * 4.4 +
-        '" rx="' +
-        w * 3.1 +
-        '" ry="' +
-        w * 2.1 +
-        '" fill="#fff" opacity=".52" pointer-events="none"/>' +
-        '<ellipse cx="' +
-        w * 0.4 +
-        '" cy="' +
-        -w * 3.4 +
-        '" rx="' +
-        w * 0.24 +
-        '" ry="' +
-        w * 3.4 +
-        '" fill="#fff" opacity=".32" pointer-events="none"/>' +
-        '<ellipse cx="' +
-        -w * 1.1 +
-        '" cy="' +
-        -w * 4.0 +
-        '" rx="' +
-        w * 2.2 +
-        '" ry="' +
-        w * 1.35 +
-        '" fill="#fff" opacity=".42" pointer-events="none"/>' +
-        '<circle cx="' +
-        w * 0.1 +
-        '" cy="' +
-        -w * 0.34 +
-        '" r="' +
-        w * 0.14 +
-        '" fill="#fff" opacity=".58" pointer-events="none"/>' +
-        '<circle cx="' +
-        w * 0.13 +
-        '" cy="' +
-        -w * 0.38 +
-        '" r="' +
-        w * 0.05 +
-        '" fill="#fff" opacity=".9" pointer-events="none"/>' +
-        '<ellipse cx="' +
-        w * 0.18 +
-        '" cy="' +
-        w * 0.65 +
-        '" rx="' +
-        w * 0.1 +
-        '" ry="' +
-        w * 0.28 +
-        '" fill="#fff" opacity=".42" pointer-events="none"/>' +
-        '<ellipse cx="' +
-        w * 0.28 +
-        '" cy="' +
-        w * 1.25 +
-        '" rx="' +
-        w * 0.07 +
-        '" ry="' +
-        w * 0.22 +
-        '" fill="#fff" opacity=".32" pointer-events="none"/>' +
-        '<circle cx="' +
-        -w * 2.4 +
-        '" cy="' +
-        -w * 3.6 +
-        '" r="' +
-        w * 0.17 +
-        '" fill="#fff" opacity=".48" pointer-events="none"/>' +
-        '<circle cx="' +
-        -w * 2.22 +
-        '" cy="' +
-        -w * 3.74 +
-        '" r="' +
-        w * 0.06 +
-        '" fill="#fff" opacity=".82" pointer-events="none"/>' +
-        '<circle cx="' +
-        w * 3.5 +
-        '" cy="' +
-        -w * 2.5 +
-        '" r="' +
-        w * 0.14 +
-        '" fill="#fff" opacity=".4" pointer-events="none"/>' +
-        '<circle cx="' +
-        w * 3.6 +
-        '" cy="' +
-        -w * 2.62 +
-        '" r="' +
-        w * 0.05 +
-        '" fill="#fff" opacity=".78" pointer-events="none"/>' +
-        '<circle cx="' +
-        -w * 0.8 +
-        '" cy="' +
-        -w * 2.2 +
-        '" r="' +
-        w * 0.12 +
-        '" fill="#fff" opacity=".36" pointer-events="none"/>' +
-        '<circle cx="' +
-        w * 1.8 +
-        '" cy="' +
-        -w * 1.6 +
-        '" r="' +
-        w * 0.1 +
-        '" fill="#fff" opacity=".3" pointer-events="none"/>';
-    } else {
-      g += '<circle cx="0" cy="0" r="' + w / 2 + '" fill="none" stroke="#222" stroke-width="' + sw + '"/>';
+    g += '<circle cx="0" cy="0" r="' + w / 2 + '" fill="none" stroke="#222" stroke-width="' + sw + '"/>';
       g +=
         '<line x1="' +
         -w / 5 +
@@ -383,7 +157,6 @@
         '" stroke="#222" stroke-width="' +
         sw +
         '"/>';
-    }
     return g;
   }
 

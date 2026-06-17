@@ -76,7 +76,7 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=29",
+  "APP_VER=30",
   "homeStepsHtml",
   "clearStaticLanding",
   "applyRecordZoom",
@@ -252,8 +252,9 @@ if (!dotSolid.includes("mark-solid") || dotSolid.includes("stroke-dasharray")) f
 if (typeof Geo.isLineCut !== "function") fail("isLineCut export");
 
 const oppai = Geo.targetSvg(122, "opp", "", "oppai");
-if (!oppai.includes('class="face oppai"') || !oppai.includes("#FEE7D9") || !oppai.includes("oppnip"))
+if (!oppai.includes('class="face oppai"') || !oppai.includes("oppai-face.png"))
   fail("oppai target face missing");
+if (!fs.existsSync(path.join(root, "oppai-face.png"))) fail("oppai-face.png missing");
 
 const Beg = loadModule(beginnerSrc).ConvergeBeginner;
 if (!Beg || typeof Beg.plainGroup !== "function" || !Beg.coachCard("home")) fail("ConvergeBeginner export failed");
