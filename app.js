@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=37;
+const KEY="archeryConverge.v1", APP_VER=38;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -108,7 +108,7 @@ function distRings(dist){
   DISTS.forEach((d,i)=>{
     const r=radii[i],on=d===dist;
     rings+=`<circle class="ring${on?" on":""}" data-d="${d}" cx="${cx}" cy="${cy}" r="${r}"/>`;
-    rings+=`<text class="ring lab" x="${cx}" y="${cy-r+5}" font-size="10" fill="${on?"var(--hit)":"var(--dim)"}">${d}</text>`;
+    rings+=`<text class="ring lab" x="${cx}" y="${cy-r+5}" font-size="10" fill="${on?"var(--ink)":"var(--dim)"}">${d}</text>`;
   });
   rings+=`<circle class="center" cx="${cx}" cy="${cy}" r="6"/>`;
   rings+=`<text x="${cx}" y="${cy+6}" text-anchor="middle" font-size="28" font-weight="700" fill="var(--text)">${dist}</text>`;
@@ -255,10 +255,15 @@ function bindReopenEnd(s,id,then){
   };
 }
 
+function backLbl(){return begOn()?"戻る":"Back";}
 function shell(phaseIdx,title,back,bodyHtml,footHtml,fit){
   const el=$("#frame");
   const fitOn=!!fit;
-  if(el){el.className=fitOn?"frame fit"+(fit==="setup"?" setup-fit":""):"frame";el.classList.remove("home-mode");}
+  if(el){
+    el.className=fitOn?"frame fit"+(fit==="setup"?" setup-fit":""):"frame";
+    el.classList.remove("home-mode","app-mode");
+    if(phaseIdx>=0||title||back)el.classList.add("app-mode");
+  }
   document.body.classList.toggle("noflow",fitOn&&fit!=="setup");
   el.innerHTML=`
     ${phaseIdx>=0?phaseArc(phaseIdx):""}
@@ -329,7 +334,7 @@ function render(){
   }catch(e){
     console.error(e);
     shell(-1,"エラー",null,`<div class="empty">表示エラー: ${esc(e.message)}<br><br>
-      <button class="btn hit" id="errReset">練習データをリセット</button></div>`,"");
+      <button class="btn hero" id="errReset">練習データをリセット</button></div>`,"");
     const er=$("#errReset");if(er)er.onclick=()=>{db.active=null;save();ui.screen="home";render();};
     afterRender();
   }
@@ -416,7 +421,7 @@ function renderSetup(){
   const wDir=ui._windDir??last?.windDir??"";
   const wSpd=ui._windSpd??last?.windSpeed??0;
   const mk=db.sightMarks.filter(m=>g&&m.setupId===g.id&&m.dist===dist).sort((a,b)=>b.date.localeCompare(a.date))[0];
-  shell(0,begOn()?`距離 ${dist}m`:`${dist}m`,"←",`
+  shell(0,begOn()?"準備":"Setup",backLbl(),`
     ${begOn()&&Beg?Beg.coachCard("setup"):""}
     ${distRings(dist)}
     <p class="field-hint">${begOn()?"的までの距離（メートル）をタップで選びます":""}</p>
@@ -433,7 +438,7 @@ function renderSetup(){
         ${begOn()?`<p class="field-hint full">今見ている数字でOK。空欄でも始められます</p>`:""}
       </div>
     </div>`,
-    `${geoLegend("setup")}<button class="btn hit" id="start">${begOn()?"記録を始める（的の前へ）":"射る"}</button>`,"setup");
+    `${geoLegend("setup")}<button class="btn hero" id="start">${begOn()?"記録を始める（的の前へ）":"射る"}</button>`,"setup");
   document.querySelectorAll(".dist-svg .ring").forEach(c=>c.onclick=()=>{ui._dist=+c.dataset.d;renderSetup();});
   document.querySelectorAll(".wbtn").forEach(c=>c.onclick=()=>{ui._windDir=c.dataset.wd;renderSetup();});
   document.querySelectorAll(".wind-spd button").forEach(c=>c.onclick=()=>{ui._windSpd=+c.dataset.ws;renderSetup();});
@@ -458,7 +463,7 @@ function renderRecord(){
   const zenRec=Geo.isZenkinEnd(s.cur,pe);
   const oiRec=zenOppaiIdx(s,s.cur,pe);
   const canSetupBack=!n&&!s.ends.length;
-  shell(1,recordTitle(s,n,pe)+(zenRec?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:""),canSetupBack?(begOn()?"← 準備":"← 準備"):"",`
+  shell(1,recordTitle(s,n,pe)+(zenRec?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:""),canSetupBack?backLbl():"",`
     ${begOn()&&Beg?Beg.coachCard("record",{n,pe,zenkin:zenRec}):""}
     <div class="zoom-bar">${zoomChipsHtml()}</div>
     <div class="tgt-stage">
@@ -474,7 +479,7 @@ function renderRecord(){
     ${geoLegend("record")}`,
     `${!n&&s.ends.length?`<div class="foot-undo">${reopenEndBtnHtml("reopenRec")}</div>`:""}
     <div class="row">${n?`<button class="btn ghost sm undo-btn" id="undo">${begOn()?"1本取り消し":"Undo 1"}</button>`:`<span class="gap-btn"></span>`}
-      <button class="btn beat" id="backLine"${n?"":" disabled"}>${begOn()?"6本終わった・戻る":"6 done · return"}</button></div>`,true);
+      <button class="btn hero" id="backLine"${n?"":" disabled"}>${begOn()?"6本終わった・戻る":"6 done · return"}</button></div>`,true);
   paintMarks(s);
   applyRecordZoom(s);
   bindTarget(s);
@@ -600,7 +605,7 @@ function renderReturn(){
     <div class="foot-undo">${reopenEndBtnHtml("reopenRet")}</div>
     <div class="row3">
       <button class="btn ghost" id="adjBtn">${ui.adj?"保存":begOn()?"サイトを直す":"調整"}</button>
-      <button class="btn hit" id="next">${begOn()?"もう6本打つ":"次へ"}</button>
+      <button class="btn hero" id="next">${begOn()?"もう6本打つ":"次へ"}</button>
       <button class="btn ghost" id="fin">${begOn()?"今日は終わり":"終了"}</button>
     </div>`,true);
   bindReopenEnd(s,"#reopenRet",renderRecord);
@@ -622,27 +627,33 @@ function renderReturn(){
 
 function renderDone(){
   const s=db.sessions[db.sessions.length-1];
-  shell(-1,"おつかれさま",null,s?`
-    ${begOn()&&Beg?Beg.coachCard("done"):""}
-    <div class="end-badge" style="padding:32px 0"><div class="n">${sessTot(s)}</div>
-      <div class="s">${begOn()?`${s.ends.length}回（各6本）· ${s.dist}m`:`${s.ends.length}E · ${s.dist}m`}</div>
-      ${sessCompareHint(s)?`<div class="s cmp">${esc(sessCompareHint(s))}</div>`:""}</div>
-    ${sightDial(s.sightStart||{},s.sightNow||{},null)}
-    ${(s.adjLog||[]).length?`<p style="text-align:center;font-size:12px;color:var(--dim)">調整 ${s.adjLog.length} 回</p>`:""}`:
+  shell(-1,"",null,s?`
+    <div class="app-page">
+      <div class="end-hero">
+        <p class="eyebrow">SESSION</p>
+        <h2 class="headline">${begOn()?"おつかれさま":"Well done"}</h2>
+      </div>
+      ${begOn()&&Beg?Beg.coachCard("done"):""}
+      <div class="end-badge" style="padding:24px 0"><div class="n">${sessTot(s)}</div>
+        <div class="s">${begOn()?`${s.ends.length}回（各6本）· ${s.dist}m`:`${s.ends.length}E · ${s.dist}m`}</div>
+        ${sessCompareHint(s)?`<div class="s cmp">${esc(sessCompareHint(s))}</div>`:""}</div>
+      ${sightDial(s.sightStart||{},s.sightNow||{},null)}
+      ${(s.adjLog||[]).length?`<p style="text-align:center;font-size:13px;color:var(--dim);letter-spacing:-.01em">調整 ${s.adjLog.length} 回</p>`:""}
+    </div>`:
     `<div class="empty">—</div>`,
     s?`<button class="btn ghost" id="undoFin" style="margin-bottom:8px">${begOn()?"終了を取り消す":"練習を続ける"}</button>
-    <button class="btn hit" id="home">ホームへ</button>`:"");
+    <button class="btn hero" id="home">${begOn()?"ホームへ":"Home"}</button>`:"");
   const uf=$("#undoFin");if(uf)uf.onclick=()=>{if(undoFinishSession()){toast(begOn()?"練習に戻しました":"取り消しました");render();}else toast("戻せません");};
   const homeBtn=$("#home");if(homeBtn)homeBtn.onclick=()=>nav("home");
 }
 
 function renderHistory(){
-  shell(-1,"過去","←",(()=>{
+  shell(-1,begOn()?"履歴":"History",backLbl(),(()=>{
     const ss=[...db.sessions].reverse();
-    return ss.length?ss.map(s=>`
+    return `<div class="app-page">${ss.length?ss.map(s=>`
       <div class="hist-row" data-id="${s.id}"><div><div class="d">${fmtD(s.date)} · ${s.dist}m</div>
         <div class="m">${begOn()?s.ends.length+"回":s.ends.length+"E"}${s.note?" · "+esc(s.note):""}</div></div><div class="pts">${sessTot(s)}</div></div>`).join("")
-      :`<div class="empty">なし</div>`;
+      :`<div class="empty">${begOn()?"まだ記録がありません":"No sessions yet"}</div>`}</div>`;
   })(),"");
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
   $("#body").querySelectorAll(".hist-row").forEach(r=>r.onclick=()=>{ui.histId=r.dataset.id;render();});
@@ -654,7 +665,7 @@ function renderHistDetail(){
   const st=stats(sessArr(s));
   const geoDefs=Geo.GEO_MARKER_DEFS;
   const hsOver=geoDefs+(st?`<g class="geo-layer" pointer-events="none">${Geo.geoSvg(st,s.faceD,null)}</g>`:"");
-  shell(-1,`${fmtD(s.date)} · ${s.dist}m`,"←",`
+  shell(-1,`${fmtD(s.date)} · ${s.dist}m`,backLbl(),`
     <div class="tgt-stage" style="min-height:300px"><div class="box sq-fit"><div class="tgt-stack">${Geo.targetSvg(s.faceD,"hs",hsOver)}</div></div></div>
     ${st?`<div class="geo-nums" style="position:static;justify-content:center"><span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span></div>`:""}`,
     `<button class="btn ghost" id="del">削除</button>`);
@@ -666,7 +677,8 @@ function renderHistDetail(){
 function renderGear(){
   const g=getSetup();
   const gp=Phy.gearPrecisionProfile(g);
-  shell(-1,"設定","←",`
+  shell(-1,begOn()?"設定":"Settings",backLbl(),`
+    <div class="app-page">
     <div class="beg-toggle"><label class="beg-lbl"><input type="checkbox" id="begMode" ${db.settings.beginnerMode!==false?"checked":""}> やさしい説明（初心者向け）</label></div>
     <div class="gear-lbl">名前 / 弓</div>
     <div class="gear-grid">
@@ -692,8 +704,9 @@ function renderGear(){
       <input class="gear-inp" id="gcv" inputmode="decimal" placeholder="上下" value="${esc(g.calibV70||"")}">
       <input class="gear-inp" id="gch" inputmode="decimal" placeholder="左右" value="${esc(g.calibH70||"")}">
       <input class="gear-inp full" id="geye" inputmode="decimal" placeholder="アイサイト距離mm（850）" value="${esc(db.settings.eyeSight||850)}">
+    </div>
     </div>`,
-    `<button class="btn hit" id="gs">保存</button>`);
+    `<button class="btn hero" id="gs">${begOn()?"保存":"Save"}</button>`);
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
   const bm=$("#begMode");if(bm)bm.onchange=()=>{db.settings.beginnerMode=bm.checked;save();toast(bm.checked?"やさしい説明オン":"上級者表示");render();};
   $("#gs").onclick=()=>{
