@@ -21,10 +21,21 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 html,body{margin:0;padding:0;overflow-x:hidden;background:var(--void);color:var(--text);touch-action:manipulation;-ms-touch-action:manipulation}
 body{font-family:var(--sans);font-size:15px;-webkit-user-select:none;user-select:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body.noflow{overflow:hidden;height:100dvh;max-height:100dvh}
 input,select,textarea{-webkit-user-select:auto;user-select:auto}
 button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-offset:2px}
 
 .frame{position:relative;min-height:100dvh;display:flex;flex-direction:column;max-width:520px;margin:0 auto}
+.frame.fit{height:100dvh;max-height:100dvh;min-height:0;overflow:hidden}
+.frame.fit .main{flex:1;min-height:0;display:flex;flex-direction:column}
+.frame.fit .phase-arc{padding:4px 10px 0;padding-top:calc(4px + env(safe-area-inset-top))}
+.frame.fit .phase-arc svg{height:26px}
+.frame.fit .hdr{padding:0 10px 4px;min-height:30px}
+.frame.fit .hdr .title{font-size:15px;color:var(--text)}
+.frame.fit .body{flex:1;min-height:0;overflow:hidden;padding:0 8px;display:flex;flex-direction:column}
+.frame.fit .foot{flex-shrink:0;padding:6px 10px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
+.frame.fit .btn{padding:13px 12px;font-size:15px}
+.frame.fit .btn.sm{padding:10px 12px;font-size:12px;min-height:44px}
 .phase-arc{flex-shrink:0;padding:8px 12px 4px;padding-top:calc(8px + env(safe-area-inset-top))}
 .phase-arc svg{display:block;width:100%;height:36px}
 .phase-arc .lbl{font-size:11px;fill:var(--dim)}
@@ -44,7 +55,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 
 /* distance rings */
 .dist-wrap{display:flex;justify-content:center;padding:20px 0 12px}
+.frame.fit .dist-wrap{padding:4px 0 2px;flex:1;min-height:0;align-items:center}
 .dist-svg{width:min(280px,88vw);height:min(280px,88vw);touch-action:manipulation}
+.frame.fit .dist-svg{width:min(200px,58vw);height:min(200px,58vw)}
 .dist-svg .ring{cursor:pointer;fill:none;stroke:var(--line2);stroke-width:14;transition:stroke .2s,stroke-width .2s}
 .dist-svg .ring.on{stroke:var(--hit);stroke-width:18}
 .dist-svg .ring.lab{stroke:none;fill:var(--dim);font-size:11px;text-anchor:middle}
@@ -59,6 +72,14 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .sight-x .core svg{width:100%;height:100%}
 .sight-x input{width:100%;padding:12px 8px;border:1px solid var(--line);border-radius:50px;
   background:var(--panel);color:var(--text);font-size:18px;text-align:center}
+.frame.fit .sight-x{margin:0;max-width:none}
+.frame.fit .sight-x .core{width:52px;height:52px}
+.frame.fit .sight-x input{padding:10px 6px;font-size:16px}
+.setup-mid{display:flex;align-items:center;justify-content:center;gap:10px;flex-shrink:0;padding:2px 0}
+.frame.fit .wind-compass{padding:0}
+.frame.fit .wind-compass svg{width:min(108px,30vw);height:min(108px,30vw)}
+.frame.fit .wind-spd{margin:2px 0 0;gap:4px}
+.frame.fit .wind-spd button{padding:6px 10px;font-size:12px}
 .sight-x .v-up{grid-column:2}.sight-x .v-dn{grid-column:2}
 .sight-x .h-l{grid-column:1;grid-row:2}.sight-x .h-r{grid-column:3;grid-row:2}
 .sight-x .core{grid-column:2;grid-row:2}
@@ -68,7 +89,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 
 /* target hero */
 .tgt-stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:0;touch-action:none;-ms-touch-action:none}
+.frame.fit .tgt-stage{flex:1;width:100%;height:100%}
 .tgt-stage .box{position:relative;width:100%;max-width:min(100vw - 24px, 480px);transform-origin:center center}
+.frame.fit .tgt-stage .box{height:100%;width:auto;max-width:100%;aspect-ratio:1;margin:0 auto}
 .tgt-stage .box svg.face{width:100%;display:block;touch-action:none;-ms-touch-action:none}
 .tgt-geo{position:absolute;inset:0;pointer-events:none}
 .tgt-geo svg{width:100%;height:100%;display:block}
@@ -84,10 +107,17 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 
 /* return: grouping + sight dial */
 .ret-geo{display:flex;flex-direction:column;align-items:center;gap:8px}
+.ret-split{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:center;width:100%}
+.ret-split .cell{min-height:0;min-width:0;display:flex;align-items:center;justify-content:center;height:100%}
+.ret-split .cell .box{width:100%;max-height:100%;aspect-ratio:1}
+.ret-split .sight-dial{width:100%;max-width:100%;margin:0}
+.ret-bar{flex-shrink:0;text-align:center;font-size:11px;color:var(--dim);line-height:1.35;padding:2px 4px 4px}
+.ret-bar b{color:var(--mute);font-weight:600}
 .ret-geo .mini{width:min(240px,70vw)}
 .ret-geo .mini .box{transform:scale(1)}
 
 .sight-dial{width:min(260px,80vw);margin:8px auto}
+.frame.fit .sight-dial svg{max-height:min(36dvh,200px)}
 .sight-dial svg{width:100%;display:block}
 .sight-dial .tick{stroke:var(--line2);stroke-width:1}
 .sight-dial .axis{stroke:var(--line);stroke-width:1.5;opacity:.6}
@@ -102,6 +132,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .end-badge{text-align:center;padding:6px 0}
 .end-badge .n{font-size:32px;font-weight:700;color:var(--warn)}
 .end-badge .s{font-size:12px;color:var(--dim);margin-top:2px}
+.hdr .jtag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:4px}
+.hdr .jtag.ok{background:rgba(94,207,122,.15);color:var(--hit)}
+.hdr .jtag.mid{background:rgba(232,176,64,.15);color:var(--warn)}
+.hdr .jtag.hold{background:rgba(155,124,240,.12);color:var(--sight)}
+.hdr .jtag.warn{background:rgba(224,96,80,.12);color:var(--beat)}
+.frame.fit .foot .row3{display:grid;grid-template-columns:1fr 1.2fr .9fr;gap:6px}
+.frame.fit .foot .row3 .btn{margin-top:0;padding:11px 6px;font-size:12px}
 
 .btn{
   display:block;width:100%;padding:16px;border-radius:50px;border:none;
@@ -155,6 +192,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .wind-spd button.on{border-color:var(--hit);color:var(--hit)}
 
 .phys-badge{text-align:center;padding:6px 12px;margin:4px auto;max-width:300px;border-radius:20px;font-size:13px;font-weight:600}
+.frame.fit .phys-badge,.frame.fit .phys-hint,.frame.fit .phys-traj,.frame.fit .end-badge{display:none}
 .phys-badge.ok{background:rgba(94,207,122,.12);color:var(--hit)}
 .phys-badge.mid{background:rgba(232,176,64,.12);color:var(--warn)}
 .phys-badge.hold{background:rgba(155,124,240,.1);color:var(--sight)}
@@ -178,7 +216,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 <script src="physics.js"></script>
 <script>
 "use strict";
-const KEY="archeryConverge.v1", APP_VER=6;
+const KEY="archeryConverge.v1", APP_VER=7;
 const Phy=window.ArcheryPhysics;
 const PHASES=["準備","記録","確認"];
 const DISTS=[70,50,30,18];
@@ -386,17 +424,32 @@ function sessTot(s){return sessArr(s).reduce((a,x)=>a+x.s,0);}
 function endPulse(n,cb){const p=$("#pulse"),pn=$("#pulseN");pn.textContent=n;p.classList.add("on");
   setTimeout(()=>{p.classList.remove("on");setTimeout(cb,200);},520);}
 
-function shell(phaseIdx,title,back,bodyHtml,footHtml){
-  $("#frame").innerHTML=`
+function shell(phaseIdx,title,back,bodyHtml,footHtml,fit){
+  const el=$("#frame");
+  if(el)el.className=fit?"frame fit":"frame";
+  document.body.classList.toggle("noflow",!!fit);
+  el.innerHTML=`
     ${phaseIdx>=0?phaseArc(phaseIdx):""}
     <div class="hdr">
       ${back?`<button class="back" id="backBtn">${back}</button>`:`<span class="gap"></span>`}
       <div class="title">${title||""}</div>
       <span class="gap"></span>
     </div>
-    <div class="body" id="body">${bodyHtml}</div>
-    ${footHtml?`<div class="foot" id="foot">${footHtml}</div>`:""}`;
+    ${fit?`<div class="main"><div class="body" id="body">${bodyHtml}</div>${footHtml?`<div class="foot" id="foot">${footHtml}</div>`:""}</div>`
+      :`<div class="body" id="body">${bodyHtml}</div>${footHtml?`<div class="foot" id="foot">${footHtml}</div>`:""}`}`;
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
+}
+function jtagHtml(j){
+  if(!j)return "";
+  const cls=j.tone==="ok"?"ok":j.tone==="warn"?"warn":j.tone==="hold"?"hold":"mid";
+  return `<span class="jtag ${cls}">${esc(j.label)}</span>`;
+}
+function retBarHtml(st,adv,j){
+  const parts=[];
+  if(st)parts.push(`${mono(st.mx,"x")} ${mono(st.my,"y")} R${st.rr.toFixed(1)}`);
+  if(adv&&adv.moves.length)parts.push(adv.moves.map(m=>`${m.dir}${m.cm.toFixed(1)}cm`).join("·"));
+  else if(j&&j.label==="維持")parts.push("調整不要");
+  return parts.length?`<div class="ret-bar">${parts.map(p=>`<span>${esc(p)}</span>`).join(" · ")}</div>`:"";
 }
 
 function nav(screen){ui.screen=screen;ui.histId=null;ui.adj=false;render();}
@@ -458,23 +511,20 @@ function renderSetup(){
   const wDir=ui._windDir??last?.windDir??"";
   const wSpd=ui._windSpd??last?.windSpeed??0;
   const mk=db.sightMarks.filter(m=>g&&m.setupId===g.id&&m.dist===dist).sort((a,b)=>b.date.localeCompare(a.date))[0];
-  shell(0,"距離とサイト","←",`
+  shell(0,`${dist}m`,"←",`
     ${distRings(dist)}
-    ${windCompass(wDir,wSpd)}
-    <div class="sight-x">
-      <span class="ax v-up">上下</span>
-      <input class="v-up" id="sv" inputmode="decimal" placeholder="—" value="${esc(mk?.v||"")}">
-      <div class="core"><svg viewBox="0 0 72 72"><circle cx="36" cy="36" r="34" fill="none" stroke="var(--line)" stroke-width="1"/>
-        <line x1="36" y1="4" x2="36" y2="68" stroke="var(--hit)" stroke-width="1" opacity=".5"/>
-        <line x1="4" y1="36" x2="68" y2="36" stroke="var(--hit)" stroke-width="1" opacity=".5"/>
-        <circle cx="36" cy="36" r="4" fill="var(--red)"/></svg></div>
-      <input class="h-l" id="sh" inputmode="decimal" placeholder="—" value="${esc(mk?.h||"")}">
-      <span class="ax h-l">左右</span>
-      <span class="ax v-dn"></span>
-      <span class="ax h-r"></span>
-    </div>
-    <textarea class="note-inp" id="note" placeholder="メモ（任意）" rows="1"></textarea>`,
-    `<button class="btn hit" id="start">射る</button>`);
+    <div class="setup-mid">
+      <div>${windCompass(wDir,wSpd)}</div>
+      <div class="sight-x">
+        <input class="v-up" id="sv" inputmode="decimal" placeholder="上下" value="${esc(mk?.v||"")}">
+        <div class="core"><svg viewBox="0 0 72 72"><circle cx="36" cy="36" r="34" fill="none" stroke="var(--line)" stroke-width="1"/>
+          <line x1="36" y1="4" x2="36" y2="68" stroke="var(--hit)" stroke-width="1" opacity=".5"/>
+          <line x1="4" y1="36" x2="68" y2="36" stroke="var(--hit)" stroke-width="1" opacity=".5"/>
+          <circle cx="36" cy="36" r="4" fill="var(--red)"/></svg></div>
+        <input class="h-l" id="sh" inputmode="decimal" placeholder="左右" value="${esc(mk?.h||"")}">
+      </div>
+    </div>`,
+    `<button class="btn hit" id="start">射る</button>`,true);
   document.querySelectorAll(".dist-svg .ring").forEach(c=>c.onclick=()=>{ui._dist=+c.dataset.d;renderSetup();});
   document.querySelectorAll(".wbtn").forEach(c=>c.onclick=()=>{ui._windDir=c.dataset.wd;renderSetup();});
   document.querySelectorAll(".wind-spd button").forEach(c=>c.onclick=()=>{ui._windSpd=+c.dataset.ws;renderSetup();});
@@ -483,7 +533,7 @@ function renderSetup(){
     const v=$("#sv").value.trim(),h=$("#sh").value.trim();
     db.active={
       id:uid(),date:today(),setupId:g?.id||null,dist,faceD:dist>=60?122:dist<=18?40:80,perEnd:6,
-      sightStart:{v,h},sightNow:{v,h},note:$("#note").value.trim(),
+      sightStart:{v,h},sightNow:{v,h},note:"",
       windDir:ui._windDir??"",windSpeed:ui._windSpd??0,
       phase:"record",ends:[],cur:[],adjLog:[]
     };
@@ -502,7 +552,7 @@ function renderRecord(){
   const sug=sugFromAdv(adv,j);
   const geoDefs=`<defs><marker id="geoArr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--sight)"/></marker></defs>`;
   shell(1,`E${s.ends.length+1} · ${n}/${pe}`,"",`
-    <div class="tgt-stage" style="min-height:calc(100dvh - 200px)">
+    <div class="tgt-stage">
       <div class="box" id="tgBox">
         ${slotRing(s.cur,pe,s.faceD)}
         <div style="position:relative">${targetSvg(s.faceD,"tg")}
@@ -512,8 +562,7 @@ function renderRecord(){
         </div>
       </div>
     </div>`,
-    `<button class="btn beat" id="backLine"${n?"":" disabled"}>射線に戻った</button>
-     <div class="row" style="margin-top:8px"><button class="btn ghost sm" id="undo">1本戻す</button></div>`);
+    `<div class="row"><button class="btn ghost sm" id="undo">戻す</button><button class="btn beat" id="backLine"${n?"":" disabled"}>射線に戻った</button></div>`,true);
   paintMarks(s);
   bindTarget(s);
   $("#undo").onclick=()=>{if(s.cur.length){s.cur.pop();save();renderRecord();}};
@@ -593,33 +642,28 @@ function renderReturn(){
   const sv=s.sightNow?.v??"",sh=s.sightNow?.h??"";
   const s0=s.sightStart||{};
   const geoDefs=`<defs><marker id="geoArr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--sight)"/></marker></defs>`;
-  shell(2,`E${s.ends.length}`,"",`
-    <div class="end-badge"><div class="n">${tot}</div><div class="s">${end.map(lbl).join(" · ")}</div></div>
-    ${physBadgeHtml(j)}
-    <div class="ret-geo">
-      <div class="mini"><div class="box"><div style="position:relative">${targetSvg(s.faceD,"rt")}
+  shell(2,`E${s.ends.length} · ${tot}点 ${jtagHtml(j)}`,"",`
+    <div class="ret-split">
+      <div class="cell"><div class="box"><div style="position:relative;width:100%">${targetSvg(s.faceD,"rt")}
         <div class="tgt-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}">${geoDefs}${geoSvg(st,s.faceD,sug)}</svg></div>
       </div></div></div>
-      ${sightDial(s0,{v:sv,h:sh},sug,adv)}
-      ${moveHintHtml(adv)}${trajHintHtml(adv)}
-      ${st?`<div class="geo-nums" style="position:static;justify-content:center;margin:4px 0">
-        <span>${mono(st.mx,"x")}</span><span>${mono(st.my,"y")}</span><span>R<b>${st.rr.toFixed(1)}</b></span>${st.excluded&&st.excluded.length?`<span>外${st.excluded.length}</span>`:""}</div>`:""}
-      ${ui.adj?`<div class="sight-adj">
+      <div class="cell">${ui.adj?`<div class="sight-adj" style="width:100%;margin:0">
         <input id="nv" inputmode="decimal" placeholder="上下" value="${esc(sv)}">
         <input id="nh" inputmode="decimal" placeholder="左右" value="${esc(sh)}">
-      </div><textarea class="note-inp" id="adjNote" placeholder="調整メモ（任意）" rows="1"></textarea>`:""}
-    </div>`,
-    `<div class="row">
-      <button class="btn ghost" id="adjBtn">${ui.adj?"保存":"サイトを調整した"}</button>
-      <button class="btn hit" id="next">次のエンド</button>
+      </div>`:sightDial(s0,{v:sv,h:sh},sug,adv)}</div>
     </div>
-    <button class="btn ghost" id="fin" style="margin-top:8px">練習を終える</button>`);
+    ${retBarHtml(st,adv,j)}`,`
+    <div class="row3">
+      <button class="btn ghost" id="adjBtn">${ui.adj?"保存":"調整"}</button>
+      <button class="btn hit" id="next">次へ</button>
+      <button class="btn ghost" id="fin">終了</button>
+    </div>`,true);
   let mh="";end.forEach(a=>{mh+=dot(a,s.faceD,"var(--hit)",lbl(a));});const rm=$("#rtmarks");if(rm)rm.innerHTML=mh;
   $("#adjBtn").onclick=()=>{
     if(!ui.adj){ui.adj=true;renderReturn();return;}
     const nv=$("#nv").value.trim(),nh=$("#nh").value.trim();
     s.sightNow={v:nv,h:nh};
-    s.adjLog.push({end:s.ends.length,date:Date.now(),v:nv,h:nh,note:$("#adjNote").value.trim()});
+    s.adjLog.push({end:s.ends.length,date:Date.now(),v:nv,h:nh,note:""});
     const g=db.setups[0];
     if(g)db.sightMarks.push({id:uid(),setupId:g.id,date:today(),dist:s.dist,v:nv,h:nh,tag:"adj"});
     ui.adj=false;save();toast("記録した");renderReturn();
