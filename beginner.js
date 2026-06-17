@@ -72,6 +72,31 @@
     return "※判断補助です。サイトを動かす前に射形・安全・コーチの指示を優先してください。";
   }
 
+  function safetyNote() {
+    return "サイトを動かす前に射形・安全・コーチの指示を優先してください。";
+  }
+
+  /** Plain trust line for sight suggestions — shown on return screen. */
+  function trustLine(ctx) {
+    ctx = ctx || {};
+    if (!ctx.needsMove) {
+      return "散布から読み取った参考です。動かす必要がなければそのままで大丈夫です。";
+    }
+    if (ctx.qualityLabel === "低" || (ctx.conf != null && ctx.conf < 50)) {
+      return "※参考程度の目安です。もう1回（6本）打ってから動かすのがおすすめです。";
+    }
+    if (ctx.personal === "今回だけ") {
+      return "※今回だけの傾向です。過去と違うので、すぐ動かさずもう1回確認しましょう。";
+    }
+    if (ctx.gearLevel === "低" && !ctx.hasCalib) {
+      return "※散布からの目安です。設定で弓・矢とクリック量を入れると、あなた用に近づきます。";
+    }
+    if (ctx.hasCalib || ctx.gearLevel === "高" || ctx.personal === "過去と一致") {
+      return "※散布とあなたの設定から算出した目安です。最終判断はコーチと射形を優先してください。";
+    }
+    return "※散布からの目安です。設定のクリック量を入れると精度が上がります。";
+  }
+
   function coachCard(phase, ctx) {
     ctx = ctx || {};
     var cards = {
@@ -168,5 +193,7 @@
     zenkinExplain: zenkinExplain,
     scoreExplain: scoreExplain,
     adviceDisclaimer: adviceDisclaimer,
+    safetyNote: safetyNote,
+    trustLine: trustLine,
   };
 })(typeof window !== "undefined" ? window : this);

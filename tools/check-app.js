@@ -69,6 +69,7 @@ const requiredHtml = [
   ".btn.hero",
   "app-mode",
   "mark-pop",
+  "trust-line",
 ];
 requiredHtml.forEach(s => {
   if (!html.includes(s)) fail("missing in index.html: " + s);
@@ -81,7 +82,7 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=40",
+  "APP_VER=41",
   "exportBackup",
   "importBackup",
   "home-foot-nav",
@@ -96,6 +97,10 @@ const requiredApp = [
   "shouldShowCoach",
   "COACH_CAP",
   "coachSeen",
+  "trustLineHtml",
+  "trustCtx",
+  "trustLine",
+  "safetyNote",
   "clearStaticLanding",
   "applyRecordZoom",
   "zoomChips",
@@ -281,5 +286,7 @@ const Beg = loadModule(beginnerSrc).ConvergeBeginner;
 if (!Beg || typeof Beg.plainGroup !== "function" || !Beg.coachCard("home")) fail("ConvergeBeginner export failed");
 if (!Beg.zenkinExplain || !Beg.zenkinExplain().includes("金")) fail("zenkinExplain missing");
 if (!Beg.adviceDisclaimer || !Beg.adviceDisclaimer().includes("判断補助")) fail("adviceDisclaimer missing");
+if (!Beg.trustLine || !Beg.trustLine({ needsMove: true, qualityLabel: "低", conf: 40 }).includes("目安")) fail("trustLine missing");
+if (!Beg.safetyNote || !Beg.safetyNote().includes("コーチ")) fail("safetyNote missing");
 
 console.log("check-app OK");

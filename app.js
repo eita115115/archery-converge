@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=40;
+const KEY="archeryConverge.v1", APP_VER=41;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -318,6 +318,38 @@ function jtagHtml(j){
   const cls=j.tone==="ok"?"ok":j.tone==="warn"?"warn":j.tone==="hold"?"hold":"mid";
   return `<span class="jtag ${cls}">${esc(j.label)}</span>`;
 }
+function trustCtx(adv,s){
+  const setup=getSetup(),gear=Phy.gearPrecisionProfile(setup);
+  const st=adv&&adv.st;
+  const quality=adv&&adv.quality?adv.quality:(st?Phy.sessionQuality(sessForPhy(s),setup,st):{label:"低",score:.2});
+  return{
+    needsMove:!!(adv&&adv.needsMove),
+    qualityLabel:quality.label,
+    qualityScore:quality.score,
+    conf:adv?Math.round((adv.confidence||0)*100):0,
+    gearLevel:gear.level,
+    gearScore:gear.score,
+    hasCalib:!!(String(setup.calibV70||"").trim()||String(setup.calibH70||"").trim()),
+    personal:adv&&adv.personal?adv.personal.state:""
+  };
+}
+function trustLineHtml(adv,s){
+  if(!adv)return "";
+  const ctx=trustCtx(adv,s);
+  const refine=ctx.gearLevel==="低"&&!ctx.hasCalib;
+  let text;
+  if(begOn()&&Beg)text=Beg.trustLine(ctx);
+  else{
+    const parts=["Estimate from grouping"];
+    parts.push(ctx.qualityLabel+" quality");
+    if(ctx.conf)parts.push("conf "+ctx.conf+"%");
+    if(ctx.hasCalib)parts.push("calib on");
+    else if(ctx.gearScore<.45)parts.push("add gear in Settings");
+    text=parts.join(" · ");
+  }
+  const link=refine&&ctx.needsMove?` <button type="button" class="trust-link" id="trustGear">${begOn()?"設定で精密化":"Refine in Settings"}</button>`:"";
+  return `<p class="trust-line">${esc(text)}${link}</p>`;
+}
 function adviceCardHtml(st,adv,j){
   if(!begOn()||!Beg)return "";
   const pj=Beg.plainJudgement(j)||{title:"",body:""};
@@ -326,11 +358,10 @@ function adviceCardHtml(st,adv,j){
     <div class="advice-title">${esc(pj.title)}</div>
     <div class="advice-group">矢の集まり：<b>${esc(Beg.plainGroup(st))}</b></div>
     ${moves.map(m=>`<div class="advice-move">${esc(m)}</div>`).join("")}
-    <div class="advice-note">${esc(pj.body)}</div>
-    <div class="advice-note dim">${esc(Beg.adviceDisclaimer())}</div></div>`;
+    <div class="advice-note">${esc(pj.body)}</div></div>`;
 }
 function adviceFootHtml(){
-  const t=begOn()&&Beg?Beg.adviceDisclaimer():"Estimates from grouping only — follow coach, safety, and range rules.";
+  const t=begOn()&&Beg?Beg.safetyNote():"Follow coach, safety, and range rules before adjusting sight.";
   return `<p class="advice-foot">${esc(t)}</p>`;
 }
 function sessCompareHint(s){
@@ -715,6 +746,7 @@ function renderReturn(){
   const moveLine=adv&&adv.moves.length&&Beg?Beg.plainSightMove(adv.moves[0]):"";
   shell(2,returnTitle(s,tot,j)+(zenRet?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:"")+(begOn()&&j&&!zenRet?` <span class="jtag ${j.tone==="ok"?"ok":j.tone==="warn"?"warn":j.tone==="hold"?"hold":"mid"}">${esc((Beg.plainJudgement(j)||{}).title||j.label)}</span>`:""),"",`
     ${coachCardHtml("return",{plainGroup:Beg.plainGroup(st),moveLine,zenkin:zenRet})}
+    ${trustLineHtml(adv,s)}
     ${adviceCardHtml(st,adv,j)}
     <div class="ret-split">
       <div class="cell"><div class="box sq-fit"><div class="tgt-stack">${Geo.targetSvg(s.faceD,"rt",rtOver,targetModeFor(end,pe),oiRet)}</div></div></div>
@@ -733,6 +765,7 @@ function renderReturn(){
       <button class="btn ghost" id="fin">${begOn()?"今日は終わり":"終了"}</button>
     </div>`,true);
   bindReopenEnd(s,"#reopenRet",renderRecord);
+  const tg=$("#trustGear");if(tg)tg.onclick=()=>nav("gear");
   let mh="";end.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--mark-cur)",Geo.lbl(a));});const rm=$("#rtmarks");if(rm)rm.innerHTML=mh;
   $("#adjBtn").onclick=()=>{
     if(!ui.adj){ui.adj=true;renderReturn();return;}
