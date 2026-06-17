@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=46;
+const KEY="archeryConverge.v1", APP_VER=47;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -566,8 +566,14 @@ function renderRecord(){
     ${n?`<p class="rec-hint">${begOn()?"タップを間違えたら「1本取り消し」· 長押しで位置を直せます":"Wrong tap? Undo one · long-press to nudge"}</p>`:""}
     ${geoLegendHtml("record")}`,
     `${!n&&s.ends.length?`<div class="foot-undo">${reopenEndBtnHtml("reopenRec")}</div>`:""}
-    <div class="row">${n?`<button class="btn ghost sm undo-btn" id="undo">${begOn()?"1本取り消し":"Undo 1"}</button>`:`<span class="gap-btn"></span>`}
-      <button class="btn hero" id="backLine"${n?"":" disabled"}>${begOn()?"6本終わった・戻る":"6 done · return"}</button></div>`,true);
+    <div class="rec-thumb-bar">
+      <div class="thumb-slot thumb-slot-undo${n?"":" is-idle"}">
+        <button class="btn ghost undo-btn" id="undo" type="button"${n?"":" disabled"}>${begOn()?"1本取り消し":"Undo 1"}</button>
+      </div>
+      <div class="thumb-slot thumb-slot-primary">
+        <button class="btn hero" id="backLine" type="button"${n?"":" disabled"}>${begOn()?"6本終わった・戻る":"6 done · return"}</button>
+      </div>
+    </div>`,true);
   paintMarks(s);
   applyRecordZoom(s);
   bindTarget(s);
@@ -660,17 +666,9 @@ function updateRecordChrome(s,justShot){
       hint=document.createElement("p");hint.className="rec-hint";hint.textContent=msg;prog.insertAdjacentElement("afterend",hint);
     }else if(hint)hint.textContent=msg;
   }else if(hint)hint.remove();
-  const row=$(".foot .row"),gap=row&&row.querySelector(".gap-btn"),undo=$("#undo");
-  if(n>0&&!undo&&row){
-    const btn=document.createElement("button");
-    btn.className="btn ghost sm undo-btn";btn.id="undo";
-    btn.textContent=begOn()?"1本取り消し":"Undo 1";
-    if(gap)gap.replaceWith(btn);else row.insertBefore(btn,row.firstChild);
-    bindRecordUndo(s);
-  }else if(n===0&&undo){
-    const sp=document.createElement("span");sp.className="gap-btn";
-    undo.replaceWith(sp);
-  }else if(undo)bindRecordUndo(s);
+  const undoSlot=$(".rec-thumb-bar .thumb-slot-undo"),undo=$("#undo");
+  if(undoSlot)undoSlot.classList.toggle("is-idle",n===0);
+  if(undo){undo.disabled=n===0;bindRecordUndo(s);}
   const bl=$("#backLine");
   if(bl){
     const enable=n>0;
