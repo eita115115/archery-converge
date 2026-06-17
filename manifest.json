@@ -1,0 +1,16 @@
+{
+  "name": "Converge — 得点記録",
+  "short_name": "Converge",
+  "description": "的の中心への収束だけで読む、アーチェリー記録",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#141614",
+  "theme_color": "#141614",
+  "lang": "ja",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
