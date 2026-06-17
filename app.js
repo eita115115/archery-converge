@@ -382,10 +382,13 @@ function renderRecord(){
       </div>
     </div>
     ${geoLegend("record")}`,
-    `<div class="row"><button class="btn ghost sm" id="undo">1本戻す</button><button class="btn beat" id="backLine"${n?"":" disabled"}>${begOn()?"6本終わった・戻る":"射線に戻った"}</button></div>`,true);
+    `${!n&&s.ends.length?`<div class="foot-undo">${reopenEndBtnHtml("reopenRec")}</div>`:""}
+    <div class="row">${n?`<button class="btn ghost sm" id="undo">1本戻す</button>`:`<span class="gap-btn"></span>`}
+      <button class="btn beat" id="backLine"${n?"":" disabled"}>${begOn()?"6本終わった・戻る":"射線に戻った"}</button></div>`,true);
   paintMarks(s);
   bindTarget(s);
-  $("#undo").onclick=()=>{if(s.cur.length){s.cur.pop();save();renderRecord();}};
+  bindReopenEnd(s,"#reopenRec",renderRecord);
+  const undoBtn=$("#undo");if(undoBtn)undoBtn.onclick=()=>{if(s.cur.length){s.cur.pop();save();renderRecord();}};
   $("#backLine").onclick=()=>{
     if(!s.cur.length)return;
     const t=s.cur.reduce((a,x)=>a+x.s,0);
