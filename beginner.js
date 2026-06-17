@@ -68,13 +68,17 @@
     return JUDGE_PLAIN[j.label] || { title: j.label, body: j.text || "" };
   }
 
+  function adviceDisclaimer() {
+    return "※着弾の集まりからの目安です。実際の調整はコーチ・安全確認・射場ルールを優先してください。";
+  }
+
   function coachCard(phase, ctx) {
     ctx = ctx || {};
     var cards = {
       home: {
         icon: "①②③",
         title: "3ステップで使います",
-        body: "①弓場で距離とサイトを入力 → ②的の前で刺さった場所をタップ → ③射線（弓を置く場所）に戻って結果を見る",
+        body: "①距離とサイトを入力 → ②的の前で着弾をタップ（6本） → ③弓を置いた場所に戻って集まりとサイトの目安を見る",
       },
       setup: {
         icon: "①",
@@ -90,7 +94,7 @@
           : ctx.n === 0
             ? "矢が刺さった場所を的の上でタップ。ズレたときは0.4秒以上押し続けると細かく動かせます。"
             : ctx.n < ctx.pe - 1
-              ? "あと" + (ctx.pe - ctx.n) + "本タップしたら、下のボタンで射線に戻れます。"
+              ? "あと" + (ctx.pe - ctx.n) + "本タップしたら、下の「6本終わった・戻る」で結果を見られます。"
               : "6本そろいました。下のボタンを押して戻りましょう。",
       },
       return: {
@@ -138,7 +142,7 @@
 
   function firstArrowToast(n, pe, score) {
     if (n === 1) return "1本目を記録しました！あと" + (pe - 1) + "本です";
-    if (n === pe) return "6本そろいました。射線に戻ったら下のボタンを押してください";
+    if (n === pe) return "6本そろいました。「6本終わった・戻る」を押して結果を見ましょう";
     return null;
   }
 
@@ -163,5 +167,6 @@
     firstArrowToast: firstArrowToast,
     zenkinExplain: zenkinExplain,
     scoreExplain: scoreExplain,
+    adviceDisclaimer: adviceDisclaimer,
   };
 })(typeof window !== "undefined" ? window : this);

@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=34;
+const KEY="archeryConverge.v1", APP_VER=35;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -288,7 +288,20 @@ function adviceCardHtml(st,adv,j){
     <div class="advice-title">${esc(pj.title)}</div>
     <div class="advice-group">矢の集まり：<b>${esc(Beg.plainGroup(st))}</b></div>
     ${moves.map(m=>`<div class="advice-move">${esc(m)}</div>`).join("")}
-    <div class="advice-note">${esc(pj.body)}</div></div>`;
+    <div class="advice-note">${esc(pj.body)}</div>
+    <div class="advice-note dim">${esc(Beg.adviceDisclaimer())}</div></div>`;
+}
+function adviceFootHtml(){
+  const t=begOn()&&Beg?Beg.adviceDisclaimer():"Estimates from grouping only — follow coach, safety, and range rules.";
+  return `<p class="advice-foot">${esc(t)}</p>`;
+}
+function sessCompareHint(s){
+  if(!s||db.sessions.length<2)return "";
+  const prev=db.sessions[db.sessions.length-2];
+  if(prev.dist!==s.dist)return "";
+  const d=sessTot(s)-sessTot(prev);
+  if(!d)return begOn()?"前回と同じ距離で同点":"Same dist as prior session";
+  return begOn()?(d>0?`前回（${prev.dist}m）より +${d}点`:`前回（${prev.dist}m）より ${d}点`):(d>0?`+${d} vs prior`:`${d} vs prior`);
 }
 function retBarHtml(st,adv,j){
   if(begOn())return "";
@@ -346,21 +359,21 @@ function renderHome(){
         <line x1="6" y1="50" x2="94" y2="50" stroke="var(--hit)" stroke-width=".5" opacity=".4"/>
       </svg></div>
       <h1 class="home-title">Converge</h1>
-      <p class="home-tag">${begOn()?"的で記録して、戻ったらサイトの直し方がわかる練習帳":"Tap at the face, return to see grouping & sight moves"}</p>
+      <p class="home-tag">${begOn()?"アーチェリーの着弾位置から、集まりと次のサイト調整の目安を見える化する記録アプリ":"Record hits at the face, return to see grouping and sight-move hints"}</p>
       ${homeStepsHtml()}
       <button class="btn hit" id="goSetup" style="max-width:280px">${begOn()?"練習を始める":"Start"}</button>
       ${begOn()&&Beg?Beg.coachCard("home"):""}
       ${db.sessions.length?`<p class="home-prev">前回 ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · ${sessTot(db.sessions[db.sessions.length-1])}点</p>`:""}
+      <p class="home-sub">${begOn()?"その他":"More"}</p>
       <div class="home-links">
-        <button id="lnkHist">過去</button>
-        <button id="lnkGear">装備</button>
-        <button id="lnkBk">バックアップ</button>
+        <button id="lnkHist">${begOn()?"練習の履歴":"History"}</button>
+        <button id="lnkGear">${begOn()?"設定":"Settings"}</button>
       </div>
+      <button class="home-bk" id="lnkBk" type="button">${begOn()?"データのバックアップ":"Backup data"}</button>
     </div>`,"");
   $("#goSetup").onclick=()=>nav("setup");
   $("#lnkHist").onclick=()=>nav("history");
   $("#lnkGear").onclick=()=>nav("gear");
-  if(begOn()){const lg=$("#lnkGear");if(lg)lg.textContent="設定";}
   $("#lnkBk").onclick=exportImport;
 }
 
@@ -431,10 +444,11 @@ function renderRecord(){
       </div>
     </div>
     <div class="rec-progress" aria-hidden="true">${Array.from({length:pe},(_,i)=>`<span class="dot${i<n?" on":i===n?" cur":""}"></span>`).join("")}</div>
+    ${n?`<p class="rec-hint">${begOn()?"タップを間違えたら「1本取り消し」· 長押しで位置を直せます":"Wrong tap? Undo one · long-press to nudge"}</p>`:""}
     ${geoLegend("record")}`,
     `${!n&&s.ends.length?`<div class="foot-undo">${reopenEndBtnHtml("reopenRec")}</div>`:""}
-    <div class="row">${n?`<button class="btn ghost sm" id="undo">1本戻す</button>`:`<span class="gap-btn"></span>`}
-      <button class="btn beat" id="backLine"${n?"":" disabled"}>${begOn()?"6本終わった・戻る":"射線に戻った"}</button></div>`,true);
+    <div class="row">${n?`<button class="btn ghost sm undo-btn" id="undo">${begOn()?"1本取り消し":"Undo 1"}</button>`:`<span class="gap-btn"></span>`}
+      <button class="btn beat" id="backLine"${n?"":" disabled"}>${begOn()?"6本終わった・戻る":"6 done · return"}</button></div>`,true);
   paintMarks(s);
   applyRecordZoom(s);
   bindTarget(s);
@@ -486,7 +500,7 @@ function bindTarget(s){
   function reset(){if(drag?.tm)clearTimeout(drag.tm);drag=null;cur.innerHTML="";lens.style.display="none";lens.classList.remove("fine","cut","miss");}
   svg.oncontextmenu=e=>e.preventDefault();
   svg.addEventListener("selectstart",e=>e.preventDefault());
-  function down(e){if(s.cur.length>=s.perEnd){toast(begOn()?"6本たったので射線に戻ってください":"6本 — 戻る");return;}const cp=pt(e);if(!cp)return;e.preventDefault();
+  function down(e){if(s.cur.length>=s.perEnd){toast(begOn()?"6本たったので「6本終わった・戻る」を押してください":"6 arrows — tap return");return;}const cp=pt(e);if(!cp)return;e.preventDefault();
     if(e.pointerId!=null){try{svg.setPointerCapture(e.pointerId);}catch(_){}}
     const p=toS(cp.x,cp.y);
     drag={p,raw:{x:cp.x,y:cp.y},fine:false,id:cp.id,tm:setTimeout(()=>{if(drag){drag.fine=true;draw(drag.p);}},400)};
@@ -555,7 +569,8 @@ function renderReturn(){
       </div>`:sightDial(s0,{v:sv,h:sh},sug,adv)}</div>
     </div>
     ${geoLegend("return",{j})}
-    ${retBarHtml(st,adv,j)}`,`
+    ${retBarHtml(st,adv,j)}
+    ${adviceFootHtml()}`,`
     <div class="foot-undo">${reopenEndBtnHtml("reopenRet")}</div>
     <div class="row3">
       <button class="btn ghost" id="adjBtn">${ui.adj?"保存":begOn()?"サイトを直す":"調整"}</button>
@@ -584,7 +599,8 @@ function renderDone(){
   shell(-1,"おつかれさま",null,s?`
     ${begOn()&&Beg?Beg.coachCard("done"):""}
     <div class="end-badge" style="padding:32px 0"><div class="n">${sessTot(s)}</div>
-      <div class="s">${begOn()?`${s.ends.length}回（各6本）· ${s.dist}m`:`${s.ends.length}E · ${s.dist}m`}</div></div>
+      <div class="s">${begOn()?`${s.ends.length}回（各6本）· ${s.dist}m`:`${s.ends.length}E · ${s.dist}m`}</div>
+      ${sessCompareHint(s)?`<div class="s cmp">${esc(sessCompareHint(s))}</div>`:""}</div>
     ${sightDial(s.sightStart||{},s.sightNow||{},null)}
     ${(s.adjLog||[]).length?`<p style="text-align:center;font-size:12px;color:var(--dim)">調整 ${s.adjLog.length} 回</p>`:""}`:
     `<div class="empty">—</div>`,
@@ -631,7 +647,8 @@ function renderGear(){
       <input class="gear-inp" id="gn" placeholder="名前" value="${esc(g.name)}">
       <input class="gear-inp" id="gb" placeholder="弓" value="${esc(g.bow)}">
     </div>
-    <div class="phys-traj" style="margin:8px 0">${begOn()?"詳しく入れると提案がより正確に（なくても使えます）":`物理入力 ${Math.round(gp.score*100)}% — RK4精度に影響`}</div>
+    <div class="phys-traj" style="margin:8px 0">${begOn()?"弓・矢の数値は任意。入れると提案の目安が少し精密になります（なくても使えます）":`Physics inputs ${Math.round(gp.score*100)}% — affects estimate quality`}</div>
+    <p class="advice-foot" style="margin:0 0 8px">${begOn()&&Beg?esc(Beg.adviceDisclaimer()):"Estimates only — not a substitute for coaching."}</p>
     <div class="gear-sep"></div>
     <div class="gear-lbl">${begOn()?"弓・矢（任意）":"弓・矢（物理エンジン）"}</div>
     <div class="gear-grid">
