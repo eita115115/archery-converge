@@ -81,7 +81,7 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=39",
+  "APP_VER=40",
   "exportBackup",
   "importBackup",
   "home-foot-nav",
@@ -92,6 +92,10 @@ const requiredApp = [
   "backLbl",
   "app-mode",
   "afterRecordArrow",
+  "coachCardHtml",
+  "shouldShowCoach",
+  "COACH_CAP",
+  "coachSeen",
   "clearStaticLanding",
   "applyRecordZoom",
   "zoomChips",

@@ -3,12 +3,45 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=39;
+const KEY="archeryConverge.v1", APP_VER=40;
+const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
 const PHASES=["準備","記録","確認"];
 function begOn(){return Beg&&Beg.isOn(db.settings);}
+function coachSeenMap(){
+  if(!db.settings.coachSeen||typeof db.settings.coachSeen!=="object")db.settings.coachSeen={};
+  return db.settings.coachSeen;
+}
+function coachKey(phase,ctx){
+  ctx=ctx||{};
+  if(phase==="record"&&ctx.zenkin)return "record-zenkin";
+  if(phase==="return"&&ctx.zenkin)return "return-zenkin";
+  return phase;
+}
+function shouldShowCoach(phase,ctx){
+  if(!begOn()||!Beg)return false;
+  ctx=ctx||{};
+  if(phase==="record"&&!ctx.zenkin&&ctx.n>0)return false;
+  return (coachSeenMap()[coachKey(phase,ctx)]||0)<COACH_CAP;
+}
+function bumpCoachSeen(phase,ctx){
+  const key=coachKey(phase,ctx);
+  const m=coachSeenMap();
+  m[key]=(m[key]||0)+1;
+  save();
+}
+function coachCardHtml(phase,ctx){
+  ctx=ctx||{};
+  if(!shouldShowCoach(phase,ctx))return "";
+  const html=Beg.coachCard(phase,ctx);
+  if(!html)return "";
+  const key=coachKey(phase,ctx);
+  if(!ui._coachBump)ui._coachBump={};
+  if(!ui._coachBump[key]){ui._coachBump[key]=true;bumpCoachSeen(phase,ctx);}
+  return html;
+}
 const DISTS=[70,50,30,18];
 let db=load();
 const ui={screen:"home",histId:null,adj:false,_dist:70,zoom:1};
@@ -319,7 +352,7 @@ function retBarHtml(st,adv,j){
 function recordTitle(s,n,pe){return begOn()?`${Beg.endLabel(s.ends.length+1)} · ${Beg.arrowProgress(n,pe)}`:`E${s.ends.length+1} · ${n}/${pe}`;}
 function returnTitle(s,tot,j){return begOn()?`${Beg.endLabel(s.ends.length)} · ${tot}点`:`E${s.ends.length} · ${tot}点 ${jtagHtml(j)}`;}
 
-function nav(screen){ui.screen=screen;ui.histId=null;ui.adj=false;render();}
+function nav(screen){ui.screen=screen;ui.histId=null;ui.adj=false;ui._coachBump={};render();}
 
 function render(){
   try{
@@ -422,7 +455,7 @@ function renderSetup(){
   const wSpd=ui._windSpd??last?.windSpeed??0;
   const mk=db.sightMarks.filter(m=>g&&m.setupId===g.id&&m.dist===dist).sort((a,b)=>b.date.localeCompare(a.date))[0];
   shell(0,begOn()?"準備":"Setup",backLbl(),`
-    ${begOn()&&Beg?Beg.coachCard("setup"):""}
+    ${coachCardHtml("setup")}
     ${distRings(dist)}
     <p class="field-hint">${begOn()?"的までの距離（メートル）をタップで選びます":""}</p>
     <div class="setup-mid">
@@ -464,7 +497,7 @@ function renderRecord(){
   const oiRec=zenOppaiIdx(s,s.cur,pe);
   const canSetupBack=!n&&!s.ends.length;
   shell(1,recordTitle(s,n,pe)+(zenRec?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:""),canSetupBack?backLbl():"",`
-    ${begOn()&&Beg?Beg.coachCard("record",{n,pe,zenkin:zenRec}):""}
+    ${coachCardHtml("record",{n,pe,zenkin:zenRec})}
     <div class="zoom-bar">${zoomChipsHtml()}</div>
     <div class="tgt-stage">
       <div class="box sq-fit" id="tgBox">
@@ -534,14 +567,18 @@ function updateRecordFace(s){
   if(isOppai&&!wasOppai){svg.classList.add("face-reveal");setTimeout(()=>svg.classList.remove("face-reveal"),560);}
 }
 function updateRecordCoach(s){
-  if(!begOn()||!Beg)return;
   const n=s.cur.length,pe=s.perEnd,zenRec=Geo.isZenkinEnd(s.cur,pe);
+  const ctx={n,pe,zenkin:zenRec};
   const card=document.querySelector(".coach-card[data-phase='record']");
-  if(!card)return;
+  if(!zenRec&&n>0){if(card)card.remove();return;}
+  const html=coachCardHtml("record",ctx);
+  if(!html){if(card)card.remove();return;}
   const wrap=document.createElement("div");
-  wrap.innerHTML=Beg.coachCard("record",{n,pe,zenkin:zenRec});
+  wrap.innerHTML=html;
   const neu=wrap.firstElementChild;
-  if(neu)card.replaceWith(neu);
+  if(!neu)return;
+  if(card)card.replaceWith(neu);
+  else{const anchor=$(".zoom-bar")||$(".tgt-stage");if(anchor)anchor.insertAdjacentElement("beforebegin",neu);}
 }
 function bindRecordUndo(s){
   const undo=$("#undo");if(!undo)return;
@@ -677,7 +714,7 @@ function renderReturn(){
   const rtOver=geoDefs+(st?`<g class="geo-layer" pointer-events="none">${Geo.geoSvg(st,s.faceD,sug)}</g>`:"");
   const moveLine=adv&&adv.moves.length&&Beg?Beg.plainSightMove(adv.moves[0]):"";
   shell(2,returnTitle(s,tot,j)+(zenRet?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:"")+(begOn()&&j&&!zenRet?` <span class="jtag ${j.tone==="ok"?"ok":j.tone==="warn"?"warn":j.tone==="hold"?"hold":"mid"}">${esc((Beg.plainJudgement(j)||{}).title||j.label)}</span>`:""),"",`
-    ${begOn()&&Beg?Beg.coachCard("return",{plainGroup:Beg.plainGroup(st),moveLine,zenkin:zenRet}):""}
+    ${coachCardHtml("return",{plainGroup:Beg.plainGroup(st),moveLine,zenkin:zenRet})}
     ${adviceCardHtml(st,adv,j)}
     <div class="ret-split">
       <div class="cell"><div class="box sq-fit"><div class="tgt-stack">${Geo.targetSvg(s.faceD,"rt",rtOver,targetModeFor(end,pe),oiRet)}</div></div></div>
@@ -720,7 +757,7 @@ function renderDone(){
         <p class="eyebrow">SESSION</p>
         <h2 class="headline">${begOn()?"おつかれさま":"Well done"}</h2>
       </div>
-      ${begOn()&&Beg?Beg.coachCard("done"):""}
+      ${coachCardHtml("done")}
       <div class="end-badge" style="padding:24px 0"><div class="n">${sessTot(s)}</div>
         <div class="s">${begOn()?`${s.ends.length}回（各6本）· ${s.dist}m`:`${s.ends.length}E · ${s.dist}m`}</div>
         ${sessCompareHint(s)?`<div class="s cmp">${esc(sessCompareHint(s))}</div>`:""}</div>
@@ -795,7 +832,11 @@ function renderGear(){
     </div>`,
     `<button class="btn hero" id="gs">${begOn()?"保存":"Save"}</button>`);
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
-  const bm=$("#begMode");if(bm)bm.onchange=()=>{db.settings.beginnerMode=bm.checked;save();toast(bm.checked?"やさしい説明オン":"上級者表示");render();};
+  const bm=$("#begMode");if(bm)bm.onchange=()=>{
+    db.settings.beginnerMode=bm.checked;
+    if(bm.checked)db.settings.coachSeen={};
+    save();toast(bm.checked?"やさしい説明オン":"上級者表示");ui._coachBump={};render();
+  };
   $("#gs").onclick=()=>{
     const d={id:g.id||uid(),name:$("#gn").value.trim()||"main",bow:$("#gb").value.trim(),
       poundage:$("#gp").value.trim(),drawLength:$("#gd").value.trim(),arrowWeight:$("#gw").value.trim(),
