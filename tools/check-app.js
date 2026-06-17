@@ -53,7 +53,6 @@ const requiredHtml = [
   "coach-card",
   "advice-card",
   "--geo-group",
-  "slotRadius",
   ".frame.fit",
   "tgt-stack",
   "geo-legend",
