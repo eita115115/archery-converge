@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=36;
+const KEY="archeryConverge.v1", APP_VER=37;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
@@ -258,15 +258,15 @@ function bindReopenEnd(s,id,then){
 function shell(phaseIdx,title,back,bodyHtml,footHtml,fit){
   const el=$("#frame");
   const fitOn=!!fit;
-  if(el)el.className=fitOn?"frame fit"+(fit==="setup"?" setup-fit":""):"frame";
+  if(el){el.className=fitOn?"frame fit"+(fit==="setup"?" setup-fit":""):"frame";el.classList.remove("home-mode");}
   document.body.classList.toggle("noflow",fitOn&&fit!=="setup");
   el.innerHTML=`
     ${phaseIdx>=0?phaseArc(phaseIdx):""}
-    <div class="hdr">
+    ${title||back?`<div class="hdr">
       ${back?`<button class="back" id="backBtn">${back}</button>`:`<span class="gap"></span>`}
       <div class="title">${title||""}</div>
       <span class="gap"></span>
-    </div>
+    </div>`:""}
     ${fit?`<div class="main"><div class="body" id="body">${bodyHtml}</div>${footHtml?`<div class="foot" id="foot">${footHtml}</div>`:""}</div>`
       :`<div class="body" id="body">${bodyHtml}</div>${footHtml?`<div class="foot" id="foot">${footHtml}</div>`:""}`}`;
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
@@ -335,45 +335,48 @@ function render(){
   }
 }
 
-function homeStepsHtml(){
+function homeFlowHtml(){
   const steps=begOn()?[
-    ["1","距離とサイトを決める","リングでメートルを選び、照準の数字をメモ"],
-    ["2","的の前で6本タップ","刺さった場所をタップ。長押しで微調整"],
-    ["3","戻ってサイトを確認","集まりと「動かす方向」を見る"]
+    ["準備","距離・サイト"],
+    ["記録","的の前で6本"],
+    ["確認","集まりを見る"]
   ]:[
-    ["1","Setup","距離・風・サイト"],
-    ["2","Record","着弾タップ ×6"],
-    ["3","Return","散布 & サイト提案"]
+    ["Setup","Dist · sight"],
+    ["Record","Tap ×6"],
+    ["Return","Grouping"]
   ];
-  return `<ol class="home-steps">${steps.map(([n,t,d])=>`<li><b>${n}</b><span><strong>${t}</strong> — ${d}</span></li>`).join("")}</ol>`;
+  return `<div class="home-flow home-steps">${steps.map(([k,v],i)=>`${i?`<span class="flow-dot" aria-hidden="true"></span>`:""}<div class="flow-item"><span class="flow-k">${k}</span><span class="flow-v">${v}</span></div>`).join("")}</div>`;
 }
 function renderHome(){
   shell(-1,"",null,`
     <div class="home-wrap">
-      <div class="home-rings"><svg viewBox="0 0 100 100" role="img" aria-label="的">
-        <circle cx="50" cy="50" r="44" fill="none" stroke="var(--line2)" stroke-width="2"/>
-        <circle cx="50" cy="50" r="32" fill="none" stroke="var(--line2)" stroke-width="2"/>
-        <circle cx="50" cy="50" r="20" fill="none" stroke="var(--line2)" stroke-width="2"/>
-        <circle cx="50" cy="50" r="8" fill="var(--red)"/>
-        <line x1="50" y1="6" x2="50" y2="94" stroke="var(--hit)" stroke-width=".5" opacity=".4"/>
-        <line x1="6" y1="50" x2="94" y2="50" stroke="var(--hit)" stroke-width=".5" opacity=".4"/>
-      </svg></div>
-      <h1 class="home-title">Converge</h1>
-      <p class="home-tag">${begOn()?"着弾を記録し、戻ったら集まりを見る。サイト調整は目安 — 判断の補助アプリです":"Tap hits, return to see grouping. Sight hints are estimates, not orders."}</p>
-      ${homeStepsHtml()}
-      <button class="btn hit" id="goSetup" style="max-width:280px">${begOn()?"練習を始める":"Start"}</button>
-      ${begOn()&&Beg?Beg.coachCard("home"):""}
-      ${db.sessions.length?`<p class="home-prev">前回 ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · ${sessTot(db.sessions[db.sessions.length-1])}点</p>`:""}
-      <p class="home-sub">${begOn()?"その他":"More"}</p>
-      <div class="home-links">
-        <button id="lnkHist">${begOn()?"練習の履歴":"History"}</button>
-        <button id="lnkGear">${begOn()?"設定":"Settings"}</button>
-      </div>
-      <div class="bk-row">
-        <button class="btn ghost sm" id="bkOut" type="button">${begOn()?"データを書き出す":"Export"}</button>
-        <button class="btn ghost sm" id="bkIn" type="button">${begOn()?"データを読み込む":"Import"}</button>
-      </div>
+      <section class="home-hero">
+        <div class="home-visual" aria-hidden="true"><svg viewBox="0 0 100 100" role="img" aria-label="的">
+          <defs><radialGradient id="hg" cx="50%" cy="45%" r="50%"><stop offset="0%" stop-color="#fff"/><stop offset="70%" stop-color="#f5f3ee"/><stop offset="100%" stop-color="#e8e4dc"/></radialGradient></defs>
+          <circle cx="50" cy="50" r="46" fill="url(#hg)" stroke="#d8d5cd" stroke-width=".5"/>
+          <circle cx="50" cy="50" r="36" fill="none" stroke="#1c1b19" stroke-width="1.2" opacity=".12"/>
+          <circle cx="50" cy="50" r="26" fill="none" stroke="#1c1b19" stroke-width="1.2" opacity=".18"/>
+          <circle cx="50" cy="50" r="16" fill="none" stroke="#1c1b19" stroke-width="1.2" opacity=".22"/>
+          <circle cx="50" cy="50" r="6" fill="#1c1b19"/>
+          <circle cx="50" cy="50" r="2.2" fill="#d4a72c"/>
+        </svg></div>
+        <p class="home-eyebrow">${begOn()?"ARCHERY":"ARCHERY PRACTICE"}</p>
+        <h1 class="home-title">${begOn()?"着弾が、<br>収束する。":"Hits<br>converge."}</h1>
+        <p class="home-tag">${begOn()?"的の前で記録。戻れば、次の一手が見える。":"Record at the face. Return. See the next move."}</p>
+      </section>
+      ${homeFlowHtml()}
+      ${db.sessions.length?`<p class="home-prev">${begOn()?"前回":"Last"} · ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · <b>${sessTot(db.sessions[db.sessions.length-1])}</b></p>`:""}
+      <button class="btn hero" id="goSetup">${begOn()?"練習を始める":"Get started"}</button>
+      <footer class="home-foot">
+        <nav class="home-foot-nav">
+          <button type="button" id="lnkHist">${begOn()?"履歴":"History"}</button>
+          <button type="button" id="lnkGear">${begOn()?"設定":"Settings"}</button>
+          <button type="button" id="bkOut">${begOn()?"書き出し":"Export"}</button>
+          <button type="button" id="bkIn">${begOn()?"読み込み":"Import"}</button>
+        </nav>
+      </footer>
     </div>`,"");
+  const fr=$("#frame");if(fr)fr.classList.add("home-mode");
   $("#goSetup").onclick=()=>nav("setup");
   $("#lnkHist").onclick=()=>nav("history");
   $("#lnkGear").onclick=()=>nav("gear");

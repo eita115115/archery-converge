@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#f8f7f4">
-<meta name="description" content="Converge — アーチェリーの着弾位置から集まりとサイト調整の目安を見える化する記録アプリ。的の前でタップ記録、戻って確認。初心者向け説明・オフライン対応。">
+<meta name="description" content="Converge — 着弾が、収束する。的の前で記録し、戻れば集まりが見えるアーチェリー練習アプリ。オフライン対応。">
 <meta name="keywords" content="アーチェリー,弓道,得点記録,サイト調整,グルーピング,練習帳,PWA">
 <meta name="robots" content="index,follow">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -215,15 +215,32 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 .frame.fit .foot-undo{padding:0 0 6px}
 .frame.fit .foot-undo .reopen-btn{padding:11px 12px;font-size:13px}
 
-.home-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(var(--vh,1vh)*100 - 80px);text-align:center;padding:20px}
-.home-rings{width:120px;height:120px;margin-bottom:24px}
-.home-rings svg{width:100%;height:100%}
-.home-wrap p{margin:12px 0 0;font-size:13px;color:var(--dim);line-height:1.6}
-.home-sub{margin:20px 0 6px;font-size:11px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
-.home-links{display:flex;gap:20px;justify-content:center}
-.home-links button{background:none;border:none;color:var(--mute);font-size:13px;cursor:pointer;text-decoration:underline;padding:8px}
-.bk-row{display:flex;gap:10px;justify-content:center;margin:10px auto 0;max-width:300px}
-.bk-row .btn{flex:1}
+.frame.home-mode{background:var(--void);box-shadow:none;max-width:100%}
+.frame.home-mode .body{padding:0;flex:1;display:flex;flex-direction:column}
+.home-wrap{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;
+  padding:calc(28px + var(--safe-top)) 28px calc(24px + var(--safe-bot));min-height:calc(var(--vh,1vh)*100);min-height:100dvh}
+.home-hero{display:flex;flex-direction:column;align-items:center;width:100%}
+.home-visual{width:min(200px,54vw);aspect-ratio:1;margin:0 0 28px;filter:drop-shadow(0 24px 48px rgba(28,27,25,.12))}
+.home-visual svg{width:100%;height:100%;display:block}
+.home-eyebrow{margin:0 0 10px;font-size:11px;font-weight:600;letter-spacing:.18em;color:var(--dim)}
+.home-title{margin:0;font-size:clamp(2.25rem,10vw,3rem);font-weight:700;letter-spacing:-.05em;line-height:1.02;color:var(--ink)}
+.home-tag{margin:18px 0 0;max-width:19em;font-size:1.0625rem;font-weight:400;line-height:1.5;color:var(--mute);letter-spacing:-.01em}
+.home-steps{}
+.home-flow{display:flex;align-items:center;justify-content:center;gap:0;width:100%;max-width:360px;margin:36px 0 8px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.home-flow .flow-item{flex:1;min-width:0;padding:0 4px}
+.home-flow .flow-k{display:block;font-size:13px;font-weight:600;letter-spacing:-.02em;color:var(--text)}
+.home-flow .flow-v{display:block;margin-top:5px;font-size:11px;color:var(--dim);letter-spacing:.01em}
+.home-flow .flow-dot{width:3px;height:3px;border-radius:50%;background:var(--line2);flex-shrink:0}
+.home-prev{margin:20px 0 0;font-size:13px;color:var(--dim);letter-spacing:-.01em}
+.home-prev b{color:var(--text);font-weight:600}
+.btn.hero{display:block;width:100%;max-width:320px;margin:28px auto 0;padding:17px 24px;border-radius:980px;border:none;
+  background:var(--ink);color:#fff;font-size:17px;font-weight:600;letter-spacing:-.02em;cursor:pointer;font-family:var(--sans);
+  transition:transform .15s ease,opacity .15s ease}
+.btn.hero:active{transform:scale(.98);opacity:.88}
+.home-foot{margin-top:auto;padding-top:32px;width:100%}
+.home-foot-nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px}
+.home-foot-nav button{background:none;border:none;padding:6px 2px;font-size:12px;color:var(--dim);cursor:pointer;letter-spacing:-.01em}
+.home-foot-nav button:hover{color:var(--mute)}
 .rec-hint{text-align:center;font-size:12px;color:var(--dim);margin:6px 0 0;line-height:1.4}
 .advice-foot{font-size:11px;color:var(--dim);text-align:center;margin:10px 0 4px;line-height:1.45;padding:0 8px}
 .advice-note.dim{color:var(--dim);margin-top:10px}
@@ -301,16 +318,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
   color:var(--hit);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1.1}
 .coach-card .coach-body b{display:block;font-size:14px;color:var(--text);margin-bottom:4px}
 .coach-card .coach-body p{margin:0;font-size:13px;color:var(--dim);line-height:1.55}
-.home-wrap .coach-card{margin:16px 0 8px;max-width:340px}
-.home-title{margin:0 0 4px;font-size:28px;font-weight:800;letter-spacing:-.02em;color:var(--text)}
-.home-tag{margin:0 0 18px;font-size:14px;color:var(--mute);line-height:1.5;max-width:320px}
-.home-steps{list-style:none;margin:0 0 20px;padding:0;max-width:340px;text-align:left;width:100%}
-.home-steps li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin-bottom:8px;background:var(--panel);
-  border:1px solid var(--line);border-radius:12px;font-size:13px;line-height:1.45;color:var(--text)}
-.home-steps li b{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:rgba(15,118,110,.12);color:var(--hit);
-  font-size:12px;display:flex;align-items:center;justify-content:center}
-.home-steps li span{flex:1;color:var(--dim)}
-.home-prev{margin:8px 0 0;font-size:12px;color:var(--dim)}
+
 
 .static-landing{padding:24px 16px 32px;max-width:520px;margin:0 auto;line-height:1.6}
 .static-landing h1{font-size:1.5rem;margin:0 0 .5rem}
@@ -346,8 +354,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 <body>
 <noscript>
   <div class="static-landing">
-    <h1>Converge — アーチェリー得点記録 &amp; サイト確認</h1>
-    <p>スマホで着弾を記録し、射線に戻って矢の集まりとサイト調整の方向を確認する練習帳です。JavaScript を有効にするとアプリが起動します。</p>
+    <h1>着弾が、収束する。</h1>
+    <p>Converge — 的の前で記録し、戻れば集まりが見える。JavaScript を有効にすると起動します。</p>
     <ol>
       <li>距離・風・サイトの目盛りを入力する</li>
       <li>的の前で刺さった場所をタップして6本記録する</li>
@@ -361,8 +369,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
   <text x="50" y="54" class="val" id="pulseN" text-anchor="middle">—</text></svg></div>
 <div class="frame" id="frame">
   <main class="static-landing" id="staticLanding" aria-hidden="true">
-    <h1>Converge — アーチェリー得点記録 &amp; サイト確認</h1>
-    <p>アーチェリーの着弾位置から、集まりと次のサイト調整の目安を見える化する記録アプリ。的の前でタップ記録 → 戻って確認。オフライン対応。</p>
+    <h1>着弾が、収束する。</h1>
+    <p>Converge — 的の前で記録し、戻れば集まりが見えるアーチェリー練習アプリ。オフライン対応。</p>
     <ol>
       <li><strong>準備</strong> — 距離・風・サイトの数字を入力</li>
       <li><strong>記録</strong> — 的の上で着弾位置をタップ（6本）</li>

@@ -64,6 +64,9 @@ const requiredHtml = [
   'meta name="description"',
   "static-landing",
   "home-steps",
+  "home-flow",
+  "home-hero",
+  ".btn.hero",
 ];
 requiredHtml.forEach(s => {
   if (!html.includes(s)) fail("missing in index.html: " + s);
@@ -76,14 +79,14 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=36",
+  "APP_VER=37",
   "exportBackup",
   "importBackup",
-  "bk-row",
+  "home-foot-nav",
   "advice-foot",
   "adviceDisclaimer",
   "sessCompareHint",
-  "homeStepsHtml",
+  "homeFlowHtml",
   "clearStaticLanding",
   "applyRecordZoom",
   "zoomChips",
