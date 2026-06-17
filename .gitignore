@@ -1,3 +1,6 @@
 .DS_Store
 Thumbs.db
 *.log
+
+# 開発用参考画像（GitHub Pages には載せない）
+refs/

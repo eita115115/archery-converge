@@ -90,18 +90,18 @@
     [1, "#d4a72c", "#222"],
   ];
 
-  /** Icon palette: Neutral Peach → Gentle Makeup → Baby Soft Skin */
+  /** Ref-driven palette: creamy outer skin → glossy pink areola (refs/oppai) */
   var OPPAI_FACE = [
-    [10, "#FEE7D9", "#ddb896"],
-    [9, "#F8D2B8", "#d9a888"],
-    [8, "#FDC9AD", "#d9987c"],
-    [7, "#FEBCA6", "#d08872"],
-    [6, "#F5A894", "#cc7d68"],
-    [5, "#EBC39E", "#c08a6a"],
-    [4, "#D7AD93", "#b07d62"],
-    [3, "#E1B9B9", "#b88484"],
-    [2, "#D69FA0", "#b07072"],
-    [1, "#C89C88", "#a06e5c"],
+    [10, "#FFF5F0", "#f0d4c8"],
+    [9, "#FEE7D9", "#e8c8b8"],
+    [8, "#FDD8CC", "#e0b8a8"],
+    [7, "#FCC8BE", "#d8a898"],
+    [6, "#F5B8B0", "#d09890"],
+    [5, "#ECA8A8", "#c88888"],
+    [4, "#E4989C", "#c07880"],
+    [3, "#D88890", "#b07078"],
+    [2, "#CC7888", "#a86872"],
+    [1, "#C06878", "#a05868"],
   ];
 
   function targetFaceSvg(fd, id, mode) {
@@ -117,18 +117,35 @@
       st;
     if (mode === "oppai") {
       g +=
-        '<defs><radialGradient id="' +
+        "<defs>" +
+        '<radialGradient id="' +
         id +
-        'nip" cx="42%" cy="36%" r="68%">' +
-        '<stop offset="0%" stop-color="#c99a8c"/>' +
-        '<stop offset="45%" stop-color="#b28278"/>' +
-        '<stop offset="100%" stop-color="#8f564c"/>' +
-        '</radialGradient><radialGradient id="' +
+        'are" cx="50%" cy="44%" r="58%">' +
+        '<stop offset="0%" stop-color="#b86878"/>' +
+        '<stop offset="34%" stop-color="#d08088"/>' +
+        '<stop offset="70%" stop-color="#e8a8a8" stop-opacity=".88"/>' +
+        '<stop offset="100%" stop-color="#f5c8c8" stop-opacity=".22"/>' +
+        "</radialGradient>" +
+        '<radialGradient id="' +
         id +
-        'vol" cx="38%" cy="32%" r="72%">' +
-        '<stop offset="0%" stop-color="#fff" stop-opacity=".38"/>' +
-        '<stop offset="42%" stop-color="#fff" stop-opacity=".06"/>' +
-        '<stop offset="100%" stop-color="#c98f7a" stop-opacity=".12"/>' +
+        'nip" cx="48%" cy="36%" r="68%">' +
+        '<stop offset="0%" stop-color="#9a5060"/>' +
+        '<stop offset="42%" stop-color="#b86878"/>' +
+        '<stop offset="100%" stop-color="#8f4858"/>' +
+        "</radialGradient>" +
+        '<radialGradient id="' +
+        id +
+        'vol" cx="62%" cy="26%" r="80%">' +
+        '<stop offset="0%" stop-color="#fff" stop-opacity=".5"/>' +
+        '<stop offset="26%" stop-color="#fff" stop-opacity=".16"/>' +
+        '<stop offset="52%" stop-color="#fff" stop-opacity=".04"/>' +
+        '<stop offset="100%" stop-color="#c87878" stop-opacity=".14"/>' +
+        "</radialGradient>" +
+        '<radialGradient id="' +
+        id +
+        'shd" cx="50%" cy="90%" r="46%">' +
+        '<stop offset="0%" stop-color="#8a5868" stop-opacity=".2"/>' +
+        '<stop offset="100%" stop-color="#8a5868" stop-opacity="0"/>' +
         "</radialGradient></defs>";
     }
     for (i = 0; i < rings.length; i++) {
@@ -144,32 +161,121 @@
         '" stroke="' +
         st +
         '" stroke-width="' +
-        (mode === "oppai" ? sw * 0.85 : sw) +
+        (mode === "oppai" ? sw * 0.42 : sw) +
         '"/>';
     }
     if (mode === "oppai") {
+      var ar = w * 2.85;
       g +=
-        '<circle cx="0" cy="0" r="' +
-        w * 0.48 +
-        '" fill="url(#' +
-        id +
-        'nip)" stroke="#7a4840" stroke-width="' +
-        sw * 0.9 +
-        '"/>' +
-        '<ellipse cx="' +
-        -w * 0.12 +
-        '" cy="' +
-        -w * 0.17 +
-        '" rx="' +
-        w * 0.16 +
-        '" ry="' +
-        w * 0.1 +
-        '" fill="#fff" opacity=".4"/>' +
         '<circle cx="0" cy="0" r="' +
         10 * w +
         '" fill="url(#' +
         id +
-        'vol)" pointer-events="none"/>';
+        'shd)" pointer-events="none"/>' +
+        '<circle cx="0" cy="0" r="' +
+        ar +
+        '" fill="url(#' +
+        id +
+        'are)" opacity=".93" pointer-events="none"/>' +
+        '<circle cx="0" cy="0" r="' +
+        ar +
+        '" fill="none" stroke="#a06068" stroke-width="' +
+        sw * 0.45 +
+        '" opacity=".32" pointer-events="none"/>' +
+        '<ellipse cx="0" cy="' +
+        -w * 0.06 +
+        '" rx="' +
+        w * 0.34 +
+        '" ry="' +
+        w * 0.5 +
+        '" fill="url(#' +
+        id +
+        'nip)" stroke="#7a3848" stroke-width="' +
+        sw * 0.6 +
+        '"/>' +
+        '<ellipse cx="' +
+        w * 0.07 +
+        '" cy="' +
+        -w * 0.21 +
+        '" rx="' +
+        w * 0.1 +
+        '" ry="' +
+        w * 0.07 +
+        '" fill="#fff" opacity=".58" pointer-events="none"/>' +
+        '<circle cx="0" cy="0" r="' +
+        10 * w +
+        '" fill="url(#' +
+        id +
+        'vol)" pointer-events="none"/>' +
+        '<ellipse cx="' +
+        w * 2.8 +
+        '" cy="' +
+        -w * 4.2 +
+        '" rx="' +
+        w * 2.5 +
+        '" ry="' +
+        w * 1.7 +
+        '" fill="#fff" opacity=".36" pointer-events="none"/>' +
+        '<ellipse cx="' +
+        w * 0.35 +
+        '" cy="' +
+        -w * 3.2 +
+        '" rx="' +
+        w * 0.2 +
+        '" ry="' +
+        w * 2.9 +
+        '" fill="#fff" opacity=".2" pointer-events="none"/>' +
+        '<ellipse cx="' +
+        -w * 0.9 +
+        '" cy="' +
+        -w * 3.8 +
+        '" rx="' +
+        w * 1.9 +
+        '" ry="' +
+        w * 1.15 +
+        '" fill="#fff" opacity=".3" pointer-events="none"/>' +
+        '<circle cx="' +
+        w * 0.09 +
+        '" cy="' +
+        -w * 0.3 +
+        '" r="' +
+        w * 0.11 +
+        '" fill="#fff" opacity=".48" pointer-events="none"/>' +
+        '<circle cx="' +
+        w * 0.11 +
+        '" cy="' +
+        -w * 0.33 +
+        '" r="' +
+        w * 0.04 +
+        '" fill="#fff" opacity=".82" pointer-events="none"/>' +
+        '<circle cx="' +
+        -w * 2.1 +
+        '" cy="' +
+        -w * 3.5 +
+        '" r="' +
+        w * 0.14 +
+        '" fill="#fff" opacity=".38" pointer-events="none"/>' +
+        '<circle cx="' +
+        -w * 1.94 +
+        '" cy="' +
+        -w * 3.62 +
+        '" r="' +
+        w * 0.05 +
+        '" fill="#fff" opacity=".72" pointer-events="none"/>' +
+        '<circle cx="' +
+        w * 3.2 +
+        '" cy="' +
+        -w * 2.4 +
+        '" r="' +
+        w * 0.11 +
+        '" fill="#fff" opacity=".32" pointer-events="none"/>' +
+        '<circle cx="' +
+        w * 3.29 +
+        '" cy="' +
+        -w * 2.49 +
+        '" r="' +
+        w * 0.04 +
+        '" fill="#fff" opacity=".68" pointer-events="none"/>';
     } else {
       g += '<circle cx="0" cy="0" r="' + w / 2 + '" fill="none" stroke="#222" stroke-width="' + sw + '"/>';
       g +=
