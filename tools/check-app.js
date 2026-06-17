@@ -76,7 +76,7 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=33",
+  "APP_VER=34",
   "homeStepsHtml",
   "clearStaticLanding",
   "applyRecordZoom",
@@ -252,7 +252,7 @@ if (!dotSolid.includes("mark-solid") || dotSolid.includes("stroke-dasharray")) f
 if (typeof Geo.isLineCut !== "function") fail("isLineCut export");
 
 const oppai = Geo.targetSvg(122, "opp", "", "oppai");
-if (!oppai.includes('class="face oppai"') || !oppai.includes("oppai/1.png"))
+if (!oppai.includes('class="face oppai"') || !oppai.includes("oppai/1.jpg"))
   fail("oppai target face missing");
 Geo.OPPAI_VARIANTS.forEach((v) => {
   if (!fs.existsSync(path.join(root, v.file))) fail("oppai variant missing: " + v.file);
