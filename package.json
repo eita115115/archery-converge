@@ -2,6 +2,7 @@
   "name": "archery-converge",
   "private": true,
   "scripts": {
-    "check:app": "node tools/check-app.js"
+    "check:app": "node tools/check-app.js",
+    "check:parse": "node tools/parse-check.js"
   }
 }

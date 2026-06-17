@@ -13,6 +13,7 @@ function median(vals){
   return a.length%2?a[m]:(a[m-1]+a[m])/2;
 }
 function pct(v){return `${Math.round(v*100)}%`;}
+/** Must match ConvergeGeometry.ringW — checked by tools/check-app.js */
 function ringW(fd){return fd/20;}
 
 function momentStats(arrows,weights){

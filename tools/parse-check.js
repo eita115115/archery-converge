@@ -1,8 +1,10 @@
 const fs = require("fs");
 const vm = require("vm");
-const html = fs.readFileSync(require("path").join(__dirname, "..", "index.html"), "utf8");
-const script = html.match(/<script>([\s\S]*)<\/script>/)[1];
-const lines = script.split("\n");
+const path = require("path");
+
+const root = path.join(__dirname, "..");
+const appSrc = fs.readFileSync(path.join(root, "app.js"), "utf8");
+const lines = appSrc.split("\n");
 
 function checkSlice(start, end, label) {
   const chunk = lines.slice(start, end).join("\n");
@@ -16,7 +18,6 @@ function checkSlice(start, end, label) {
   }
 }
 
-// Find renderRecord bounds
 const start = lines.findIndex(l => l.includes("function renderRecord"));
 const end = lines.findIndex((l, i) => i > start && l.startsWith("function paintMarks"));
 checkSlice(0, start, "before renderRecord");
@@ -24,8 +25,8 @@ checkSlice(start, end, "renderRecord");
 checkSlice(end, lines.length, "after paintMarks");
 
 try {
-  new vm.Script(script);
-  console.log("FULL: OK");
+  new vm.Script(appSrc);
+  console.log("FULL app.js: OK");
 } catch (e) {
-  console.log("FULL: FAIL", e.message);
+  console.log("FULL app.js: FAIL", e.message);
 }
