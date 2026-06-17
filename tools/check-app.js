@@ -26,7 +26,8 @@ const required = [
   "function renderReturn",
   "射線に戻った",
   "練習を始める",
-  "APP_VER=5",
+  "APP_VER=6",
+  "blockZoom",
   "normalizeActive",
   "ArcheryPhysics",
   "endAdvice",
@@ -36,6 +37,8 @@ const required = [
 required.forEach(s => { if (!html.includes(s)) fail("missing: " + s); });
 
 if (/\?\.onclick\s*=/.test(script)) fail("optional chaining assignment found");
+if (!/minimum-scale\s*=\s*1/.test(html) || !/user-scalable\s*=\s*no/.test(html)) fail("viewport zoom lock missing");
+if (!/touch-action:\s*manipulation/.test(html)) fail("touch-action manipulation missing");
 
 if (!fs.existsSync(path.join(root, "physics.js"))) fail("physics.js missing");
 

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#121412">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Converge">
@@ -18,9 +18,9 @@
   --gold:#d4a72c;--red:#c73e3a;--blue:#3d8fd4;--ink:#161614;
   --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;overflow-x:hidden;background:var(--void);color:var(--text)}
-body{font-family:var(--sans);font-size:15px;-webkit-user-select:none;user-select:none}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+html,body{margin:0;padding:0;overflow-x:hidden;background:var(--void);color:var(--text);touch-action:manipulation;-ms-touch-action:manipulation}
+body{font-family:var(--sans);font-size:15px;-webkit-user-select:none;user-select:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 input,select,textarea{-webkit-user-select:auto;user-select:auto}
 button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-offset:2px}
 
@@ -67,9 +67,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
   background:var(--panel);color:var(--text);font-size:14px;min-height:44px;resize:none;margin-top:12px}
 
 /* target hero */
-.tgt-stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:0;touch-action:none}
-.tgt-stage .box{position:relative;width:100%;max-width:min(100vw - 24px, 480px);transition:transform .35s cubic-bezier(.2,.8,.2,1);transform-origin:center}
-.tgt-stage .box svg.face{width:100%;display:block;touch-action:none}
+.tgt-stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:0;touch-action:none;-ms-touch-action:none}
+.tgt-stage .box{position:relative;width:100%;max-width:min(100vw - 24px, 480px);transform-origin:center center}
+.tgt-stage .box svg.face{width:100%;display:block;touch-action:none;-ms-touch-action:none}
 .tgt-geo{position:absolute;inset:0;pointer-events:none}
 .tgt-geo svg{width:100%;height:100%;display:block}
 .slot-ring{position:absolute;inset:-8%;pointer-events:none}
@@ -178,7 +178,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--hit);outline-of
 <script src="physics.js"></script>
 <script>
 "use strict";
-const KEY="archeryConverge.v1", APP_VER=5;
+const KEY="archeryConverge.v1", APP_VER=6;
 const Phy=window.ArcheryPhysics;
 const PHASES=["準備","記録","確認"];
 const DISTS=[70,50,30,18];
@@ -495,7 +495,7 @@ function renderSetup(){
 function renderRecord(){
   const s=db.active;if(!s){nav("home");return;}
   s.phase="record";save();
-  const n=s.cur.length,pe=s.perEnd,scale=.88+n/pe*.14;
+  const n=s.cur.length,pe=s.perEnd;
   const st=stats(s.cur);
   const adv=n>=3?endAdvice(s,s.cur):null;
   const j=adv?Phy.judgementFor(adv,s):null;
@@ -503,7 +503,7 @@ function renderRecord(){
   const geoDefs=`<defs><marker id="geoArr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--sight)"/></marker></defs>`;
   shell(1,`E${s.ends.length+1} · ${n}/${pe}`,"",`
     <div class="tgt-stage" style="min-height:calc(100dvh - 200px)">
-      <div class="box" id="tgBox" style="transform:scale(${scale})">
+      <div class="box" id="tgBox">
         ${slotRing(s.cur,pe,s.faceD)}
         <div style="position:relative">${targetSvg(s.faceD,"tg")}
           <div class="tgt-geo"><svg viewBox="${-s.faceD/2*1.18} ${-s.faceD/2*1.18} ${s.faceD*1.18} ${s.faceD*1.18}" id="geoLive">${geoDefs}${geoSvg(st,s.faceD,sug)}</svg></div>
@@ -537,7 +537,7 @@ function bindTarget(s){
   let drag=null;
   function pt(e){const t=e.changedTouches?.[0]||e.touches?.[0]||e;return t?.clientX!=null?{x:t.clientX,y:t.clientY,id:e.pointerId??t.identifier??"m"}:null;}
   function toS(x,y){const c=svg.getScreenCTM();if(!c)return{x:0,y:0};const p=svg.createSVGPoint();p.x=x;p.y=y;const r=p.matrixTransform(c.inverse());return{x:r.x,y:-r.y};}
-  function draw(p){const w=ringW(s.faceD),fine=drag?.fine,cut=fine&&lineCut(p.x,p.y,s.faceD);
+  function draw(p){const fine=drag?.fine,cut=fine&&lineCut(p.x,p.y,s.faceD);
     const col=fine?(cut?"var(--hit)":"var(--warn)"):"#fff";
     lens.classList.toggle("fine",!!fine);lens.classList.toggle("cut",!!cut);
     cur.innerHTML=`<circle cx="${p.x}" cy="${-p.y}" r="${arrR(s.faceD)}" fill="none" stroke="${col}" stroke-width="${s.faceD/400}"/>`;
@@ -545,8 +545,10 @@ function bindTarget(s){
     lens.style.left=p.x<0?"auto":"4px";lens.style.right=p.x<0?"4px":"auto";}
   function reset(){if(drag?.tm)clearTimeout(drag.tm);drag=null;cur.innerHTML="";lens.style.display="none";}
   svg.oncontextmenu=e=>e.preventDefault();
+  svg.addEventListener("selectstart",e=>e.preventDefault());
   function down(e){if(s.cur.length>=s.perEnd){toast("6本 — 戻る");return;}const cp=pt(e);if(!cp)return;e.preventDefault();
-    try{svg.setPointerCapture(cp.id);}catch(_){}const p=toS(cp.x,cp.y);
+    if(e.pointerId!=null){try{svg.setPointerCapture(e.pointerId);}catch(_){}}
+    const p=toS(cp.x,cp.y);
     drag={p,raw:{x:cp.x,y:cp.y},fine:false,id:cp.id,tm:setTimeout(()=>{if(drag){drag.fine=true;draw(drag.p);}},400)};
     lens.style.display="block";draw(p);}
   function move(e){const cp=pt(e);if(!drag||cp.id!==drag.id)return;e.preventDefault();
@@ -556,8 +558,27 @@ function bindTarget(s){
     const M=s.faceD/2*1.18,p={x:clamp(drag.p.x,-M,M),y:clamp(drag.p.y,-M,M)};reset();
     const h=hitAt(p.x,p.y,s.faceD);s.cur.push({x:+h.x.toFixed(2),y:+h.y.toFixed(2),s:h.s,X:h.X});
     save();renderRecord();}
-  svg.addEventListener("pointerdown",down);svg.addEventListener("pointermove",move);
-  svg.addEventListener("pointerup",up);svg.addEventListener("pointercancel",reset);
+  function cancel(e){const cp=pt(e);if(!drag||!cp||cp.id===drag.id)reset();}
+  if(window.PointerEvent){
+    svg.addEventListener("pointerdown",down);svg.addEventListener("pointermove",move);
+    svg.addEventListener("pointerup",up);svg.addEventListener("pointercancel",cancel);
+  }else{
+    svg.addEventListener("touchstart",down,{passive:false});svg.addEventListener("touchmove",move,{passive:false});
+    svg.addEventListener("touchend",up,{passive:false});svg.addEventListener("touchcancel",cancel,{passive:false});
+  }
+}
+function blockZoom(){
+  let last=0;
+  document.addEventListener("touchend",e=>{
+    const tag=e.target&&e.target.tagName;
+    if(tag&&/^(INPUT|TEXTAREA|SELECT)$/.test(tag))return;
+    const now=Date.now();
+    if(now-last<320)e.preventDefault();
+    last=now;
+  },{passive:false,capture:true});
+  ["gesturestart","gesturechange","gestureend"].forEach(ev=>{
+    document.addEventListener(ev,e=>e.preventDefault(),{passive:false});
+  });
 }
 
 function renderReturn(){
@@ -698,7 +719,7 @@ function checkUp(){if(location.protocol==="file:")return;fetch("version.json?"+D
 $("#updBar").onclick=()=>location.reload();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkUp();});
 window.onerror=(msg,src,line)=>{toast("ERR:"+line);console.error(msg,src,line);};
-checkUp();render();
+blockZoom();checkUp();render();
 </script>
 </body>
 </html>
