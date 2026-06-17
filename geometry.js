@@ -90,28 +90,25 @@
     [1, "#d4a72c", "#222"],
   ];
 
-  /** Zenkin face rasters — 新規4枚クローズアップ（fx/fy=焦点, zoom=拡大） */
-  var OPPAI_VARIANTS = [
-    { id: "v1", file: "oppai/1.jpg", label: "①", fx: 0.52, fy: 0.46, zoom: 1.08 },
-    { id: "v2", file: "oppai/2.jpg", label: "②", fx: 0.5, fy: 0.44, zoom: 1.06 },
-    { id: "v3", file: "oppai/3.jpg", label: "③", fx: 0.56, fy: 0.45, zoom: 1.1 },
-    { id: "v4", file: "oppai/4.jpg", label: "④", fx: 0.5, fy: 0.42, zoom: 1.08 },
+  /** 全金お祝いフェイス（非公開アセット・zenkin/） */
+  var ZENKIN_FACES = [
+    { id: "v1", file: "zenkin/1.jpg", label: "①", fx: 0.52, fy: 0.46, zoom: 1.08 },
+    { id: "v2", file: "zenkin/2.jpg", label: "②", fx: 0.5, fy: 0.44, zoom: 1.06 },
+    { id: "v3", file: "zenkin/3.jpg", label: "③", fx: 0.56, fy: 0.45, zoom: 1.1 },
+    { id: "v4", file: "zenkin/4.jpg", label: "④", fx: 0.5, fy: 0.42, zoom: 1.08 },
   ];
 
-  function oppaiVariantAt(idx) {
-    return OPPAI_VARIANTS[idx == null ? 0 : ((idx % OPPAI_VARIANTS.length) + OPPAI_VARIANTS.length) % OPPAI_VARIANTS.length];
+  function zenkinFaceAt(idx) {
+    return ZENKIN_FACES[idx == null ? 0 : ((idx % ZENKIN_FACES.length) + ZENKIN_FACES.length) % ZENKIN_FACES.length];
   }
-  function pickOppaiIdx() {
-    return Math.floor(Math.random() * OPPAI_VARIANTS.length);
+  function pickZenkinFace() {
+    return Math.floor(Math.random() * ZENKIN_FACES.length);
   }
-  function oppaiImgAt(idx) {
-    return oppaiVariantAt(idx).file;
-  }
-  function oppaiLabelAt(idx) {
-    return oppaiVariantAt(idx).label;
+  function zenkinFaceLabel(idx) {
+    return zenkinFaceAt(idx).label;
   }
 
-  function targetFaceSvg(fd, id, mode, oppaiIdx) {
+  function targetFaceSvg(fd, id, mode, faceIdx) {
     var w = ringW(fd),
       R = fd / 2,
       sw = R / 280,
@@ -121,8 +118,8 @@
       k,
       f,
       st;
-    if (mode === "oppai") {
-      var ov = oppaiVariantAt(oppaiIdx),
+    if (mode === "celebration") {
+      var ov = zenkinFaceAt(faceIdx),
         fx = ov.fx == null ? 0.5 : ov.fx,
         fy = ov.fy == null ? 0.5 : ov.fy,
         oz = ov.zoom == null ? 1.15 : ov.zoom,
@@ -186,12 +183,12 @@
     return g;
   }
 
-  function targetSvg(fd, id, overlays, mode, oppaiIdx) {
+  function targetSvg(fd, id, overlays, mode, faceIdx) {
     var vb = viewBoxFor(fd),
-      face = mode === "oppai" ? "oppai" : "sport";
+      face = mode === "celebration" ? "celebration" : "sport";
     return (
       '<svg class="face' +
-      (face === "oppai" ? " oppai" : "") +
+      (face === "celebration" ? " celebration" : "") +
       '" id="' +
       id +
       'svg" viewBox="' +
@@ -202,7 +199,7 @@
       'g"><g id="' +
       id +
       'face">' +
-      targetFaceSvg(fd, id, face, oppaiIdx) +
+      targetFaceSvg(fd, id, face, faceIdx) +
       "</g>" +
       (overlays || "") +
       '<g id="' +
@@ -576,10 +573,9 @@
     hitAt: hitAt,
     lbl: lbl,
     isZenkinEnd: isZenkinEnd,
-    OPPAI_VARIANTS: OPPAI_VARIANTS,
-    pickOppaiIdx: pickOppaiIdx,
-    oppaiImgAt: oppaiImgAt,
-    oppaiLabelAt: oppaiLabelAt,
+    ZENKIN_FACES: ZENKIN_FACES,
+    pickZenkinFace: pickZenkinFace,
+    zenkinFaceLabel: zenkinFaceLabel,
     targetSvg: targetSvg,
     targetFaceSvg: targetFaceSvg,
     dot: dot,

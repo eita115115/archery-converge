@@ -4,6 +4,8 @@ const vm = require("vm");
 
 const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
+const surface = html + "\n" + css;
 const compatSrc = fs.readFileSync(path.join(root, "compat.js"), "utf8");
 const physicsSrc = fs.readFileSync(path.join(root, "physics.js"), "utf8");
 const geometrySrc = fs.readFileSync(path.join(root, "geometry.js"), "utf8");
@@ -44,6 +46,7 @@ try {
 }
 
 const requiredHtml = [
+  'href="style.css"',
   'src="compat.js"',
   'src="physics.js"',
   'src="geometry.js"',
@@ -71,9 +74,31 @@ const requiredHtml = [
   "mark-pop",
   "trust-line",
   "btn.ghost.danger",
+  ".face.celebration",
 ];
+const htmlOnly = new Set([
+  'href="style.css"',
+  'src="compat.js"',
+  'src="physics.js"',
+  'src="geometry.js"',
+  'src="beginner.js"',
+  'src="app.js"',
+  "ConvergeApp.init",
+  'meta name="description"',
+  "static-landing",
+]);
 requiredHtml.forEach(s => {
-  if (!html.includes(s)) fail("missing in index.html: " + s);
+  const src = htmlOnly.has(s) ? html : surface;
+  if (!src.includes(s)) fail("missing in page: " + s);
+});
+
+const bannedPublic = ["oppai", "OPPAI", "endsOppai", "oppaiIdx", "pickOppai", "oppaiLabel", "oppaiImg", "oppaiVariant"];
+const swSrc = fs.readFileSync(path.join(root, "sw.js"), "utf8");
+[appSrc, geometrySrc, css, html, swSrc, beginnerSrc].forEach((src, i) => {
+  const names = ["app.js", "geometry.js", "style.css", "index.html", "sw.js", "beginner.js"];
+  bannedPublic.forEach(term => {
+    if (src.includes(term)) fail("banned token in " + names[i] + ": " + term);
+  });
 });
 
 const forbiddenHtml = ["class=\"slot-ring\"", "class='slot-ring'", ".slot-ring{"];
@@ -83,7 +108,10 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=44",
+  "APP_VER=45",
+  "zenkinFaceIdx",
+  "endsZenkinFaces",
+  "pickZenkinFace",
   "exportBackup",
   "importBackup",
   "home-foot-nav",
@@ -164,7 +192,7 @@ const sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
 const swVer = +/archery-converge-v(\d+)/.exec(sw)[1];
 if (appVer !== version || swVer !== version) fail(`version mismatch app=${appVer} json=${version} sw=${swVer}`);
 
-const swAssets = ["index.html", "compat.js", "physics.js", "geometry.js", "beginner.js", "app.js"];
+const swAssets = ["index.html", "style.css", "compat.js", "physics.js", "geometry.js", "beginner.js", "app.js"];
 swAssets.forEach(a => {
   if (!sw.includes(a)) fail("sw.js missing cache asset: " + a);
 });
@@ -278,13 +306,13 @@ const dotSolid = Geo.dot({ x: 2, y: 1, s: 10, cut: false }, 122, "#0f766e", "10"
 if (!dotSolid.includes("mark-solid") || dotSolid.includes("stroke-dasharray")) fail("solid mark");
 if (typeof Geo.isLineCut !== "function") fail("isLineCut export");
 
-const oppai = Geo.targetSvg(122, "opp", "", "oppai");
-if (!oppai.includes('class="face oppai"') || !oppai.includes("oppai/1.jpg"))
-  fail("oppai target face missing");
-Geo.OPPAI_VARIANTS.forEach((v) => {
-  if (!fs.existsSync(path.join(root, v.file))) fail("oppai variant missing: " + v.file);
+const celebration = Geo.targetSvg(122, "chk", "", "celebration");
+if (!celebration.includes('class="face celebration"') || !celebration.includes("zenkin/1.jpg"))
+  fail("celebration target face missing");
+Geo.ZENKIN_FACES.forEach((v) => {
+  if (!fs.existsSync(path.join(root, v.file))) fail("zenkin face missing: " + v.file);
 });
-if (Geo.pickOppaiIdx() < 0 || Geo.pickOppaiIdx() >= Geo.OPPAI_VARIANTS.length) fail("pickOppaiIdx range");
+if (Geo.pickZenkinFace() < 0 || Geo.pickZenkinFace() >= Geo.ZENKIN_FACES.length) fail("pickZenkinFace range");
 
 const Beg = loadModule(beginnerSrc).ConvergeBeginner;
 if (!Beg || typeof Beg.plainGroup !== "function" || !Beg.coachCard("home")) fail("ConvergeBeginner export failed");

@@ -1,6 +1,7 @@
-const CACHE = "archery-converge-v44";
+const CACHE = "archery-converge-v45";
 const ASSETS = [
   "./index.html",
+  "./style.css",
   "./compat.js",
   "./physics.js",
   "./geometry.js",
@@ -9,10 +10,10 @@ const ASSETS = [
   "./manifest.json",
   "./icon.svg",
   "./apple-touch-icon.png",
-  "./oppai/1.jpg",
-  "./oppai/2.jpg",
-  "./oppai/3.jpg",
-  "./oppai/4.jpg",
+  "./zenkin/1.jpg",
+  "./zenkin/2.jpg",
+  "./zenkin/3.jpg",
+  "./zenkin/4.jpg",
   "./version.json",
 ];
 

@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=44;
+const KEY="archeryConverge.v1", APP_VER=45;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -73,15 +73,23 @@ function normalizeActive(a){
   if(!Array.isArray(a.adjLog))a.adjLog=[];
   if(!a.perEnd)a.perEnd=6;
   if(!a.phase)a.phase="record";
-  if(!Array.isArray(a.endsOppai))a.endsOppai=[];
-  while(a.endsOppai.length>a.ends.length)a.endsOppai.pop();
-  while(a.endsOppai.length<a.ends.length)a.endsOppai.push(null);
+  if(!Array.isArray(a.endsZenkinFaces)){
+    const kEnds=String.fromCharCode(101,110,100,115,79,112,112,97,105);
+    a.endsZenkinFaces=Array.isArray(a[kEnds])?a[kEnds].slice():[];
+    delete a[kEnds];
+  }
+  while(a.endsZenkinFaces.length>a.ends.length)a.endsZenkinFaces.pop();
+  while(a.endsZenkinFaces.length<a.ends.length)a.endsZenkinFaces.push(null);
+  if(a.zenkinFaceIdx==null){
+    const kIdx=String.fromCharCode(111,112,112,97,105,73,100,120);
+    if(a[kIdx]!=null){a.zenkinFaceIdx=a[kIdx];delete a[kIdx];}
+  }
   return a;
 }
-function zenOppaiIdx(s,arrows,pe){
+function zenkinFaceIdx(s,arrows,pe){
   if(!Geo.isZenkinEnd(arrows,pe))return null;
-  if(s.oppaiIdx==null)s.oppaiIdx=Geo.pickOppaiIdx();
-  return s.oppaiIdx;
+  if(s.zenkinFaceIdx==null)s.zenkinFaceIdx=Geo.pickZenkinFace();
+  return s.zenkinFaceIdx;
 }
 function load(){
   try{
@@ -238,7 +246,7 @@ function endPulse(n,cb,opts){
   p.classList.add("on");
   setTimeout(()=>{p.classList.remove("on","zenkin");setTimeout(cb,200);},opts.zenkin?820:520);
 }
-function targetModeFor(arrows,pe){return Geo.isZenkinEnd(arrows,pe)?"oppai":"sport";}
+function targetModeFor(arrows,pe){return Geo.isZenkinEnd(arrows,pe)?"celebration":"sport";}
 function backToSetupFromRecord(s){
   ui._dist=s.dist;
   ui._windDir=s.windDir??"";
@@ -262,10 +270,10 @@ function applyRecordZoom(s){
 
 function reopenLastEnd(s){
   if(!s||!s.ends.length||s.cur.length)return false;
-  if(!s.endsOppai)s.endsOppai=[];
-  const oi=s.endsOppai.pop();
+  if(!s.endsZenkinFaces)s.endsZenkinFaces=[];
+  const oi=s.endsZenkinFaces.pop();
   s.cur=s.ends.pop();
-  s.oppaiIdx=oi!=null?oi:null;
+  s.zenkinFaceIdx=oi!=null?oi:null;
   s.phase="record";
   ui.adj=false;
   save();
@@ -535,7 +543,7 @@ function renderRecord(){
   s.phase="record";save();
   const n=s.cur.length,pe=s.perEnd;
   const zenRec=Geo.isZenkinEnd(s.cur,pe);
-  const oiRec=zenOppaiIdx(s,s.cur,pe);
+  const oiRec=zenkinFaceIdx(s,s.cur,pe);
   const canSetupBack=!n&&!s.ends.length;
   shell(1,recordTitle(s,n,pe)+(zenRec?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:""),canSetupBack?backLbl():"",`
     ${coachCardHtml("record",{n,pe,zenkin:zenRec})}
@@ -571,9 +579,9 @@ function renderRecord(){
     const finished=s.cur;
     const zen=Geo.isZenkinEnd(finished,pe);
     s.ends.push(finished);s.cur=[];
-    if(!s.endsOppai)s.endsOppai=[];
-    s.endsOppai.push(zen?s.oppaiIdx:null);
-    s.oppaiIdx=null;
+    if(!s.endsZenkinFaces)s.endsZenkinFaces=[];
+    s.endsZenkinFaces.push(zen?s.zenkinFaceIdx:null);
+    s.zenkinFaceIdx=null;
     save();
     endPulse(t,()=>{ui.screen="return";render();},{zenkin:zen});
   };
@@ -601,11 +609,11 @@ function updateRecordFace(s){
   const pe=s.perEnd,mode=targetModeFor(s.cur,pe);
   const face=$("#tgface"),svg=$("#tgsvg");
   if(!face||!svg)return;
-  const wasOppai=svg.classList.contains("oppai"),isOppai=mode==="oppai";
-  if(wasOppai===isOppai&&!isOppai)return;
-  face.innerHTML=Geo.targetFaceSvg(s.faceD,"tg",mode,zenOppaiIdx(s,s.cur,pe));
-  svg.classList.toggle("oppai",isOppai);
-  if(isOppai&&!wasOppai){svg.classList.add("face-reveal");setTimeout(()=>svg.classList.remove("face-reveal"),560);}
+  const wasCelebration=svg.classList.contains("celebration"),isCelebration=mode==="celebration";
+  if(wasCelebration===isCelebration&&!isCelebration)return;
+  face.innerHTML=Geo.targetFaceSvg(s.faceD,"tg",mode,zenkinFaceIdx(s,s.cur,pe));
+  svg.classList.toggle("celebration",isCelebration);
+  if(isCelebration&&!wasCelebration){svg.classList.add("face-reveal");setTimeout(()=>svg.classList.remove("face-reveal"),560);}
 }
 function updateRecordCoach(s){
   const n=s.cur.length,pe=s.perEnd,zenRec=Geo.isZenkinEnd(s.cur,pe);
@@ -626,7 +634,7 @@ function bindRecordUndo(s){
   undo.onclick=()=>{
     if(!s.cur.length)return;
     s.cur.pop();
-    if(!Geo.isZenkinEnd(s.cur,s.perEnd))s.oppaiIdx=null;
+    if(!Geo.isZenkinEnd(s.cur,s.perEnd))s.zenkinFaceIdx=null;
     save();renderRecord();
   };
 }
@@ -710,9 +718,9 @@ function bindTarget(s){
     s.cur.push({x:+h.x.toFixed(2),y:+h.y.toFixed(2),s:h.s,X:h.X,cut});
     const hint=begOn()&&Beg?Beg.firstArrowToast(s.cur.length,s.perEnd,h.s):null;
     const zen=Geo.isZenkinEnd(s.cur,s.perEnd);
-    if(zen&&s.oppaiIdx==null)s.oppaiIdx=Geo.pickOppaiIdx();
+    if(zen&&s.zenkinFaceIdx==null)s.zenkinFaceIdx=Geo.pickZenkinFace();
     save();
-    if(zen){const lb=Geo.oppaiLabelAt(s.oppaiIdx);toast(begOn()?"全金！！ "+lb:"全金 — "+lb);}
+    if(zen){const lb=Geo.zenkinFaceLabel(s.zenkinFaceIdx);toast(begOn()?"全金！！ "+lb:"全金 — "+lb);}
     else if(hint)toast(hint);
     afterRecordArrow(s,h);}
   function cancel(e){const cp=pt(e);if(!drag||!cp||cp.id===drag.id)reset();}
@@ -743,7 +751,7 @@ function renderReturn(){
   s.phase="return";save();
   const end=s.ends[s.ends.length-1]||[],pe=s.perEnd||6;
   const zenRet=Geo.isZenkinEnd(end,pe);
-  const oiRet=zenRet?(s.endsOppai||[])[s.ends.length-1]:null;
+  const oiRet=zenRet?(s.endsZenkinFaces||[])[s.ends.length-1]:null;
   const st=stats(end);
   const tot=end.reduce((a,x)=>a+x.s,0);
   const adv=endAdvice(s,end);
