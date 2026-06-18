@@ -118,13 +118,9 @@ requiredHtml.forEach(s => {
   if (!src.includes(s)) fail("missing in page: " + s);
 });
 
-function stripMigrateV44(src) {
-  return src.replace(/\/\* MIGRATE-V44[\s\S]*?END-MIGRATE-V44 \*\//g, "");
-}
 const bannedPublic = ["oppai", "OPPAI", "endsOppai", "oppaiIdx", "pickOppai", "oppaiLabel", "oppaiImg", "oppaiVariant"];
 const swSrc = fs.readFileSync(path.join(root, "sw.js"), "utf8");
-const appPublic = stripMigrateV44(appSrc);
-[appPublic, geometrySrc, css, html, swSrc, beginnerSrc].forEach((src, i) => {
+[appSrc, geometrySrc, css, html, swSrc, beginnerSrc].forEach((src, i) => {
   const names = ["app.js", "geometry.js", "style.css", "index.html", "sw.js", "beginner.js"];
   bannedPublic.forEach(term => {
     if (src.includes(term)) fail("banned token in " + names[i] + ": " + term);
@@ -141,7 +137,7 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=73",
+  "APP_VER=74",
   "returnVerdictHtml(st,adv,j,s.faceD)",
   "EXPORT_VERSION=1",
   "exportVersion",
@@ -187,8 +183,6 @@ const requiredApp = [
   "page-in",
   "doneBackupPromptHtml",
   "hasExported",
-  "REMOVE-AT: v70",
-  "migrateV44Session",
   "startQuickSession",
   "backup-bar",
   "safety-banner",
@@ -391,7 +385,7 @@ const windySess = { dist: 70, faceD: 122, windDir: "左から", windSpeed: 4 };
 const stLat = { n: 6, sx: 2.2, sy: 1, mx: 1.2, my: 0.4, rr: 1.8, confidence: 0.72 };
 const wc = Eng.wind.classify(windySess, stLat);
 if (!wc.windy || !wc.lateralDominant || wc.trustPenalty < 0.4) fail("wind.classify windy lateral");
-if (appPublic.includes("Phy.") || /const Phy=/.test(appPublic))
+if (appSrc.includes("Phy.") || /const Phy=/.test(appSrc))
   fail("app.js must route physics through ConvergeEngine only");
 if (typeof Phy.configure !== "function" || typeof Phy.clearCaches !== "function") fail("physics configure/clearCaches missing");
 

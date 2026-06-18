@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=73, EXPORT_VERSION=1;
+const KEY="archeryConverge.v1", APP_VER=74, EXPORT_VERSION=1;
 const COACH_CAP=2;
 const CONVERGE_MILESTONES=[25,50,75];
 const Cx=window.ConvergeCompat;
@@ -66,20 +66,6 @@ let db=load();
 const ui={screen:"home",histId:null,adj:false,_dist:70,zoom:1};
 
 function blankDb(){return{schemaVersion:1,setups:[],sightMarks:[],sessions:[],active:null,settings:{eyeSight:850,beginnerMode:true}};}
-/* MIGRATE-V44: rename v44 session fields (endsOppai/oppaiIdx) → endsZenkinFaces/zenkinFaceIdx
- * REMOVE-AT: v70 (~2026-Q3) — delete this block once v44 local data has aged out */
-function migrateV44Session(a){
-  if(!a||typeof a!=="object")return;
-  if(!Array.isArray(a.endsZenkinFaces)){
-    a.endsZenkinFaces=Array.isArray(a.endsOppai)?a.endsOppai.slice():[];
-    delete a.endsOppai;
-  }
-  if(a.zenkinFaceIdx==null&&a.oppaiIdx!=null){
-    a.zenkinFaceIdx=a.oppaiIdx;
-    delete a.oppaiIdx;
-  }
-}
-/* END-MIGRATE-V44 */
 function normalizeActive(a){
   if(!a)return null;
   if(!Array.isArray(a.ends))a.ends=[];
@@ -87,9 +73,9 @@ function normalizeActive(a){
   if(!a.sightStart)a.sightStart={v:"",h:""};
   if(!a.sightNow)a.sightNow={...a.sightStart};
   if(!Array.isArray(a.adjLog))a.adjLog=[];
+  if(!Array.isArray(a.endsZenkinFaces))a.endsZenkinFaces=[];
   if(!a.perEnd)a.perEnd=6;
   if(!a.phase)a.phase="record";
-  migrateV44Session(a);
   while(a.endsZenkinFaces.length>a.ends.length)a.endsZenkinFaces.pop();
   while(a.endsZenkinFaces.length<a.ends.length)a.endsZenkinFaces.push(null);
   return a;
