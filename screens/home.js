@@ -104,8 +104,8 @@ function renderHome(){
             ${homeReadinessChipHtml()}
           </div>
           <div class="tile-ctas home-start">
-            <button class="btn button hero" id="goQuick">${begOn()?"記録を始める":"Start recording"}</button>
-            <button type="button" class="btn button-secondary" id="goSetup">${begOn()?"距離・サイトを変更":"Change dist & sight"}</button>
+            <button type="button" class="btn hero" id="goQuick">${begOn()?"記録を始める":"Start recording"}</button>
+            <button type="button" class="btn btn-secondary button-secondary" id="goSetup">${begOn()?"距離・サイトを変更":"Change dist & sight"}</button>
           </div>
           ${db.sessions.length?`<p class="home-prev">${begOn()?"前回":"Last"} · ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · <b>${sessTot(db.sessions[db.sessions.length-1])}</b></p>`:""}
         </div>
