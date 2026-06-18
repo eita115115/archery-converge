@@ -3,6 +3,37 @@
 "use strict";
 const VERSION="RK4-3D";
 
+const DEFAULT_CFG={
+  maxSimSteps:5000,rk4Dt:.006,
+  trajectoryCacheSize:16,calibrationCacheSize:12
+};
+let CFG=Object.assign({},DEFAULT_CFG);
+const trajCache=new Map();
+const pcalCache=new Map();
+const regCache=new Map();
+
+function configure(opts){
+  if(!opts)return Object.assign({},CFG);
+  CFG=Object.assign({},CFG,opts);
+  trimCache(trajCache,CFG.trajectoryCacheSize);
+  trimCache(pcalCache,CFG.calibrationCacheSize);
+  return Object.assign({},CFG);
+}
+function trimCache(map,max){
+  while(map.size>max){
+    const k=map.keys().next().value;
+    map.delete(k);
+  }
+}
+function clearCaches(){trajCache.clear();pcalCache.clear();regCache.clear();}
+function invalidateSetup(setupId){
+  const p=String(setupId||"");
+  [trajCache,pcalCache,regCache].forEach(map=>{
+    map.forEach((_,k)=>{if(k.indexOf(p)>=0)map.delete(k);});
+  });
+}
+function cacheKey(parts){return parts.map(v=>v==null?"":String(v)).join("|");}
+
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function num(v){const n=parseFloat(v);return Number.isFinite(n)?n:null;}
 function normGearText(s){return String(s||"").normalize("NFKC").toUpperCase().replace(/[・_/]+/g," ").replace(/\s+/g," ").trim();}
@@ -176,7 +207,8 @@ function windModel(sess){
 }
 function simulateArrow(distM,angle,phys,wind){
   wind=wind||{down:0,side:0};
-  const k=.5*phys.rho*phys.cd*phys.area/phys.massKg,dt=.006,g=9.80665;
+  const k=.5*phys.rho*phys.cd*phys.area/phys.massKg,dt=CFG.rk4Dt,g=9.80665;
+  const maxSteps=CFG.maxSimSteps;
   let s={x:0,y:0,z:0,t:0,vx:phys.speedMps*Math.cos(angle),vy:phys.speedMps*Math.sin(angle),vz:0};
   const deriv=a=>{
     const rx=a.vx-(wind.down||0),ry=a.vy,rz=a.vz-(wind.side||0),rv=Math.hypot(rx,ry,rz);
@@ -189,7 +221,7 @@ function simulateArrow(distM,angle,phys,wind){
       vx:a.vx+h*(k1.vx+2*k2.vx+2*k3.vx+k4.vx),vy:a.vy+h*(k1.vy+2*k2.vy+2*k3.vy+k4.vy),vz:a.vz+h*(k1.vz+2*k2.vz+2*k3.vz+k4.vz)};
   };
   let prev=s;
-  for(let i=0;i<5000&&s.x<distM&&s.y>-100;i++){
+  for(let i=0;i<maxSteps&&s.x<distM&&s.y>-100;i++){
     prev=s;
     const k1=deriv(s),k2=deriv(add(s,k1,dt/2)),k3=deriv(add(s,k2,dt/2)),k4=deriv(add(s,k3,dt));
     s=mix(s,k1,k2,k3,k4);
@@ -216,6 +248,9 @@ function solveZeroAngle(distM,phys,wind){
 }
 function trajectoryModel(sess,setup,eyeMm){
   const distM=Math.max(5,sess.dist||70);
+  const sk=cacheKey(["traj",distM,sess.windDir,sess.windSpeed,eyeMm,setup&&setup.id,
+    setup&&setup.poundage,setup&&setup.arrowSpeed,setup&&setup.arrowWeight,setup&&setup.arrowDia]);
+  if(trajCache.has(sk))return trajCache.get(sk);
   const phys=physicsProfile(setup||{});
   const wind=windModel(sess||{});
   const angle=solveZeroAngle(distM,phys,wind);
@@ -230,7 +265,10 @@ function trajectoryModel(sess,setup,eyeMm){
   const windUncertaintyCm=Math.abs(windDriftCm)*(wind.variability||0)+(wind.speed?.35:0);
   const has=k=>String((setup||{})[k]||"").trim();
   const modelScore=clamp((phys.measuredSpeed?.2:.08)+(has("arrowWeight")?.13:.06)+(has("arrowDia")?.11:.05)+(has("temperature")?.07:.03)+(wind.speed?(wind.known?.12:.06):.08),0,1);
-  return {phys,wind,angle,tof:base.t,impactSpeed:base.speed,sens,mmPerCmV,mmPerCmH,windDriftCm,windUncertaintyCm,modelScore,engine:"RK4-3D"};
+  const out={phys,wind,angle,tof:base.t,impactSpeed:base.speed,sens,mmPerCmV,mmPerCmH,windDriftCm,windUncertaintyCm,modelScore,engine:"RK4-3D"};
+  trajCache.set(sk,out);
+  trimCache(trajCache,CFG.trajectoryCacheSize);
+  return out;
 }
 
 function weightedMedian(items,fallback){
@@ -337,6 +375,8 @@ function personalModel(db,sess,setup,currentSt){
   return {sample:items.length,state:support?"過去と一致":conflict?"今回だけ": "観察中",stability:clamp(align*.5+.5,0,1),align};
 }
 function regressionAdvice(db,setupId,dist){
+  const rk=cacheKey(["reg",setupId,dist,(db.sessions||[]).length]);
+  if(regCache.has(rk))return regCache.get(rk);
   const setup=(db.setups||[]).find(s=>s.id===setupId);
   const ss=(db.sessions||[]).filter(s=>s.setupId===setupId&&s.dist===dist);
   const res={};
@@ -358,10 +398,14 @@ function regressionAdvice(db,setupId,dist){
       if(r&&r.zero!=null&&isFinite(r.zero))res[tag]={zero:r.zero,n:pts.length,r2:r.r2,slope:r.b,quality:r.quality||r.r2||0};
     }
   });
+  regCache.set(rk,res);
+  trimCache(regCache,CFG.calibrationCacheSize*2);
   return res;
 }
 function personalPhysicsCalibration(db,setupId,settings){
   if(!setupId||!db)return null;
+  const pk=cacheKey(["pcal",setupId,(db.sessions||[]).length,(settings&&settings.eyeSight)||850]);
+  if(pcalCache.has(pk))return pcalCache.get(pk);
   const setup=(db.setups||[]).find(s=>s.id===setupId);
   if(!setup)return null;
   const eye=(settings&&settings.eyeSight)||850;
@@ -385,7 +429,10 @@ function personalPhysicsCalibration(db,setupId,settings){
     if(r.h&&Math.abs(r.h.slope)>.05)clickH.push({v:Math.abs(r.h.slope)*70/d,w:clamp(r.h.quality,.05,1)});
   });
   const score=clamp(Math.min(sessions.length,12)*.04+Math.min(windRatios.length,6)*.06+Math.min(clickV.length+clickH.length,8)*.05,0,1);
-  return {score,windFactor:weightedMedian(windRatios,1),click:{v70:weightedMedian(clickV,null),h70:weightedMedian(clickH,null)}};
+  const out={score,windFactor:weightedMedian(windRatios,1),click:{v70:weightedMedian(clickV,null),h70:weightedMedian(clickH,null)}};
+  pcalCache.set(pk,out);
+  trimCache(pcalCache,CFG.calibrationCacheSize);
+  return out;
 }
 
 function adviceModel(db,settings,sess,setup,st){
@@ -461,6 +508,7 @@ function judgementFor(adv,sess){
 
 const ArcheryPhysics=Object.freeze({
   version:VERSION,
+  configure,clearCaches,invalidateSetup,
   clamp,median,num,ringW,
   robustStats,groupStats,
   physicsProfile,windModel,simulateArrow,solveZeroAngle,trajectoryModel,

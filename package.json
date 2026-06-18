@@ -6,6 +6,7 @@
     "check:parse": "node tools/parse-check.js",
     "check:beginner": "node tools/beginner-sim.js",
     "check": "npm run check:app && npm run check:beginner",
+    "check:engine": "node tools/engine-bench.js",
     "icon": "node tools/render-icon.js"
   },
   "devDependencies": {

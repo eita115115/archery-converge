@@ -3,11 +3,13 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=59;
+const KEY="archeryConverge.v1", APP_VER=60;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
+const Eng=window.ConvergeEngine;
 const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
+if(!Eng)throw new Error("ConvergeEngine required");
 
 function begOn(){return Beg&&Beg.isOn(db.settings);}
 function coachSeenMap(){
@@ -120,10 +122,11 @@ function today(){return new Date().toISOString().slice(0,10);}
 function fmtD(d){const x=new Date(d+"T12:00:00");return `${x.getMonth()+1}/${x.getDate()}`;}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 
-function stats(ar){return Phy.robustStats(ar);}
+function stats(ar){return Eng.grouping.robust(ar);}
 function getSetup(){return db.setups[0]||{};}
 function sessForPhy(s){return{id:s.id,date:s.date,dist:s.dist,faceD:s.faceD,setupId:s.setupId,windDir:s.windDir,windSpeed:s.windSpeed,sightNow:s.sightNow,sightStart:s.sightStart};}
-function endAdvice(s,arrows){return Phy.adviceForEnd(db,db.settings,getSetup(),sessForPhy(s),arrows);}
+function endAdvice(s,arrows){return Eng.advice.forEnd(db,db.settings,getSetup(),sessForPhy(s),arrows);}
+function engineBump(){if(Eng&&Eng.clearCaches)Eng.clearCaches();}
 function sugFromAdv(adv,j){
   if(!adv||!adv.vector)return null;
   const sc=j&&j.scale!=null?j.scale:1;
@@ -608,7 +611,7 @@ function importBackup(){
         db.active=normalizeActive(db.active);
         (db.sessions||[]).forEach(s=>{if(!Array.isArray(s.ends))s.ends=[];});
         const n=db.sessions.length;
-        save();toast(begOn()?`${n}件の練習を読み込みました`:`Imported ${n} sessions`);render();
+        engineBump();save();toast(begOn()?`${n}件の練習を読み込みました`:`Imported ${n} sessions`);render();
       }catch(e){toast(begOn()?"ファイルが読めません":"Invalid file");}
     };
     r.readAsText(f);
@@ -851,10 +854,11 @@ function renderReturn(){
   const end=s.ends[s.ends.length-1]||[],pe=s.perEnd||6;
   const zenRet=Geo.isZenkinEnd(end,pe);
   const oiRet=zenRet?(s.endsZenkinFaces||[])[s.ends.length-1]:null;
-  const st=stats(end);
   const tot=end.reduce((a,x)=>a+x.s,0);
-  const adv=endAdvice(s,end);
-  const j=Phy.judgementFor(adv,s);
+  const analysis=Eng.advice.analyzeEnd(db,db.settings,getSetup(),sessForPhy(s),end);
+  const st=analysis.st;
+  const adv=analysis.adv;
+  const j=analysis.j;
   const sug=sugFromAdv(adv,j);
   const sv=s.sightNow?.v??"",sh=s.sightNow?.h??"";
   const s0=s.sightStart||{};
@@ -950,7 +954,7 @@ function renderHistDetail(){
 
 function renderGear(){
   const g=getSetup();
-  const gp=Phy.gearPrecisionProfile(g);
+  const gp=Eng.calibration.gear(g);
   shell(-1,begOn()?"設定":"Settings",backLbl(),`
     <div class="app-page">
     <div class="beg-toggle"><label class="beg-lbl"><input type="checkbox" id="begMode" ${db.settings.beginnerMode!==false?"checked":""}> やさしい表示</label>
@@ -996,6 +1000,7 @@ function renderGear(){
       calibV70:$("#gcv").value.trim(),calibH70:$("#gch").value.trim()};
     if(db.setups.length)db.setups[0]=d;else db.setups.push(d);
     const eye=parseFloat($("#geye").value);if(isFinite(eye)&&eye>0)db.settings.eyeSight=eye;
+    if(Eng.invalidateSetup)Eng.invalidateSetup(d.id);
     save();toast("保存した");
   };
 }

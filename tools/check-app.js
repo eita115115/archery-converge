@@ -10,6 +10,7 @@ const compatSrc = fs.readFileSync(path.join(root, "compat.js"), "utf8");
 const physicsSrc = fs.readFileSync(path.join(root, "physics.js"), "utf8");
 const geometrySrc = fs.readFileSync(path.join(root, "geometry.js"), "utf8");
 const beginnerSrc = fs.readFileSync(path.join(root, "beginner.js"), "utf8");
+const engineSrc = fs.readFileSync(path.join(root, "engine.js"), "utf8");
 const appSrc = fs.readFileSync(path.join(root, "app.js"), "utf8");
 
 function fail(msg) {
@@ -40,6 +41,7 @@ try {
   new vm.Script(physicsSrc);
   new vm.Script(geometrySrc);
   new vm.Script(beginnerSrc);
+  new vm.Script(engineSrc);
   new vm.Script(appSrc);
 } catch (e) {
   fail("JavaScript syntax error: " + e.message);
@@ -48,8 +50,9 @@ try {
 const requiredHtml = [
   'href="style.css"',
   'src="compat.js"',
-  'src="physics.js"',
   'src="geometry.js"',
+  'src="physics.js"',
+  'src="engine.js"',
   'src="beginner.js"',
   'src="app.js"',
   "ConvergeApp.init",
@@ -95,8 +98,9 @@ const requiredHtml = [
 const htmlOnly = new Set([
   'href="style.css"',
   'src="compat.js"',
-  'src="physics.js"',
   'src="geometry.js"',
+  'src="physics.js"',
+  'src="engine.js"',
   'src="beginner.js"',
   'src="app.js"',
   "ConvergeApp.init",
@@ -134,7 +138,10 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=59",
+  "ConvergeEngine required",
+  "analyzeEnd",
+  "engineBump",
+  "APP_VER=60",
   "return-verdict",
   "return-verdict-eyebrow",
   "returnVerdictHtml",
@@ -230,7 +237,7 @@ if (!geometrySrc.includes("function previewMark"))
 if (!geometrySrc.includes("arrowMarkRadius") || !geometrySrc.includes("archery-note markCircle"))
   fail("archery-note mark import missing");
 
-const scriptOrder = ["compat.js", "physics.js", "geometry.js", "beginner.js", "app.js"];
+const scriptOrder = ["compat.js", "geometry.js", "physics.js", "engine.js", "beginner.js", "app.js"];
 let last = -1;
 scriptOrder.forEach(f => {
   const i = html.indexOf('src="' + f + '"');
@@ -245,7 +252,7 @@ const sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
 const swVer = +/archery-converge-v(\d+)/.exec(sw)[1];
 if (appVer !== version || swVer !== version) fail(`version mismatch app=${appVer} json=${version} sw=${swVer}`);
 
-const swAssets = ["index.html", "style.css", "compat.js", "physics.js", "geometry.js", "beginner.js", "app.js"];
+const swAssets = ["index.html", "style.css", "compat.js", "geometry.js", "physics.js", "engine.js", "beginner.js", "app.js"];
 swAssets.forEach(a => {
   if (!sw.includes(a)) fail("sw.js missing cache asset: " + a);
 });
@@ -309,8 +316,22 @@ const arrows = [
 const st = Phy.robustStats(arrows);
 if (!st || st.excluded.length !== 1 || st.method !== "ellipse-biweight") fail("robustStats failed");
 
+Phy.clearCaches();
 const calm = Phy.trajectoryModel({ dist: 70 }, { poundage: "38", arrowWeight: "334", arrowDia: "5.5" }, 850);
 if (calm.engine !== "RK4-3D" || calm.tof < 0.6 || calm.tof > 1.5) fail("RK4 trajectory failed");
+const calm2 = Phy.trajectoryModel({ dist: 70 }, { poundage: "38", arrowWeight: "334", arrowDia: "5.5" }, 850);
+if (calm2 !== calm) fail("trajectory cache miss");
+
+const engCtx = loadModule(engineSrc, {
+  ArcheryPhysics: Phy,
+  ConvergeGeometry: Geo,
+  navigator: { hardwareConcurrency: 4, deviceMemory: 4 },
+  matchMedia: () => ({ matches: false }),
+});
+const Eng = engCtx.ConvergeEngine;
+if (!Eng || typeof Eng.advice.analyzeEnd !== "function") fail("ConvergeEngine export failed");
+if (!Eng.profile || !Eng.profile.tier) fail("ConvergeEngine deviceProfile missing");
+if (typeof Phy.configure !== "function" || typeof Phy.clearCaches !== "function") fail("physics configure/clearCaches missing");
 
 const db = {
   setups: [{ id: "main", poundage: "38", arrowWeight: "334", arrowDia: "5.5" }],
