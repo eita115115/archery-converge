@@ -1,4 +1,4 @@
-const CACHE = "archery-converge-v76";
+const CACHE = "archery-converge-v77";
 const ASSETS = [
   "./index.html",
   "./style.css",
@@ -22,6 +22,11 @@ const ASSETS = [
   "./zenkin/2.jpg",
   "./zenkin/3.jpg",
   "./zenkin/4.jpg",
+  "./zenkin/5.jpg",
+  "./zenkin/6.jpg",
+  "./zenkin/7.jpg",
+  "./zenkin/8.jpg",
+  "./zenkin/9.jpg",
   "./version.json",
 ];
 

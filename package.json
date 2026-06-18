@@ -10,7 +10,8 @@
     "version:sync": "node tools/sync-version.js",
     "version:check": "node tools/sync-version.js --check",
     "version:bump": "node tools/sync-version.js --bump",
-    "icon": "node tools/render-icon.js"
+    "icon": "node tools/render-icon.js",
+    "zenkin:build": "node tools/build-zenkin.js"
   },
   "devDependencies": {
     "sharp": "^0.35.1"

@@ -623,12 +623,21 @@ if (!dotSolid.includes("mark-solid") || dotSolid.includes("stroke-dasharray")) f
 if (typeof Geo.isLineCut !== "function") fail("isLineCut export");
 
 const celebration = Geo.targetSvg(122, "chk", "", "celebration");
-if (!celebration.includes('class="face celebration"') || !celebration.includes("zenkin/1.jpg"))
+if (!celebration.includes("face celebration") || !celebration.includes("zenkin/1.jpg"))
   fail("celebration target face missing");
 Geo.ZENKIN_FACES.forEach((v) => {
   if (!fs.existsSync(path.join(root, v.file))) fail("zenkin face missing: " + v.file);
 });
 if (Geo.pickZenkinFace() < 0 || Geo.pickZenkinFace() >= Geo.ZENKIN_FACES.length) fail("pickZenkinFace range");
+if (!Geo.ZENKIN_FACES.every(f => f.weight > 0 && f.tier)) fail("zenkin face weight/tier missing");
+const rare = Geo.ZENKIN_FACES.filter(f => f.weight < 1);
+if (rare.length !== 4) fail("expected 4 ultra-rare zenkin faces");
+let zenkinHist = new Array(Geo.ZENKIN_FACES.length).fill(0);
+for (let zi = 0; zi < 8000; zi++) zenkinHist[Geo.pickZenkinFace()]++;
+const rareRate = rare.reduce((a, f) => a + zenkinHist[Geo.ZENKIN_FACES.indexOf(f)], 0) / 8000;
+const commonRate = zenkinHist[0] / 8000;
+if (rareRate >= commonRate * 0.25) fail("zenkin rare faces too common: " + rareRate.toFixed(3));
+if (rareRate < 0.008) fail("zenkin rare faces never sampled");
 
 const Beg = loadModule(beginnerSrc).ConvergeBeginner;
 if (!Beg || typeof Beg.plainGroup !== "function" || !Beg.coachCard("home")) fail("ConvergeBeginner export failed");
@@ -668,6 +677,10 @@ const skTokens = [
   "--sk-tone-ok",
   "var(--sk-duration-hero)",
   "var(--sk-duration-zenkin)",
+  "tier-gold",
+  "tier-silver",
+  "tier-framed",
+  "gold-shimmer",
 ];
 skTokens.forEach(t => {
   if (!css.includes(t)) fail("missing sk token: " + t);

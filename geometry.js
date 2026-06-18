@@ -90,19 +90,54 @@
     [1, "#d4a72c", "#222"],
   ];
 
-  /** 全金お祝いフェイス（非公開アセット・zenkin/） */
+  /** 全金お祝いフェイス（非公開アセット・zenkin/）— weight = 出現重み（小さいほどレア） */
   var ZENKIN_FACES = [
-    { id: "v1", file: "zenkin/1.jpg", label: "①", fx: 0.52, fy: 0.46, zoom: 1.08 },
-    { id: "v2", file: "zenkin/2.jpg", label: "②", fx: 0.5, fy: 0.44, zoom: 1.06 },
-    { id: "v3", file: "zenkin/3.jpg", label: "③", fx: 0.56, fy: 0.45, zoom: 1.1 },
-    { id: "v4", file: "zenkin/4.jpg", label: "④", fx: 0.5, fy: 0.42, zoom: 1.08 },
+    { id: "v1", file: "zenkin/1.jpg", label: "①", fx: 0.52, fy: 0.46, zoom: 1.08, weight: 28, tier: "common" },
+    { id: "v2", file: "zenkin/2.jpg", label: "②", fx: 0.5, fy: 0.44, zoom: 1.06, weight: 22, tier: "common" },
+    { id: "v3", file: "zenkin/3.jpg", label: "③", fx: 0.56, fy: 0.45, zoom: 1.1, weight: 22, tier: "common" },
+    { id: "v4", file: "zenkin/4.jpg", label: "④", fx: 0.5, fy: 0.42, zoom: 1.08, weight: 14, tier: "flashy" },
+    { id: "v5", file: "zenkin/5.jpg", label: "⑤", fx: 0.5, fy: 0.45, zoom: 1.08, weight: 0.35, tier: "gold" },
+    { id: "v6", file: "zenkin/6.jpg", label: "⑥", fx: 0.5, fy: 0.45, zoom: 1.08, weight: 0.35, tier: "silver" },
+    { id: "v7", file: "zenkin/7.jpg", label: "⑦", fx: 0.5, fy: 0.45, zoom: 1.05, weight: 4, tier: "epic" },
+    { id: "v8", file: "zenkin/8.jpg", label: "⑧", fx: 0.5, fy: 0.5, zoom: 1.0, weight: 0.35, tier: "framed" },
+    { id: "v9", file: "zenkin/9.jpg", label: "⑨", fx: 0.5, fy: 0.5, zoom: 1.0, weight: 0.35, tier: "framed" },
   ];
 
   function zenkinFaceAt(idx) {
     return ZENKIN_FACES[idx == null ? 0 : ((idx % ZENKIN_FACES.length) + ZENKIN_FACES.length) % ZENKIN_FACES.length];
   }
+  function zenkinFaceWeight(face) {
+    var w = face && face.weight != null ? +face.weight : 1;
+    return w > 0 ? w : 1;
+  }
   function pickZenkinFace() {
-    return Math.floor(Math.random() * ZENKIN_FACES.length);
+    var total = 0,
+      i,
+      w;
+    for (i = 0; i < ZENKIN_FACES.length; i++) total += zenkinFaceWeight(ZENKIN_FACES[i]);
+    var r = Math.random() * total,
+      acc = 0;
+    for (i = 0; i < ZENKIN_FACES.length; i++) {
+      acc += zenkinFaceWeight(ZENKIN_FACES[i]);
+      if (r < acc) return i;
+    }
+    return ZENKIN_FACES.length - 1;
+  }
+  function zenkinTierClass(faceIdx) {
+    var ov = zenkinFaceAt(faceIdx);
+    return ov.tier ? " tier-" + ov.tier : "";
+  }
+  function applyZenkinFaceClasses(svg, mode, faceIdx) {
+    if (!svg) return;
+    var on = mode === "celebration";
+    svg.classList.toggle("celebration", on);
+    var tiers = ["tier-common", "tier-flashy", "tier-gold", "tier-silver", "tier-epic", "tier-framed"],
+      t;
+    for (t = 0; t < tiers.length; t++) svg.classList.remove(tiers[t]);
+    if (on) {
+      var cls = zenkinTierClass(faceIdx);
+      if (cls) svg.classList.add(cls.slice(1));
+    }
   }
   function zenkinFaceLabel(idx) {
     return zenkinFaceAt(idx).label;
@@ -185,10 +220,12 @@
 
   function targetSvg(fd, id, overlays, mode, faceIdx) {
     var vb = viewBoxFor(fd),
-      face = mode === "celebration" ? "celebration" : "sport";
+      face = mode === "celebration" ? "celebration" : "sport",
+      tierCls = face === "celebration" ? zenkinTierClass(faceIdx) : "";
     return (
       '<svg class="face' +
       (face === "celebration" ? " celebration" : "") +
+      tierCls +
       '" id="' +
       id +
       'svg" viewBox="' +
@@ -575,6 +612,9 @@
     isZenkinEnd: isZenkinEnd,
     ZENKIN_FACES: ZENKIN_FACES,
     pickZenkinFace: pickZenkinFace,
+    zenkinFaceWeight: zenkinFaceWeight,
+    zenkinTierClass: zenkinTierClass,
+    applyZenkinFaceClasses: applyZenkinFaceClasses,
     zenkinFaceLabel: zenkinFaceLabel,
     targetSvg: targetSvg,
     targetFaceSvg: targetFaceSvg,

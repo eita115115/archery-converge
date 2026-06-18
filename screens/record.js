@@ -79,7 +79,7 @@ function updateRecordFace(s){
   const wasCelebration=svg.classList.contains("celebration"),isCelebration=mode==="celebration";
   if(wasCelebration===isCelebration&&!isCelebration)return;
   face.innerHTML=Geo.targetFaceSvg(s.faceD,"tg",mode,zenkinFaceIdx(s,s.cur,pe));
-  svg.classList.toggle("celebration",isCelebration);
+  Geo.applyZenkinFaceClasses(svg,mode,zenkinFaceIdx(s,s.cur,pe));
   if(isCelebration&&!wasCelebration){svg.classList.add("face-reveal");setTimeout(()=>svg.classList.remove("face-reveal"),560);}
 }
 function updateRecordCoach(s){

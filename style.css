@@ -107,6 +107,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .tgt-stack svg.face{width:100%;height:100%;display:block;touch-action:none;-ms-touch-action:none;
   border-radius:50%;box-shadow:var(--shadow),0 0 0 1px rgba(0,0,0,.04);transition:box-shadow .25s ease,filter .2s ease}
 .tgt-stack svg.face.celebration{box-shadow:0 10px 28px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.06)}
+.tgt-stack svg.face.celebration.tier-flashy{box-shadow:0 10px 30px rgba(0,0,0,.2),0 0 14px rgba(212,167,44,.18)}
+.tgt-stack svg.face.celebration.tier-epic{box-shadow:0 12px 34px rgba(0,0,0,.24),0 0 18px rgba(148,163,184,.35);animation:zenkin-pop var(--sk-duration-zenkin) var(--ease-spring) both,silver-pulse 2.2s ease-in-out infinite}
+.tgt-stack svg.face.celebration.tier-gold{box-shadow:0 12px 36px rgba(180,83,9,.28),0 0 22px rgba(212,167,44,.45);animation:zenkin-pop var(--sk-duration-zenkin) var(--ease-spring) both,gold-shimmer 2.4s ease-in-out infinite}
+.tgt-stack svg.face.celebration.tier-silver{box-shadow:0 12px 36px rgba(100,116,139,.3),0 0 24px rgba(191,219,254,.5);animation:zenkin-pop var(--sk-duration-zenkin) var(--ease-spring) both,silver-pulse 1.8s ease-in-out infinite}
+.tgt-stack svg.face.celebration.tier-framed{box-shadow:0 14px 40px rgba(0,0,0,.28),0 0 26px rgba(167,139,250,.42),inset 0 0 0 2px rgba(212,167,44,.35);animation:zenkin-pop var(--sk-duration-zenkin) var(--ease-spring) both,frame-glow 2.6s ease-in-out infinite}
+@keyframes gold-shimmer{0%,100%{filter:brightness(1) saturate(1)}50%{filter:brightness(1.12) saturate(1.18)}}
+@keyframes silver-pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.1) contrast(1.06)}}
+@keyframes frame-glow{0%,100%{filter:none}50%{filter:brightness(1.06) drop-shadow(0 0 10px rgba(212,167,44,.35))}}
 .tgt-stack.hit-flash svg.face{animation:tgt-flash var(--sk-duration-hero) var(--ease-spring) both}
 .tgt-stack.zenkin-converge::after{content:"";position:absolute;inset:4%;border-radius:50%;border:3px solid var(--gold);pointer-events:none;
   animation:converge-ring var(--sk-duration-zenkin) var(--ease-spring) both;box-shadow:0 0 24px rgba(180,83,9,.35)}
@@ -554,6 +562,8 @@ html:lang(ja) .hist-end-body{letter-spacing:0}
   #body.page-in,.home-preview,.coach-card,.safety-banner,.updbar:not([hidden]),
   .mark-scored.mark-pop,.tgt-stack.hit-flash svg.face,.btn.hero.ready-pulse,
   .tgt-stack.zenkin-converge::after,.tgt-stack.zenkin-converge::before,.tgt-stack.zenkin-converge svg.face,
+  .tgt-stack svg.face.celebration.tier-gold,.tgt-stack svg.face.celebration.tier-silver,
+  .tgt-stack svg.face.celebration.tier-framed,.tgt-stack svg.face.celebration.tier-epic,
   .zenkin-dots span,.ret-converge .geo-center-dot,.ret-converge .mark-scored.ret-mark-in,.ret-converge .geo-layer ellipse,.ret-converge .geo-layer circle,
   .rec-progress.converge-dots .dot,.pulse.on svg,.pulse.on .val,.return-verdict,.ret-split.ret-reveal,
   .return-meta,.return-memory-chip,.home-readiness-chip,.hist-end-sum::before{animation:none!important}
