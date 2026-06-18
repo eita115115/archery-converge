@@ -236,6 +236,55 @@
     return Phy.personalModel(db, slimSession(sess), slimSetup(setup), st);
   }
 
+  var SCHEMA_VERSION = 2;
+
+  function migrateDb(d) {
+    if (!d) return d;
+    var ver = d.schemaVersion || 1;
+    if (!d.settings) d.settings = {};
+    if (ver < 2) {
+      if (d.settings.calibrationDigest === undefined) d.settings.calibrationDigest = null;
+      if (d.settings.convergeIndex === undefined) d.settings.convergeIndex = null;
+      if (d.settings.engineRuntimeSeen === undefined) d.settings.engineRuntimeSeen = null;
+      d.schemaVersion = 2;
+    }
+    return d;
+  }
+
+  function buildDigest(db, settings) {
+    var setup = (db.setups || [])[0];
+    if (!setup || !setup.id) return null;
+    var pcal = Phy.personalPhysicsCalibration(db, setup.id, settings);
+    var index = Phy.convergeIndex(db, setup.id, settings);
+    return {
+      setupId: setup.id,
+      score: pcal && pcal.score != null ? pcal.score : 0,
+      clickV70: pcal && pcal.click ? pcal.click.v70 : null,
+      clickH70: pcal && pcal.click ? pcal.click.h70 : null,
+      convergeIndex: index,
+      updatedAt: Date.now(),
+    };
+  }
+
+  function applyMeta(db, settings) {
+    if (!db) return db;
+    if (!db.settings) db.settings = {};
+    var setup = (db.setups || [])[0];
+    if (setup && setup.id) {
+      db.settings.calibrationDigest = buildDigest(db, settings || db.settings);
+      db.settings.convergeIndex = Phy.convergeIndex(db, setup.id, settings || db.settings);
+    }
+    db.settings.engineRuntimeSeen = RUNTIME_VERSION;
+    return db;
+  }
+
+  function sessionNudge(db) {
+    var n = (db && db.sessions ? db.sessions : []).length;
+    if (n >= 200) return { level: "strong", count: n };
+    if (n >= 150) return { level: "soft", count: n };
+    return { level: "none", count: n };
+  }
+
   function readinessHint(db, setupId, settings) {
     if (!setupId) return null;
     var index = Phy.convergeIndex(db, setupId, settings);
@@ -299,6 +348,13 @@
       regression: Phy.regressionAdvice,
       physics: Phy.personalPhysicsCalibration,
       gear: Phy.gearPrecisionProfile,
+      buildDigest: buildDigest,
+    }),
+    storage: Object.freeze({
+      schemaVersion: SCHEMA_VERSION,
+      migrateDb: migrateDb,
+      applyMeta: applyMeta,
+      sessionNudge: sessionNudge,
     }),
     metrics: Object.freeze({
       ringW: ringW,

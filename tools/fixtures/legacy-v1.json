@@ -1,0 +1,16 @@
+{
+  "setups": [{ "id": "legacy", "poundage": "36" }],
+  "sessions": [
+    {
+      "id": "old1",
+      "date": "2025-01-01",
+      "dist": 70,
+      "faceD": 122,
+      "setupId": "legacy",
+      "ends": []
+    }
+  ],
+  "sightMarks": [],
+  "settings": { "eyeSight": 850, "beginnerMode": true },
+  "active": null
+}

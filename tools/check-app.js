@@ -141,7 +141,10 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=64",
+  "APP_VER=65",
+  "schemaVersion",
+  "storageNudge",
+  "QuotaExceededError",
   "return-verdict",
   "return-verdict-eyebrow",
   "returnVerdictHtml",
@@ -423,6 +426,24 @@ if (!sessAnalysis.summary || sessAnalysis.summary.trend !== sessFixture.expected
   fail("analyzeSession trend mismatch: " + (sessAnalysis.summary && sessAnalysis.summary.trend));
 if (!sessAnalysis.ends[0].describe || sessAnalysis.ends[0].describe.center.mx == null)
   fail("analyzeSession missing per-end describe");
+
+if (!Eng.storage || typeof Eng.storage.migrateDb !== "function") fail("Eng.storage missing");
+const legacyV1 = JSON.parse(fs.readFileSync(path.join(root, "tools/fixtures/legacy-v1.json"), "utf8"));
+const migrated = Eng.storage.migrateDb(Object.assign({ schemaVersion: 1 }, legacyV1));
+if (migrated.schemaVersion !== 2) fail("migrateDb should bump schemaVersion to 2");
+if (migrated.settings.calibrationDigest != null) fail("migrateDb should init calibrationDigest null");
+const sparse = Eng.calibration.gear({ poundage: "36" });
+if (!Array.isArray(sparse.missingFieldHints) || sparse.missingFieldHints.length < 4)
+  fail("gearPrecisionProfile missingFieldHints");
+const digest = Eng.calibration.buildDigest(db, db.settings);
+if (!digest || digest.setupId !== "main" || digest.convergeIndex == null) fail("buildDigest failed");
+Eng.storage.applyMeta(db, db.settings);
+if (db.settings.calibrationDigest == null || db.settings.engineRuntimeSeen !== 2)
+  fail("applyMeta should set digest and engineRuntimeSeen");
+const nudge150 = Eng.storage.sessionNudge({ sessions: new Array(150) });
+const nudge200 = Eng.storage.sessionNudge({ sessions: new Array(200) });
+if (nudge150.level !== "soft" || nudge200.level !== "strong") fail("sessionNudge thresholds");
+if (!appSrc.includes("QuotaExceededError")) fail("save() quota handler missing");
 
 const stack = Geo.targetSvg(
   122,

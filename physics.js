@@ -349,8 +349,9 @@ function suggestWindReconfirm(sess,adv){
 }
 function gearPrecisionProfile(s){
   const checks=["arrowWeight","arrowDia","poundage","drawLength","arrowSpeed","temperature"];
-  const filled=checks.filter(k=>s&&String(s[k]||"").trim()).length;
-  return {score:filled/checks.length,level:filled>=4?"高":filled>=2?"中":"低"};
+  const missingFieldHints=checks.filter(k=>!s||!String(s[k]||"").trim());
+  const filled=checks.length-missingFieldHints.length;
+  return {score:filled/checks.length,level:filled>=4?"高":filled>=2?"中":"低",missingFieldHints};
 }
 function sessionQuality(sess,setup,st){
   if(!st)return {score:.2,label:"低",reasons:["矢数不足"]};

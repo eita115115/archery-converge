@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=64;
+const KEY="archeryConverge.v1", APP_VER=65;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Eng=window.ConvergeEngine;
@@ -64,7 +64,7 @@ const DISTS=[70,50,30,18];
 let db=load();
 const ui={screen:"home",histId:null,adj:false,_dist:70,zoom:1};
 
-function blankDb(){return{setups:[],sightMarks:[],sessions:[],active:null,settings:{eyeSight:850,beginnerMode:true}};}
+function blankDb(){return{schemaVersion:1,setups:[],sightMarks:[],sessions:[],active:null,settings:{eyeSight:850,beginnerMode:true}};}
 /* MIGRATE-V44: rename v44 session fields (endsOppai/oppaiIdx) → endsZenkinFaces/zenkinFaceIdx
  * REMOVE-AT: v70 (~2026-Q3) — delete this block once v44 local data has aged out */
 function migrateV44Session(a){
@@ -102,17 +102,31 @@ function load(){
   try{
     const d=JSON.parse(localStorage.getItem(KEY));
     if(d){
-      const out=Object.assign(blankDb(),d);
+      let out=Object.assign(blankDb(),d);
       out.settings=Object.assign({eyeSight:850,beginnerMode:true},out.settings||{});
       if(out.settings.beginnerMode===undefined)out.settings.beginnerMode=true;
       out.active=normalizeActive(out.active);
       (out.sessions||[]).forEach(s=>{if(!Array.isArray(s.ends))s.ends=[];});
+      if(Eng&&Eng.storage&&Eng.storage.migrateDb)out=Eng.storage.migrateDb(out);
       return out;
     }
   }catch(e){}
-  return blankDb();
+  let fresh=blankDb();
+  if(Eng&&Eng.storage&&Eng.storage.migrateDb)fresh=Eng.storage.migrateDb(fresh);
+  return fresh;
 }
-function save(){localStorage.setItem(KEY,JSON.stringify(db));}
+function save(){
+  try{
+    if(Eng&&Eng.storage&&Eng.storage.applyMeta)Eng.storage.applyMeta(db,db.settings);
+    localStorage.setItem(KEY,JSON.stringify(db));
+  }catch(e){
+    const quota=e&&(e.name==="QuotaExceededError"||e.code===22);
+    if(quota){
+      toast(begOn()?"保存できません。バックアップを取ってください":"Storage full — export backup");
+      if(db.settings)db.settings.storageNudge=true;
+    }else throw e;
+  }
+}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function $(s,r){return (r||document).querySelector(s);}
 function esc(s){return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;");}
