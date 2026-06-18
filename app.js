@@ -3,11 +3,10 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=60;
+const KEY="archeryConverge.v1", APP_VER=61;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Eng=window.ConvergeEngine;
-const Phy=window.ArcheryPhysics;
 const Beg=window.ConvergeBeginner;
 if(!Eng)throw new Error("ConvergeEngine required");
 
@@ -67,7 +66,7 @@ const ui={screen:"home",histId:null,adj:false,_dist:70,zoom:1};
 
 function blankDb(){return{setups:[],sightMarks:[],sessions:[],active:null,settings:{eyeSight:850,beginnerMode:true}};}
 /* MIGRATE-V44: rename v44 session fields (endsOppai/oppaiIdx) → endsZenkinFaces/zenkinFaceIdx
- * REMOVE-AT: v55 (~2026-Q3) — delete this block once v44 local data has aged out */
+ * REMOVE-AT: v70 (~2026-Q3) — delete this block once v44 local data has aged out */
 function migrateV44Session(a){
   if(!a||typeof a!=="object")return;
   if(!Array.isArray(a.endsZenkinFaces)){
@@ -348,9 +347,9 @@ function jtagHtml(j){
   return `<span class="jtag ${cls}">${esc(j.label)}</span>`;
 }
 function trustCtx(adv,s){
-  const setup=getSetup(),gear=Phy.gearPrecisionProfile(setup);
+  const setup=getSetup(),gear=Eng.calibration.gear(setup);
   const st=adv&&adv.st;
-  const quality=adv&&adv.quality?adv.quality:(st?Phy.sessionQuality(sessForPhy(s),setup,st):{label:"低",score:.2});
+  const quality=adv&&adv.quality?adv.quality:(st?Eng.advice.quality(sessForPhy(s),setup,st):{label:"低",score:.2});
   return{
     needsMove:!!(adv&&adv.needsMove),
     qualityLabel:quality.label,

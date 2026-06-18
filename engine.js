@@ -102,6 +102,59 @@
     if (typeof Phy.invalidateSetup === "function") Phy.invalidateSetup(setupId);
   }
 
+  var REF_FACE_D = 122;
+  var LEGACY_SOFT = 0.35;
+  var LEGACY_STRONG = 0.7;
+
+  function ringW(fd) {
+    return Geo && Geo.ringW ? Geo.ringW(fd) : Phy.ringW(fd);
+  }
+
+  /** Ring-relative offset bands — preserves 0.35/0.7 cm at faceD=122 (70 m). */
+  function offsetBands(faceD) {
+    var rw = ringW(faceD);
+    var kSoft = LEGACY_SOFT / ringW(REF_FACE_D);
+    var kStrong = LEGACY_STRONG / ringW(REF_FACE_D);
+    return {
+      kSoft: kSoft,
+      kStrong: kStrong,
+      softDist: rw * kSoft,
+      strongDist: rw * kStrong,
+    };
+  }
+
+  function isCentered(mx, my, faceD) {
+    var b = offsetBands(faceD);
+    return Math.abs(mx) <= b.softDist && Math.abs(my) <= b.softDist;
+  }
+
+  function offsetClass(mx, my, faceD) {
+    var b = offsetBands(faceD);
+    function axisClass(v) {
+      var a = Math.abs(v);
+      if (a <= b.softDist) return "center";
+      if (a <= b.strongDist) return "soft";
+      return "strong";
+    }
+    return { h: axisClass(mx), v: axisClass(my) };
+  }
+
+  function ellipseShape(st) {
+    if (!st) return { ratio: 1, angleDeg: 0, dominant: "round" };
+    var sx = st.sx || 0.01;
+    var sy = st.sy || 0.01;
+    var ratio = Math.max(sx, sy) / Math.max(0.01, Math.min(sx, sy));
+    var dominant = ratio < 1.15 ? "round" : sx > sy ? "h" : "v";
+    return { ratio: ratio, angleDeg: sx > sy ? 0 : 90, dominant: dominant };
+  }
+
+  function confidenceBand(conf) {
+    var c = conf == null ? 0 : conf;
+    if (c >= 0.62) return "high";
+    if (c >= 0.45) return "mid";
+    return "low";
+  }
+
   root.ConvergeEngine = Object.freeze({
     runtimeVersion: RUNTIME_VERSION,
     physicsVersion: Phy.version,
@@ -133,6 +186,14 @@
       physics: Phy.personalPhysicsCalibration,
       gear: Phy.gearPrecisionProfile,
     }),
-    ringW: Geo && Geo.ringW ? Geo.ringW : Phy.ringW,
+    metrics: Object.freeze({
+      ringW: ringW,
+      offsetBands: offsetBands,
+      offsetClass: offsetClass,
+      isCentered: isCentered,
+      ellipseShape: ellipseShape,
+      confidenceBand: confidenceBand,
+    }),
+    ringW: ringW,
   });
 })(typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : this);

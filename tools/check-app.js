@@ -141,7 +141,7 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=60",
+  "APP_VER=61",
   "return-verdict",
   "return-verdict-eyebrow",
   "returnVerdictHtml",
@@ -160,7 +160,7 @@ const requiredApp = [
   "page-in",
   "doneBackupPromptHtml",
   "hasExported",
-  "REMOVE-AT: v55",
+  "REMOVE-AT: v70",
   "migrateV44Session",
   "startQuickSession",
   "backup-bar",
@@ -331,6 +331,19 @@ const engCtx = loadModule(engineSrc, {
 const Eng = engCtx.ConvergeEngine;
 if (!Eng || typeof Eng.advice.analyzeEnd !== "function") fail("ConvergeEngine export failed");
 if (!Eng.profile || !Eng.profile.tier) fail("ConvergeEngine deviceProfile missing");
+if (!Eng.metrics || typeof Eng.metrics.offsetBands !== "function") fail("Eng.metrics missing");
+const bands122 = Eng.metrics.offsetBands(122);
+if (Math.abs(bands122.softDist - 0.35) > 0.001) fail("offsetBands(122).softDist != 0.35");
+if (Math.abs(bands122.strongDist - 0.7) > 0.001) fail("offsetBands(122).strongDist != 0.7");
+const bands40 = Eng.metrics.offsetBands(40);
+if (bands40.softDist >= bands122.softDist || bands40.strongDist >= bands122.strongDist)
+  fail("offsetBands must shrink on smaller faceD");
+if (!Eng.metrics.isCentered(0.2, 0.2, 122)) fail("isCentered should pass inside soft band");
+if (Eng.metrics.isCentered(0.5, 0.2, 122)) fail("isCentered should fail outside soft band");
+if (Eng.metrics.confidenceBand(0.7) !== "high" || Eng.metrics.confidenceBand(0.5) !== "mid")
+  fail("confidenceBand tiers wrong");
+if (appPublic.includes("Phy.") || /const Phy=/.test(appPublic))
+  fail("app.js must route physics through ConvergeEngine only");
 if (typeof Phy.configure !== "function" || typeof Phy.clearCaches !== "function") fail("physics configure/clearCaches missing");
 
 const db = {
