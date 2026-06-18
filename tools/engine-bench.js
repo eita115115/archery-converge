@@ -1,5 +1,5 @@
 /**
- * Quick engine bench — trajectory cache + analyzeEnd latency.
+ * Engine bench — latency smoke + regression gates (E2+).
  * Run: node tools/engine-bench.js
  */
 const fs = require("fs");
@@ -47,17 +47,28 @@ const db = {
   settings: { eyeSight: 850, beginnerMode: true },
 };
 const sess = { id: "a1", dist: 70, faceD: fd, setupId: "s1", windDir: "", windSpeed: 0 };
+const windySess = { id: "a2", dist: 70, faceD: fd, setupId: "s1", windDir: "左から", windSpeed: 4 };
+const st = Eng.grouping.robust(arrows);
 
-function bench(label, fn, n) {
+let failed = false;
+
+function bench(label, fn, n, maxMsPerCall) {
   Eng.clearCaches();
   const t0 = process.hrtime.bigint();
   for (let i = 0; i < n; i++) fn();
   const ms = Number(process.hrtime.bigint() - t0) / 1e6;
-  console.log(label + ": " + ms.toFixed(2) + "ms (" + (ms / n).toFixed(3) + "ms/call)");
+  const per = ms / n;
+  console.log(label + ": " + ms.toFixed(2) + "ms (" + per.toFixed(3) + "ms/call)");
+  if (maxMsPerCall != null && per > maxMsPerCall) {
+    console.error("engine-bench FAIL: " + label + " > " + maxMsPerCall + " ms/call (got " + per.toFixed(3) + ")");
+    failed = true;
+  }
 }
 
 bench("trajectory cold x20", () => Eng.ballistics.trajectory(sess, db.setups[0], 850), 20);
 bench("trajectory cached x200", () => Eng.ballistics.trajectory(sess, db.setups[0], 850), 200);
 bench("analyzeEnd x50", () => Eng.advice.analyzeEnd(db, db.settings, db.setups[0], sess, arrows), 50);
+bench("wind.classify x200", () => Eng.wind.classify(windySess, st), 200, 0.5);
 
+if (failed) process.exit(1);
 console.log("engine-bench OK tier=" + Eng.profile.tier + " steps=" + Eng.profile.maxSimSteps);

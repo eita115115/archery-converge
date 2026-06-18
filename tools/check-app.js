@@ -141,7 +141,7 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=61",
+  "APP_VER=62",
   "return-verdict",
   "return-verdict-eyebrow",
   "returnVerdictHtml",
@@ -342,6 +342,11 @@ if (!Eng.metrics.isCentered(0.2, 0.2, 122)) fail("isCentered should pass inside 
 if (Eng.metrics.isCentered(0.5, 0.2, 122)) fail("isCentered should fail outside soft band");
 if (Eng.metrics.confidenceBand(0.7) !== "high" || Eng.metrics.confidenceBand(0.5) !== "mid")
   fail("confidenceBand tiers wrong");
+if (!Eng.wind || typeof Eng.wind.classify !== "function") fail("Eng.wind.classify missing");
+const windySess = { dist: 70, faceD: 122, windDir: "左から", windSpeed: 4 };
+const stLat = { n: 6, sx: 2.2, sy: 1, mx: 1.2, my: 0.4, rr: 1.8, confidence: 0.72 };
+const wc = Eng.wind.classify(windySess, stLat);
+if (!wc.windy || !wc.lateralDominant || wc.trustPenalty < 0.4) fail("wind.classify windy lateral");
 if (appPublic.includes("Phy.") || /const Phy=/.test(appPublic))
   fail("app.js must route physics through ConvergeEngine only");
 if (typeof Phy.configure !== "function" || typeof Phy.clearCaches !== "function") fail("physics configure/clearCaches missing");
@@ -363,6 +368,18 @@ const end = [
 ];
 const adv = Phy.adviceForEnd(db, db.settings, db.setups[0], sess, end);
 if (!adv || !adv.moves.length) fail("adviceForEnd failed");
+
+const windySession = { id: "w1", date: "2026-06-18", dist: 70, faceD: 122, setupId: "main", windDir: "左から", windSpeed: 4 };
+const mockWindAdv = {
+  st: stLat,
+  needsMove: true,
+  confidence: 0.65,
+  personal: { state: "観察中" },
+  model: { traj: Phy.trajectoryModel(windySession, db.setups[0], 850) },
+};
+if (!Eng.wind.suggestReconfirm(windySession, mockWindAdv)) fail("suggestReconfirm expected true");
+const windyJ = Eng.advice.judgement(mockWindAdv, windySession);
+if (!windyJ || windyJ.label !== "風考慮") fail("judgement 風考慮 expected for windy lateral end");
 
 const stack = Geo.targetSvg(
   122,

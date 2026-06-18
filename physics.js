@@ -329,6 +329,24 @@ function robustWeightedLine(pts){
 }
 
 function isWindy(sess){const ws=num(sess&&sess.windSpeed);return ws!=null&&ws>=3.5;}
+function classifyWind(sess,st,opts){
+  opts=opts||{};
+  const wm=windModel(sess||{});
+  const windy=isWindy(sess);
+  const lateralDominant=!!(st&&st.n&&(st.sx||0)>(st.sy||.01)*1.15);
+  const traj=opts.traj;
+  const driftCm=opts.driftCm!=null?opts.driftCm:(traj&&traj.windDriftCm)||0;
+  let trustPenalty=0;
+  if(windy&&lateralDominant)trustPenalty=.5;
+  else if(windy)trustPenalty=.2;
+  if(wm.variability>.35)trustPenalty=Math.max(trustPenalty,clamp((wm.variability-.18)*.55,.15,.45));
+  return {windy,lateralDominant,driftCm,trustPenalty,variability:wm.variability,speed:wm.speed,label:wm.label};
+}
+function suggestWindReconfirm(sess,adv){
+  if(!adv||!adv.st)return false;
+  const c=classifyWind(sess,adv.st,{traj:adv.model&&adv.model.traj});
+  return c.windy&&c.lateralDominant;
+}
 function gearPrecisionProfile(s){
   const checks=["arrowWeight","arrowDia","poundage","drawLength","arrowSpeed","temperature"];
   const filled=checks.filter(k=>s&&String(s[k]||"").trim()).length;
@@ -446,6 +464,8 @@ function adviceModel(db,settings,sess,setup,st){
   const pcal=personalPhysicsCalibration(db,setup&&setup.id,settings);
   const p=num(setup&&setup.poundage);
   let vFactor=nudge,hFactor=nudge;
+  const wm=windModel(sess);
+  if(wm.variability>.35)confidence*=clamp(1-(wm.variability-.35)*.25,.88,1);
   if(traj.wind.speed){
     const drift=traj.windDriftCm*(pcal&&pcal.windFactor||1);
     if(Math.abs(drift)>w*.25&&Math.sign(drift)===Math.sign(st.mx)){hFactor*=.78;confidence*=.92;}
@@ -500,7 +520,7 @@ function judgementFor(adv,sess){
   if(adv.personal&&adv.personal.state==="今回だけ")return {label:"保留",tone:"hold",scale:.35,text:"過去傾向と逆。追加エンドで再現性を確認。"};
   if(st.n<6||(adv.confidence||0)<.45)return {label:"保留",tone:"hold",scale:.4,text:"本数・信頼度が足りない。1エンド追加してから。"};
   if(st.rr>w*2.8)return {label:"射形優先",tone:"warn",scale:.45,text:"散りが大きい。提案量の半分以下で様子見。"};
-  if(isWindy(sess)&&st.sx>st.sy*1.15)return {label:"風考慮",tone:"hold",scale:.5,text:"横風の影響あり。無風で再確認が理想。"};
+  if(suggestWindReconfirm(sess,adv))return {label:"風考慮",tone:"hold",scale:.5,text:"横風の影響あり。無風で再確認が理想。"};
   if(adv.personal&&adv.personal.state==="過去と一致"&&(adv.confidence||0)>=.62)return {label:"動かす",tone:"ok",scale:1,text:"過去傾向と一致。提案量で動かす根拠あり。"};
   if((adv.confidence||0)>=.72&&st.rr<=w*2.2)return {label:"動かす",tone:"ok",scale:1,text:"中心と信頼度が揃った。提案通りに動かす。"};
   return {label:"少量",tone:"mid",scale:.65,text:"傾向は見えた。提案の6〜7割で様子見。"};
@@ -513,7 +533,7 @@ const ArcheryPhysics=Object.freeze({
   robustStats,groupStats,
   physicsProfile,windModel,simulateArrow,solveZeroAngle,trajectoryModel,
   adviceForEnd,judgementFor,sessionQuality,personalModel,regressionAdvice,personalPhysicsCalibration,
-  gearPrecisionProfile
+  gearPrecisionProfile,classifyWind,suggestWindReconfirm,isWindy
 });
 if(typeof module!=="undefined"&&module.exports)module.exports=ArcheryPhysics;
 root.ArcheryPhysics=ArcheryPhysics;

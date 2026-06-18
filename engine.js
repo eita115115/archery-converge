@@ -194,6 +194,11 @@
       ellipseShape: ellipseShape,
       confidenceBand: confidenceBand,
     }),
+    wind: Object.freeze({
+      model: Phy.windModel,
+      classify: Phy.classifyWind,
+      suggestReconfirm: Phy.suggestWindReconfirm,
+    }),
     ringW: ringW,
   });
 })(typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : this);
