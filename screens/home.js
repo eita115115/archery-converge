@@ -16,8 +16,8 @@ function quickStartDist(){
 }
 function quickStartSight(dist){
   const g=getSetup();
-  const mk=db.sightMarks.filter(m=>g&&m.setupId===g.id&&m.dist===dist).sort((a,b)=>b.date.localeCompare(a.date))[0];
-  return {v:mk?.v||"",h:mk?.h||""};
+  const row=latestSightForDist(g.id,dist);
+  return {v:row?.v||"",h:row?.h||""};
 }
 function startQuickSession(){
   const dist=quickStartDist(),last=db.sessions[db.sessions.length-1];
@@ -107,6 +107,7 @@ function renderHome(){
             <button type="button" class="btn hero" id="goQuick">${begOn()?"記録を始める":"Start recording"}</button>
             <button type="button" class="btn btn-secondary button-secondary" id="goSetup">${begOn()?"距離・サイトを変更":"Change dist & sight"}</button>
           </div>
+          ${homeQuickSightHtml()}
           ${db.sessions.length?`<p class="home-prev">${begOn()?"前回":"Last"} · ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · <b>${sessTot(db.sessions[db.sessions.length-1])}</b></p>`:""}
         </div>
       </section>
@@ -128,10 +129,11 @@ function renderSetup(){
   const dist=ui._dist||(last?.dist||70);
   const wDir=ui._windDir??last?.windDir??"";
   const wSpd=ui._windSpd??last?.windSpeed??0;
-  const mk=db.sightMarks.filter(m=>g&&m.setupId===g.id&&m.dist===dist).sort((a,b)=>b.date.localeCompare(a.date))[0];
+  const mk=latestSightForDist(g.id,dist);
   shell(0,begOn()?"準備":"Setup",backLbl(),`
     ${coachCardHtml("setup",{sessionCount:db.sessions.length})}
     ${distRings(dist)}
+    ${sightByDistPanelHtml(dist,{tappable:true})}
     <div class="setup-mid">
       <div>${windCompass(wDir,wSpd)}</div>
       <div class="sight-x">
@@ -145,6 +147,7 @@ function renderSetup(){
     </div>`,
     `<button class="btn hero" id="start">${begOn()?"記録を始める（的の前へ）":"射る"}</button>`,"setup");
   document.querySelectorAll(".dist-svg .ring").forEach(c=>c.onclick=()=>{ui._dist=+c.dataset.d;renderSetup();});
+  document.querySelectorAll(".sight-by-dist-row[data-sd]").forEach(c=>c.onclick=()=>{ui._dist=+c.dataset.sd;renderSetup();});
   document.querySelectorAll(".wbtn").forEach(c=>c.onclick=()=>{ui._windDir=c.dataset.wd;renderSetup();});
   document.querySelectorAll(".wind-spd button").forEach(c=>c.onclick=()=>{ui._windSpd=+c.dataset.ws;renderSetup();});
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");

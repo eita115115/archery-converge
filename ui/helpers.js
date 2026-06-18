@@ -42,6 +42,49 @@ function windCompass(dir,spd){
     <div class="wind-spd">${spdBtns}<span style="font-size:11px;color:var(--dim);align-self:center">m/s</span></div>`;
 }
 
+function latestSightForDist(setupId,dist){
+  if(!setupId)return null;
+  const mk=(db.sightMarks||[]).filter(m=>m.setupId===setupId&&m.dist===dist).sort((a,b)=>b.date.localeCompare(a.date))[0];
+  if(mk&&(mk.v||mk.h))return{v:mk.v||"",h:mk.h||"",date:mk.date};
+  const sess=(db.sessions||[]).filter(s=>s.setupId===setupId&&s.dist===dist).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
+  if(sess&&sess.sightNow&&(sess.sightNow.v||sess.sightNow.h))return{v:sess.sightNow.v||"",h:sess.sightNow.h||"",date:sess.date};
+  return null;
+}
+function sightVhLabel(row){
+  if(!row||(!row.v&&!row.h))return "—";
+  if(begOn())return `上下 ${row.v||"—"} · 左右 ${row.h||"—"}`;
+  return `V ${row.v||"—"} · H ${row.h||"—"}`;
+}
+function sightByDistPanelHtml(activeDist,opts){
+  opts=opts||{};
+  const g=getSetup(),setupId=g.id;
+  if(!setupId)return "";
+  const rows=DISTS.map(d=>{
+    const on=d===activeDist,row=latestSightForDist(setupId,d);
+    const tag=opts.tappable?`<button type="button" class="sight-by-dist-row${on?" on":""}${row?"":" is-empty"}" data-sd="${d}">
+      <span class="sight-by-dist-d">${d}m</span><span class="sight-by-dist-vh">${esc(sightVhLabel(row))}</span></button>`
+      :`<div class="sight-by-dist-row${on?" on":""}${row?"":" is-empty"}">
+      <span class="sight-by-dist-d">${d}m</span><span class="sight-by-dist-vh">${esc(sightVhLabel(row))}</span></div>`;
+    return tag;
+  }).join("");
+  const hd=begOn()?"距離別サイト":"Sight by distance";
+  const hint=opts.tappable?(begOn()?"タップで距離を切り替え":""):"";
+  return `<section class="sight-by-dist" aria-label="${esc(hd)}">
+    <p class="sight-by-dist-hd">${esc(hd)}</p>
+    <div class="sight-by-dist-rows">${rows}</div>
+    ${hint?`<p class="sight-by-dist-hint">${esc(hint)}</p>`:""}
+  </section>`;
+}
+function homeQuickSightHtml(){
+  const g=getSetup();
+  if(!g.id)return "";
+  const dist=quickStartDist();
+  const row=latestSightForDist(g.id,dist);
+  if(!row||(!row.v&&!row.h))return "";
+  const line=begOn()?`今回 ${dist}m · ${sightVhLabel(row)}`:`Next ${dist}m · ${sightVhLabel(row)}`;
+  return `<p class="home-sight-ref">${esc(line)}</p>`;
+}
+
 function distRings(dist){
   const cx=100,cy=100,radii=[88,66,44,22];
   let rings="";

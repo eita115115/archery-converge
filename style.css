@@ -85,6 +85,22 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .frame.fit .sight-x{margin:0;max-width:none}
 .frame.fit .sight-x .core{width:68px;height:68px}
 .frame.fit .sight-x input{padding:12px 8px;font-size:18px}
+.sight-by-dist{margin:12px auto 0;width:100%;max-width:320px;padding:12px 14px;border-radius:16px;background:var(--panel);
+  border:1.5px solid var(--line2);box-shadow:0 1px 0 rgba(28,27,25,.04)}
+.sight-by-dist-hd{margin:0 0 10px;font-size:12px;font-weight:600;color:var(--dim);letter-spacing:-.01em;text-align:center}
+html:lang(ja) .sight-by-dist-hd{letter-spacing:0}
+.sight-by-dist-rows{display:flex;flex-direction:column;gap:6px}
+.sight-by-dist-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border-radius:12px;
+  border:1px solid var(--line);background:#fff;text-align:left;font:inherit;cursor:default}
+button.sight-by-dist-row{cursor:pointer;transition:transform .15s ease,background .15s ease,border-color .15s ease}
+button.sight-by-dist-row:active{transform:scale(.98)}
+.sight-by-dist-row.on{border-color:var(--hit);background:rgba(15,118,110,.06)}
+.sight-by-dist-row.is-empty .sight-by-dist-vh{color:var(--dim);opacity:.7}
+.sight-by-dist-d{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-.02em;flex-shrink:0}
+.sight-by-dist-vh{font-size:13px;color:var(--mute);letter-spacing:-.01em;text-align:right;line-height:1.35}
+.sight-by-dist-hint{margin:8px 0 0;font-size:11px;color:var(--dim);text-align:center;line-height:1.4}
+.home-sight-ref{margin:14px 0 0;font-size:13px;color:var(--mute);letter-spacing:-.01em;line-height:1.4}
+html:lang(ja) .home-sight-ref{letter-spacing:0}
 .setup-mid{display:flex;align-items:center;justify-content:center;gap:14px;flex-shrink:0;padding:8px 0}
 .frame.fit .wind-compass{padding:4px 0}
 .frame.fit .wind-compass svg{width:min(168px,44vw);height:min(168px,44vw)}
