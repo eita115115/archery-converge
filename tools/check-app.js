@@ -141,7 +141,7 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=69",
+  "APP_VER=70",
   "returnVerdictHtml(st,adv,j,s.faceD)",
   "EXPORT_VERSION=1",
   "exportVersion",
@@ -166,6 +166,12 @@ const requiredApp = [
   "record-wind-hint",
   "maybeConvergeMilestoneToast",
   "CONVERGE_MILESTONES",
+  "histEndRowsHtml",
+  "histSessionAnalysis",
+  "hist-end-list",
+  "hist-end-row",
+  "histEndHead",
+  "histSessionTrend",
   "groupDirection",
   "simpleSightAction",
   "ret-converge",
@@ -545,6 +551,11 @@ if (Beg.convergeMilestoneLine(25) !== "あなた用の目安が育ってきま�
 if (Beg.convergeMilestoneLine(75) !== "あなた用の目安がかなり育ちました") fail("convergeMilestoneLine 75");
 const setupCoach = Beg.coachCard("setup", { sessionCount: 6 });
 if (!setupCoach.includes("m/s")) fail("setup coach advanced wind tip missing");
+const histRow = sessAnalysis.ends[0];
+if (!Beg.histEndHead(histRow, 122, 1, 60).includes("回目")) fail("histEndHead missing");
+if (!Beg.histEndBody(histRow, 122)) fail("histEndBody empty");
+if (Beg.histSessionTrend(sessAnalysis.summary) !== "右寄りの傾向") fail("histSessionTrend mismatch");
+if (!Beg.histBestEndLine(3).includes("3回目")) fail("histBestEndLine missing");
 
 const ogDesc = /property="og:description" content="([^"]+)"/.exec(html);
 if (!ogDesc || ogDesc[1].length < 36) fail("og:description too short");

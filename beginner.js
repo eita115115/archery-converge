@@ -158,6 +158,34 @@
     return "風が強めです。戻ったあとの目安は風の影響を考慮してください。";
   }
 
+  /** Collapsed history end row — groupDirection headline. */
+  function histEndHead(row, faceD, endNum, pts) {
+    if (!row || !row.st) return endNum + "回目 · " + pts + "点";
+    return endNum + "回目 · " + groupDirection(row.st, faceD) + " · " + pts + "点";
+  }
+
+  /** Expanded history end row — spread + judgement in plain words. */
+  function histEndBody(row, faceD) {
+    if (!row || !row.st) return "";
+    var parts = [];
+    var sg = simpleGroup(row.st, faceD);
+    if (sg && sg !== "記録しよう") parts.push(sg);
+    var pj = row.j ? plainJudgement(row.j) : null;
+    if (pj && pj.title) parts.push(pj.title);
+    return parts.join(" · ");
+  }
+
+  /** Session-level trend from analyzeSession.summary. */
+  function histSessionTrend(summary) {
+    if (!summary || !summary.trend || summary.trend === "stable" || summary.trend === "none") return null;
+    var map = { right: "右寄りの傾向", left: "左寄りの傾向", up: "上寄りの傾向", down: "下寄りの傾向" };
+    return map[summary.trend] || null;
+  }
+
+  function histBestEndLine(endNum) {
+    return "一番集まったのは" + endNum + "回目";
+  }
+
   /** One-time toast when convergeIndex crosses 25 / 50 / 75. */
   function convergeMilestoneLine(level) {
     if (level >= 75) return "あなた用の目安がかなり育ちました";
@@ -307,5 +335,9 @@
     confidenceWords: confidenceWords,
     windRecordHint: windRecordHint,
     convergeMilestoneLine: convergeMilestoneLine,
+    histEndHead: histEndHead,
+    histEndBody: histEndBody,
+    histSessionTrend: histSessionTrend,
+    histBestEndLine: histBestEndLine,
   };
 })(typeof window !== "undefined" ? window : this);

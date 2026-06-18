@@ -412,6 +412,20 @@ html:lang(ja) .btn.hero{letter-spacing:0;line-height:1.3529611765}
 .hist-row .d{font-size:16px;font-weight:500;color:var(--text)}
 .hist-row .m{font-size:13px;color:var(--dim);margin-top:3px}
 .hist-row .pts{font-size:24px;font-weight:700;letter-spacing:-.03em;color:var(--ink)}
+.hist-detail-meta{margin:0 0 10px;font-size:13px;font-weight:500;line-height:1.4;color:var(--dim);text-align:center;letter-spacing:-.01em}
+html:lang(ja) .hist-detail-meta{letter-spacing:0}
+.hist-detail-target{margin-bottom:8px}
+.hist-end-list{display:flex;flex-direction:column;gap:6px;margin:12px 0 4px}
+.hist-end-row{border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden}
+.hist-end-sum{display:flex;align-items:center;gap:8px;padding:12px 14px;font-size:14px;font-weight:500;line-height:1.35;color:var(--text);
+  cursor:pointer;list-style:none;letter-spacing:-.01em}
+html:lang(ja) .hist-end-sum{letter-spacing:0}
+.hist-end-sum::-webkit-details-marker{display:none}
+.hist-end-sum::before{content:"";flex-shrink:0;width:7px;height:7px;border-right:1.5px solid var(--dim);border-bottom:1.5px solid var(--dim);
+  transform:rotate(-45deg);transition:transform .2s var(--ease-out);margin-right:2px}
+.hist-end-row[open] .hist-end-sum::before{transform:rotate(45deg)}
+.hist-end-body{padding:0 14px 12px 29px;font-size:13px;line-height:1.45;color:var(--dim);letter-spacing:-.01em}
+html:lang(ja) .hist-end-body{letter-spacing:0}
 
 .gear-inp{width:100%;padding:13px 16px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text);font-size:16px;margin-bottom:10px;letter-spacing:-.01em}
 .gear-lbl{font-size:12px;font-weight:500;color:var(--dim);margin:14px 0 6px;letter-spacing:-.01em}
