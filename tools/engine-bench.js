@@ -50,6 +50,9 @@ const sess = { id: "a1", dist: 70, faceD: fd, setupId: "s1", windDir: "", windSp
 const windySess = { id: "a2", dist: 70, faceD: fd, setupId: "s1", windDir: "左から", windSpeed: 4 };
 const st = Eng.grouping.robust(arrows);
 
+const sixFixture = JSON.parse(fs.readFileSync(path.join(root, "tools/fixtures/session-six-ends.json"), "utf8"));
+const sixSession = Object.assign({ setupId: "s1" }, sixFixture.session);
+
 let failed = false;
 
 function bench(label, fn, n, maxMsPerCall) {
@@ -65,12 +68,31 @@ function bench(label, fn, n, maxMsPerCall) {
   }
 }
 
+function benchOnce(label, fn, maxMs) {
+  Eng.clearCaches();
+  fn();
+  const t0 = process.hrtime.bigint();
+  fn();
+  const ms = Number(process.hrtime.bigint() - t0) / 1e6;
+  console.log(label + ": " + ms.toFixed(2) + "ms");
+  if (maxMs != null && ms > maxMs) {
+    console.error("engine-bench FAIL: " + label + " > " + maxMs + " ms (got " + ms.toFixed(2) + ")");
+    failed = true;
+  }
+}
+
 bench("trajectory cold x20", () => Eng.ballistics.trajectory(sess, db.setups[0], 850), 20);
 bench("trajectory cached x200", () => Eng.ballistics.trajectory(sess, db.setups[0], 850), 200);
 bench("analyzeEnd x50", () => Eng.advice.analyzeEnd(db, db.settings, db.setups[0], sess, arrows), 50);
 bench("wind.classify x200", () => Eng.wind.classify(windySess, st), 200, 0.5);
 Eng.memory.convergeIndex(db, "s1", db.settings);
 bench("convergeIndex x100", () => Eng.memory.convergeIndex(db, "s1", db.settings), 100, 5);
+bench("grouping.describe x100", () => Eng.grouping.describe(st, fd), 100, 0.2);
+benchOnce(
+  "analyzeSession 6 ends",
+  () => Eng.advice.analyzeSession(db, db.settings, db.setups[0], sixSession),
+  50
+);
 
 if (failed) process.exit(1);
 console.log("engine-bench OK tier=" + Eng.profile.tier + " steps=" + Eng.profile.maxSimSteps);

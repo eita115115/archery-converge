@@ -87,6 +87,83 @@
     return { st: st, adv: adv, j: j };
   }
 
+  /** Structured grouping report for history / done (X4). */
+  function describeGrouping(st, faceD) {
+    if (!st || st.n < 1) return null;
+    var shape = ellipseShape(st);
+    return {
+      center: { mx: st.mx, my: st.my },
+      spread: {
+        rr: st.rr,
+        sx: st.sx,
+        sy: st.sy,
+        angleDeg: st.angleDeg != null ? st.angleDeg : shape.angleDeg,
+        major: st.major,
+        minor: st.minor,
+        dominant: shape.dominant,
+      },
+      outliers: (st.excluded && st.excluded.length) || 0,
+      method: st.method || "simple",
+      confidence: st.confidence,
+    };
+  }
+
+  function summarizeSessionEnds(ends, faceD) {
+    if (!ends.length) return { trend: "none", totalAdj: { h: 0, v: 0 }, bestEnd: null, endCount: 0 };
+    var rw = ringW(faceD);
+    var mxVals = [];
+    var myVals = [];
+    ends.forEach(function (e) {
+      if (e.st) {
+        mxVals.push(e.st.mx);
+        myVals.push(e.st.my);
+      }
+    });
+    var trend = "stable";
+    if (mxVals.length >= 2) {
+      var dm = mxVals[mxVals.length - 1] - mxVals[0];
+      var dy = myVals[myVals.length - 1] - myVals[0];
+      if (Math.abs(dm) > Math.abs(dy) && Math.abs(dm) > rw * 0.15) trend = dm > 0 ? "right" : "left";
+      else if (Math.abs(dy) > rw * 0.15) trend = dy > 0 ? "up" : "down";
+    }
+    var totalH = 0;
+    var totalV = 0;
+    ends.forEach(function (e) {
+      if (e.adv && e.adv.vector) {
+        totalH += e.adv.vector.h || 0;
+        totalV += e.adv.vector.v || 0;
+      }
+    });
+    var bestEnd = 0;
+    var bestRr = Infinity;
+    ends.forEach(function (e, i) {
+      if (e.st && e.st.rr < bestRr) {
+        bestRr = e.st.rr;
+        bestEnd = i;
+      }
+    });
+    return { trend: trend, totalAdj: { h: totalH, v: totalV }, bestEnd: bestEnd, endCount: ends.length };
+  }
+
+  /** Multi-end analysis for done / history detail (one call, no N× UI). */
+  function analyzeSession(db, settings, setup, session) {
+    var g = slimSetup(setup);
+    var faceD = (session && session.faceD) || 122;
+    var ends = [];
+    (session && session.ends ? session.ends : []).forEach(function (arrows, i) {
+      if (!arrows || !arrows.length) return;
+      var row = analyzeEnd(db, settings, g, session, arrows);
+      ends.push({
+        index: i,
+        st: row.st,
+        adv: row.adv,
+        j: row.j,
+        describe: describeGrouping(row.st, faceD),
+      });
+    });
+    return { ends: ends, summary: summarizeSessionEnds(ends, faceD) };
+  }
+
   function trajectoryFor(db, settings, setup, sess) {
     var s = slimSession(sess);
     var g = slimSetup(setup);
@@ -201,6 +278,7 @@
     grouping: Object.freeze({
       robust: Phy.robustStats,
       simple: Phy.groupStats,
+      describe: describeGrouping,
     }),
     ballistics: Object.freeze({
       profile: Phy.physicsProfile,
@@ -214,6 +292,7 @@
       judgement: Phy.judgementFor,
       quality: Phy.sessionQuality,
       analyzeEnd: analyzeEnd,
+      analyzeSession: analyzeSession,
     }),
     calibration: Object.freeze({
       personal: Phy.personalModel,

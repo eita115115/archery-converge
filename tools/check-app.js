@@ -141,7 +141,7 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=63",
+  "APP_VER=64",
   "return-verdict",
   "return-verdict-eyebrow",
   "returnVerdictHtml",
@@ -409,6 +409,20 @@ const streakDb = {
   settings: db.settings,
 };
 if (Eng.memory.sessionStreak(streakDb, "main", 70) < 2) fail("sessionStreak expected >= 2");
+
+if (typeof Eng.grouping.describe !== "function") fail("Eng.grouping.describe missing");
+const desc = Eng.grouping.describe(st, 122);
+if (!desc || !desc.center || desc.spread.rr == null || !desc.method) fail("grouping.describe shape invalid");
+
+const sessFixture = JSON.parse(fs.readFileSync(path.join(root, "tools/fixtures/session-six-ends.json"), "utf8"));
+Phy.clearCaches();
+const sessAnalysis = Eng.advice.analyzeSession(db, db.settings, db.setups[0], sessFixture.session);
+if (!sessAnalysis.ends || sessAnalysis.ends.length !== sessFixture.expectedEndCount)
+  fail("analyzeSession end count mismatch");
+if (!sessAnalysis.summary || sessAnalysis.summary.trend !== sessFixture.expectedTrend)
+  fail("analyzeSession trend mismatch: " + (sessAnalysis.summary && sessAnalysis.summary.trend));
+if (!sessAnalysis.ends[0].describe || sessAnalysis.ends[0].describe.center.mx == null)
+  fail("analyzeSession missing per-end describe");
 
 const stack = Geo.targetSvg(
   122,
