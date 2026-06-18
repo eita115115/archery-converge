@@ -192,6 +192,8 @@ function renderGear(){
     <div class="tile-card gear-tile">
       <div class="beg-toggle"><label class="beg-lbl"><input type="checkbox" id="begMode" ${db.settings.beginnerMode!==false?"checked":""}> やさしい表示</label>
       <p class="field-hint beg-mode-hint">オフにすると数値・信頼度・図例を表示します</p></div>
+      <div class="beg-toggle" style="margin-top:10px"><label class="beg-lbl"><input type="checkbox" id="zenFx" ${db.settings.zenkinFx===true?"checked":""}> 全金の演出</label>
+      <p class="field-hint beg-mode-hint">オフだと全金でも的は通常表示・短いフィードバック</p></div>
       ${gearCalibBarHtml(g)}
     </div>
     <div class="tile-card gear-tile">
@@ -229,6 +231,7 @@ function renderGear(){
     if(bm.checked)db.settings.coachSeen={};
     save();toast(bm.checked?"やさしい説明オン":"上級者表示");ui._coachBump={};ui._legendBump={};render();
   };
+  const zf=$("#zenFx");if(zf)zf.onchange=()=>{db.settings.zenkinFx=zf.checked;save();toast(zf.checked?"全金演出オン":"全金演出オフ");};
   $("#gs").onclick=()=>{
     const d={id:g.id||uid(),name:$("#gn").value.trim()||"main",bow:$("#gb").value.trim(),
       poundage:$("#gp").value.trim(),drawLength:$("#gd").value.trim(),arrowWeight:$("#gw").value.trim(),

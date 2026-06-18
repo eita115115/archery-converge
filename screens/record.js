@@ -135,8 +135,9 @@ function afterRecordArrow(s,arrow){
   updateRecordChrome(s,true);
   const stack=document.querySelector(".tgt-stack");
   if(stack){stack.classList.remove("hit-flash");void stack.offsetWidth;stack.classList.add("hit-flash");setTimeout(()=>stack.classList.remove("hit-flash"),520);}
-  tapHaptic({zenkin:Geo.isZenkinEnd(s.cur,s.perEnd),ten:arrow.s>=10});
-  if(Geo.isZenkinEnd(s.cur,s.perEnd))flashZenkinConverge(document.querySelector(".tgt-stack"),$(".rec-progress"));
+  const zen=Geo.isZenkinEnd(s.cur,s.perEnd);
+  tapHaptic({zenkin:zen&&zenkinFxOn(),ten:arrow.s>=10});
+  if(zen&&zenkinFxOn())flashZenkinConverge(document.querySelector(".tgt-stack"),$(".rec-progress"));
 }
 
 function bindTarget(s){
@@ -174,7 +175,7 @@ function bindTarget(s){
     const zen=Geo.isZenkinEnd(s.cur,s.perEnd);
     if(zen&&s.zenkinFaceIdx==null)s.zenkinFaceIdx=Geo.pickZenkinFace();
     save();
-    if(zen){const lb=Geo.zenkinFaceLabel(s.zenkinFaceIdx);toast(begOn()?"全金！！ "+lb:"全金 — "+lb);}
+    if(zen&&zenkinFxOn()){const lb=Geo.zenkinFaceLabel(s.zenkinFaceIdx);toast(begOn()?"全金！！ "+lb:"全金 — "+lb);}
     else if(hint)toast(hint);
     afterRecordArrow(s,h);}
   function cancel(e){const cp=pt(e);if(!drag||!cp||cp.id===drag.id)reset();}

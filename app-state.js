@@ -1,7 +1,7 @@
 /* ConvergeApp — state, persistence, coach */
 var Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
-var KEY="archeryConverge.v1", APP_VER=79, EXPORT_VERSION=1;
+var KEY="archeryConverge.v1", APP_VER=80, EXPORT_VERSION=1;
 var COACH_CAP=2;
 var CONVERGE_MILESTONES=[25,50,75];
 var Cx=window.ConvergeCompat;
@@ -60,10 +60,21 @@ function geoLegendHtml(kind,extra){
   return html;
 }
 var DISTS=[70,50,30,18];
+var MISS_REASON_TAGS=[
+  {id:"good",label:"良射"},
+  {id:"push",label:"押し手"},
+  {id:"release",label:"リリース"},
+  {id:"clicker",label:"クリッカー"},
+  {id:"wind",label:"風"},
+  {id:"aim",label:"狙いミス"},
+  {id:"unknown",label:"不明"},
+  {id:"arrow",label:"矢が怪しい"}
+];
 var db=load();
 var ui={screen:"home",histId:null,adj:false,_dist:70,zoom:1};
 
-function blankDb(){return{schemaVersion:1,setups:[],sightMarks:[],sessions:[],active:null,settings:{eyeSight:850,beginnerMode:true}};}
+function zenkinFxOn(){return db.settings.zenkinFx===true;}
+function blankDb(){return{schemaVersion:1,setups:[],sightMarks:[],sessions:[],active:null,settings:{eyeSight:850,beginnerMode:true,zenkinFx:false}};}
 function normalizeActive(a){
   if(!a)return null;
   if(!Array.isArray(a.ends))a.ends=[];
@@ -72,10 +83,13 @@ function normalizeActive(a){
   if(!a.sightNow)a.sightNow={...a.sightStart};
   if(!Array.isArray(a.adjLog))a.adjLog=[];
   if(!Array.isArray(a.endsZenkinFaces))a.endsZenkinFaces=[];
+  if(!Array.isArray(a.endTags))a.endTags=[];
   if(!a.perEnd)a.perEnd=6;
   if(!a.phase)a.phase="record";
   while(a.endsZenkinFaces.length>a.ends.length)a.endsZenkinFaces.pop();
   while(a.endsZenkinFaces.length<a.ends.length)a.endsZenkinFaces.push(null);
+  while(a.endTags.length>a.ends.length)a.endTags.pop();
+  while(a.endTags.length<a.ends.length)a.endTags.push([]);
   return a;
 }
 function zenkinFaceIdx(s,arrows,pe){

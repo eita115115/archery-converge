@@ -16,15 +16,15 @@ function renderReturn(){
   const geoDefs=Geo.GEO_MARKER_DEFS;
   const rtOver=geoDefs+(st?`<g class="geo-layer" pointer-events="none">${Geo.geoSvg(st,s.faceD,sug)}</g>`:"");
   const moveLine=adv&&adv.moves.length&&Beg?Beg.plainSightMove(adv.moves[0]):"";
-  shell(2,returnTitle(s,tot,j)+(zenRet?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:"")+(!begOn()&&j?` ${jtagHtml(j)}`:""),"",`
-    ${begOn()?returnVerdictHtml(st,adv,j,s.faceD):`${trustLineHtml(adv,s)}${adviceTechHtml(st,adv,j)}`}
-    ${returnMetaRowHtml(st,adv,s)}
+  const sightMuted=!judgementAllowsSight(j);
+  shell(2,returnTitle(s,tot,j)+(zenRet?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:""),"",`
+    ${returnScreenTopHtml(st,adv,j,s,s.faceD)}
     <div class="ret-split ret-reveal">
       <div class="cell"><div class="box sq-fit"><div class="tgt-stack ret-converge">${Geo.targetSvg(s.faceD,"rt",rtOver,targetModeFor(end,pe),oiRet)}</div></div></div>
       <div class="cell">${ui.adj?`<div class="sight-adj" style="width:100%;margin:0">
         <input id="nv" inputmode="decimal" placeholder="上下" value="${esc(sv)}">
         <input id="nh" inputmode="decimal" placeholder="左右" value="${esc(sh)}">
-      </div>`:sightDial(s0,{v:sv,h:sh},sug,adv)}</div>
+      </div>`:sightDial(s0,{v:sv,h:sh},sightMuted?null:sug,sightMuted?null:adv,{muted:sightMuted})}</div>
     </div>
     ${begOn()?"":geoLegendHtml("return",{j})}`,`
     <div class="foot-undo">${reopenEndBtnHtml("reopenRet")}</div>
@@ -34,6 +34,7 @@ function renderReturn(){
       <button class="btn ghost" id="fin">${begOn()?"今日は終わり":"終了"}</button>
     </div>`,true);
   bindReopenEnd(s,"#reopenRet",renderRecord);
+  bindMissTags(s);
   maybeConvergeMilestoneToast();
   const tg=$("#trustGear");if(tg)tg.onclick=()=>nav("gear");
   let mh="";end.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--mark-cur)",Geo.lbl(a),"ret-mark-in");});const rm=$("#rtmarks");if(rm)rm.innerHTML=mh;

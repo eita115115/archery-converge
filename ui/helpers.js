@@ -140,7 +140,9 @@ function geoLegend(kind,extra){
   return `<div class="geo-legend">${list.map(it=>`<span class="gl"><svg viewBox="0 0 26 26">${it.svg}</svg>${it.t}</span>`).join("")}</div>`;
 }
 
-function sightDial(s0,now,sug,adv){
+function sightDial(s0,now,sug,adv,opts){
+  opts=opts||{};
+  const showSug=!opts.muted&&sug&&(sug.h||sug.v);
   const cx=80,cy=80,R=55;
   let ticks="";
   for(let i=0;i<24;i++){const a=i*15*Math.PI/180,x1=cx+(R-4)*Math.cos(a),y1=cy+(R-4)*Math.sin(a),x2=cx+R*Math.cos(a),y2=cy+R*Math.sin(a);
@@ -150,14 +152,14 @@ function sightDial(s0,now,sug,adv){
   const scale=2.2;
   const sx=cx+sh*scale,sy=cy-sv*scale,nx=cx+nh*scale,ny=cy-nv*scale;
   let sugLine="",sugDot="";
-  if(sug&&(sug.h||sug.v)){
+  if(showSug){
     const ex=cx+sug.h*scale*.85,ey=cy-sug.v*scale*.85;
     sugLine=`<line class="sug" x1="${nx}" y1="${ny}" x2="${ex}" y2="${ey}"/>`;
     sugDot=`<circle cx="${ex}" cy="${ey}" r="5" fill="none" stroke="var(--warn)" stroke-width="2" stroke-dasharray="2 2"/>`;
   }
-  const rec=adv&&adv.moves.length?`<text class="lbl" x="${cx}" y="152" text-anchor="middle">→ ${adv.moves.map(m=>m.dir+m.cm.toFixed(1)+"cm").join(" · ")}</text>`:
-    `<text class="lbl" x="${cx}" y="152" text-anchor="middle">調整不要</text>`;
-  return `<div class="sight-dial"><svg viewBox="0 0 160 168" xmlns="http://www.w3.org/2000/svg">
+  const rec=!opts.muted&&adv&&adv.moves.length?`<text class="lbl" x="${cx}" y="152" text-anchor="middle">→ ${adv.moves.map(m=>m.dir+m.cm.toFixed(1)+"cm").join(" · ")}</text>`:"";
+  const sugLegend=showSug?`<g class="lbl" transform="translate(92,158)"><line x1="0" y1="0" x2="10" y2="0" stroke="var(--warn)" stroke-width="2.5"/><text x="14" y="4" font-size="9" fill="var(--dim)">推奨</text></g>`:"";
+  return `<div class="sight-dial${opts.muted?" muted":""}"><svg viewBox="0 0 160 168" xmlns="http://www.w3.org/2000/svg">
     <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--warn)"/></marker></defs>
     ${ticks}
     <line class="axis" x1="${cx-R}" y1="${cy}" x2="${cx+R}" y2="${cy}"/>
@@ -167,7 +169,7 @@ function sightDial(s0,now,sug,adv){
     ${sugLine}${sugDot}
     <g class="lbl" transform="translate(18,158)"><circle r="4" fill="var(--dim)"/><text x="10" y="4" font-size="9" fill="var(--dim)">開始</text></g>
     <g class="lbl" transform="translate(58,158)"><circle r="5" fill="var(--sight)" stroke="#fff" stroke-width="1"/><text x="12" y="4" font-size="9" fill="var(--dim)">今</text></g>
-    <g class="lbl" transform="translate(92,158)"><line x1="0" y1="0" x2="10" y2="0" stroke="var(--warn)" stroke-width="2.5"/><text x="14" y="4" font-size="9" fill="var(--dim)">推奨</text></g>
+    ${sugLegend}
     ${rec}
   </svg></div>`;
 }
@@ -177,13 +179,14 @@ function sessTot(s){return sessArr(s).reduce((a,x)=>a+x.s,0);}
 
 function endPulse(n,cb,opts){
   opts=opts||{};
+  const zen=!!opts.zenkin&&zenkinFxOn();
   const p=$("#pulse"),pn=$("#pulseN");
-  pn.textContent=opts.zenkin?"全金":n;
-  p.classList.toggle("zenkin",!!opts.zenkin);
+  pn.textContent=zen?"全金":n;
+  p.classList.toggle("zenkin",zen);
   p.classList.add("on");
-  setTimeout(()=>{p.classList.remove("on","zenkin");setTimeout(cb,200);},opts.zenkin?1050:580);
+  setTimeout(()=>{p.classList.remove("on","zenkin");setTimeout(cb,200);},zen?1050:580);
 }
-function targetModeFor(arrows,pe){return Geo.isZenkinEnd(arrows,pe)?"celebration":"sport";}
+function targetModeFor(arrows,pe){return Geo.isZenkinEnd(arrows,pe)&&zenkinFxOn()?"celebration":"sport";}
 function backToSetupFromRecord(s){
   ui._dist=s.dist;
   ui._windDir=s.windDir??"";
@@ -210,6 +213,7 @@ function reopenLastEnd(s){
   if(!s.endsZenkinFaces)s.endsZenkinFaces=[];
   const oi=s.endsZenkinFaces.pop();
   s.cur=s.ends.pop();
+  if(Array.isArray(s.endTags)&&s.endTags.length)s.endTags.pop();
   s.zenkinFaceIdx=oi!=null?oi:null;
   s.phase="record";
   ui.adj=false;
@@ -307,17 +311,105 @@ function trustLineHtml(adv,s){
   const link=refine&&ctx.needsMove?` <button type="button" class="trust-link" id="trustGear">${begOn()?"設定で精密化":"Refine in Settings"}</button>`:"";
   return `<p class="trust-line">${esc(text)}${link}</p>`;
 }
+function judgementAllowsSight(j){
+  return !!(j&&(j.label==="動かす"||j.label==="少量"));
+}
+function judgementHeadline(j){
+  if(Beg&&Beg.plainJudgement){
+    const pj=Beg.plainJudgement(j);
+    if(pj&&pj.title)return pj.title;
+  }
+  return j?j.label:"—";
+}
+function judgementSubline(j){
+  if(Beg&&Beg.plainJudgement){
+    const pj=Beg.plainJudgement(j);
+    if(pj&&pj.body)return pj.body;
+  }
+  return j&&j.text?j.text:"";
+}
+function returnGroupLine(st,faceD){
+  if(!st||st.n<1)return "";
+  if(begOn()&&Beg){
+    const dir=Beg.groupDirection(st,faceD);
+    const quality=Beg.simpleGroup(st,faceD);
+    if(quality&&quality!=="記録しよう"&&!dir.includes(quality))return dir+" · "+quality;
+    return dir;
+  }
+  return `${mono(st.mx,"x")} ${mono(st.my,"y")} R${st.rr.toFixed(1)}`;
+}
 function returnVerdictHtml(st,adv,j,faceD){
-  if(!begOn()||!Beg)return "";
-  const dir=Beg.groupDirection(st,faceD);
-  const action=Beg.simpleSightAction(adv,j);
-  const quality=Beg.simpleGroup(st,faceD);
-  const detail=quality&&quality!=="記録しよう"&&!dir.includes(quality)?quality:"";
-  return `<section class="return-verdict" aria-label="${begOn()?"今回の集まり":"Grouping"}">
+  const headline=judgementHeadline(j);
+  const sub=judgementSubline(j);
+  const group=returnGroupLine(st,faceD);
+  return `<section class="return-verdict" aria-label="${begOn()?"今回の判断":"End judgement"}">
     <p class="return-verdict-eyebrow">${begOn()?"今日の6本":"This end"}</p>
-    <p class="return-verdict-main">${esc(dir)}</p>
-    <p class="return-verdict-action">${esc(action)}</p>
-    ${detail?`<p class="return-verdict-detail">${esc(detail)}</p>`:""}</section>`;
+    <p class="return-verdict-main return-judge-head">${esc(headline)}</p>
+    ${sub?`<p class="return-verdict-action return-judge-sub">${esc(sub)}</p>`:""}
+    ${group?`<p class="return-verdict-detail">${esc(group)}</p>`:""}</section>`;
+}
+function returnSightHintHtml(adv,j){
+  if(!judgementAllowsSight(j)||!adv||!adv.moves||!adv.moves.length)return "";
+  const action=begOn()&&Beg?Beg.simpleSightAction(adv,j):adv.moves.map(m=>m.dir+m.cm.toFixed(1)+"cm").join(" · ");
+  const move=begOn()&&Beg&&adv.moves[0]?Beg.plainSightMove(adv.moves[0]):"";
+  return `<details class="return-sight-hint">
+    <summary>${begOn()?"サイトの目安":"Sight hint"}</summary>
+    <p class="return-sight-action">${esc(action)}</p>
+    ${move?`<p class="return-sight-note">${esc(move)}</p>`:""}
+  </details>`;
+}
+function returnDetailHtml(st,adv,j,s){
+  const trust=trustLineHtml(adv,s);
+  const meta=returnMetaRowHtml(st,adv,s);
+  const tech=adviceTechHtml(st,adv,j);
+  if(!trust&&!meta&&!tech)return "";
+  return `<details class="return-detail">
+    <summary>${begOn()?"詳しく":"Details"}</summary>
+    <div class="return-detail-body">${trust}${meta}${tech}</div>
+  </details>`;
+}
+function ensureEndTags(s){
+  if(!s)return [];
+  if(!Array.isArray(s.endTags))s.endTags=[];
+  while(s.endTags.length<s.ends.length)s.endTags.push([]);
+  while(s.endTags.length>s.ends.length)s.endTags.pop();
+  return s.endTags;
+}
+function missTagsHtml(s){
+  const idx=s.ends.length-1;
+  if(idx<0)return "";
+  const tags=ensureEndTags(s)[idx]||[];
+  const chips=MISS_REASON_TAGS.map(t=>{
+    const on=tags.includes(t.id);
+    return `<button type="button" class="miss-tag${on?" on":""}" data-tag="${esc(t.id)}">${esc(t.label)}</button>`;
+  }).join("");
+  return `<div class="miss-tags" aria-label="${begOn()?"外れた理由":"Miss reason"}">
+    <p class="miss-tags-lbl">${begOn()?"外れた理由（任意）":"Reason (optional)"}</p>
+    <div class="miss-tags-row">${chips}</div>
+  </div>`;
+}
+function returnScreenTopHtml(st,adv,j,s,faceD){
+  return `${returnVerdictHtml(st,adv,j,faceD)}${missTagsHtml(s)}${returnSightHintHtml(adv,j)}${returnDetailHtml(st,adv,j,s)}`;
+}
+function bindMissTags(s){
+  const idx=s.ends.length-1;
+  if(idx<0)return;
+  document.querySelectorAll(".miss-tag").forEach(btn=>{
+    btn.onclick=()=>{
+      const id=btn.dataset.tag;
+      const row=ensureEndTags(s)[idx];
+      let next=row.includes(id)?row.filter(x=>x!==id):row.concat(id);
+      s.endTags[idx]=next;
+      save();
+      btn.classList.toggle("on",next.includes(id));
+    };
+  });
+}
+function syncUpdBar(available){
+  const b=$("#updBar");if(!b)return;
+  const busy=db.active&&(ui.screen==="record"||ui.screen==="return");
+  if(busy){b.hidden=true;return;}
+  if(available!==undefined)b.hidden=!available;
 }
 function memoryChipLinePro(streak,dirKey){
   if(streak<2||!dirKey||dirKey==="c")return "";
@@ -488,5 +580,5 @@ function recordTitle(s,n,pe){
 }
 function returnTitle(s,tot,j){
   if(begOn())return `確認 · ${Beg.endLabel(s.ends.length)}`;
-  return `Return · E${s.ends.length} · ${tot}pt ${jtagHtml(j)}`;
+  return `Return · E${s.ends.length} · ${tot}pt`;
 }

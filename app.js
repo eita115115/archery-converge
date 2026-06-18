@@ -2,6 +2,7 @@
 function nav(screen){ui.screen=screen;ui.histId=null;ui.adj=false;ui._coachBump={};ui._legendBump={};render();}
 
 function render(){
+  syncUpdBar(ui._updAvail);
   try{
     if(db.active&&ui.screen==="home")ui.screen=db.active.phase||"record";
     if(ui.screen==="home")return renderHome();
@@ -37,7 +38,7 @@ function blockZoom(){
 if("serviceWorker"in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
-function checkUp(){if(location.protocol==="file:")return;fetch("version.json?"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(j=>{const b=$("#updBar");if(b&&j?.v>APP_VER)b.hidden=false;}).catch(()=>{});}
+function checkUp(){if(location.protocol==="file:")return;fetch("version.json?"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(j=>{ui._updAvail=!!(j&&j.v>APP_VER);syncUpdBar(ui._updAvail);}).catch(()=>{});}
 $("#updBar").onclick=()=>location.reload();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkUp();});
 window.onerror=(msg,src,line)=>{toast("ERR:"+line);console.error(msg,src,line);};
