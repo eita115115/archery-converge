@@ -6,8 +6,8 @@ const path = require("path");
 const vm = require("vm");
 
 const root = path.join(__dirname, "..");
-function load(name) {
-  const src = fs.readFileSync(path.join(root, name), "utf8");
+
+function boot() {
   const ctx = {
     window: {},
     Math,
@@ -15,23 +15,42 @@ function load(name) {
     module: { exports: {} },
     globalThis: {},
     document: { documentElement: { style: { setProperty: () => {} } } },
+    navigator: { hardwareConcurrency: 4, deviceMemory: 4 },
+    matchMedia: () => ({ matches: false }),
   };
   ctx.window = ctx;
   ctx.globalThis = ctx;
-  vm.runInNewContext(src, ctx);
+  ["geometry.js", "physics.js", "engine.js", "beginner.js"].forEach(f => {
+    vm.runInNewContext(fs.readFileSync(path.join(root, f), "utf8"), ctx);
+  });
   return ctx;
 }
 
-const Geo = load("geometry.js").ConvergeGeometry;
-const Phy = load("physics.js").ArcheryPhysics || load("physics.js").module.exports;
-const Beg = load("beginner.js").ConvergeBeginner;
+const ctx = boot();
+const Geo = ctx.ConvergeGeometry;
+const Phy = ctx.ArcheryPhysics || ctx.module.exports;
+const Eng = ctx.ConvergeEngine;
+const Beg = ctx.ConvergeBeginner;
 
 const issues = [];
 function fail(msg) {
   issues.push(msg);
 }
 
+if (!Eng || !Eng.metrics) fail("ConvergeEngine.metrics required for beginner verbalization");
+
 const settings = { beginnerMode: true, eyeSight: 850 };
+
+// --- Golden parity at faceD=122 (70 m) ---
+(function () {
+  const stCenter = { n: 6, mx: 0.1, my: 0.1, rr: 0.8 };
+  if (Beg.groupDirection(stCenter, 122) !== "中心はだいたい真ん中") fail("golden center direction");
+  const stSoft = { n: 6, mx: 0.5, my: 0.4, rr: 1.2 };
+  if (Beg.groupDirection(stSoft, 122) !== "中心は少し上右") fail("golden soft direction: " + Beg.groupDirection(stSoft, 122));
+  const stStrong = { n: 6, mx: 1.0, my: 0.8, rr: 1.5 };
+  if (Beg.groupDirection(stStrong, 122) !== "中心は上右") fail("golden strong direction: " + Beg.groupDirection(stStrong, 122));
+  if (!Beg.simpleGroup({ n: 6, mx: 0.2, my: 0.2, rr: 1.0 }, 122).includes("集ま")) fail("golden simpleGroup centered");
+})();
 
 // --- Scenario A: complete novice, first end, scattered shots ---
 (function () {
@@ -49,13 +68,13 @@ const settings = { beginnerMode: true, eyeSight: 850 };
     return { x: h.x, y: h.y, s: h.s, X: h.X };
   });
   const st = Phy.robustStats(arrows);
-  const pg = Beg.plainGroup(st);
+  const pg = Beg.plainGroup(st, fd);
   if (!pg || pg.length < 4) fail("plainGroup empty for novice end");
   if (/R\d|mx|my/.test(pg)) fail("plainGroup contains jargon: " + pg);
-  const sg = Beg.simpleGroup(st);
+  const sg = Beg.simpleGroup(st, fd);
   if (!sg || sg.length < 3) fail("simpleGroup empty for novice end");
   if (/R\d|mx|my|x|y/.test(sg)) fail("simpleGroup contains jargon: " + sg);
-  const gd = Beg.groupDirection(st);
+  const gd = Beg.groupDirection(st, fd);
   if (!gd || gd.length < 3) fail("groupDirection empty for novice end");
   if (/R\d|mx|my|x|y/.test(gd)) fail("groupDirection contains jargon: " + gd);
   if (!gd.includes("中心")) fail("groupDirection should mention 中心: " + gd);
@@ -90,7 +109,8 @@ for (let run = 0; run < 96; run++) {
     arrows.push({ x: h.x, y: h.y, s: h.s, X: h.X });
   }
   const st = Phy.robustStats(arrows);
-  Beg.plainGroup(st);
+  Beg.plainGroup(st, fd);
+  Beg.groupDirection(st, fd);
   const adv = Phy.adviceForEnd(
     { setups: [{}], sessions: [], sightMarks: [], settings },
     settings,
@@ -118,6 +138,14 @@ for (let run = 0; run < 96; run++) {
 // --- Scenario D: labels ---
 if (Beg.endLabel(1) !== "1回目（6本ずつ）") fail("endLabel wrong");
 if (!Beg.arrowProgress(3, 6).includes("3本目")) fail("arrowProgress wrong");
+
+// --- Scenario E: return meta verbalization ---
+if (Beg.memoryChipLine(3, "u") !== "3回連続・上寄り") fail("memoryChipLine golden: " + Beg.memoryChipLine(3, "u"));
+if (Beg.memoryChipLine(2, "c") != null) fail("memoryChipLine should hide center");
+if (Beg.confidenceWords("high") !== "信頼度：高い") fail("confidenceWords high");
+if (Beg.confidenceWords("mid") !== "信頼度：ふつう") fail("confidenceWords mid");
+if (Beg.confidenceWords("low") !== "信頼度：まだ足りない") fail("confidenceWords low");
+if (/conf|%|R\d/.test(Beg.confidenceWords("high"))) fail("confidenceWords contains jargon");
 
 console.log("beginner-sim: " + (issues.length ? issues.length + " issues" : "OK"));
 if (issues.length) {

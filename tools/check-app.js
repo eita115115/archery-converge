@@ -141,7 +141,8 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=66",
+  "APP_VER=68",
+  "returnVerdictHtml(st,adv,j,s.faceD)",
   "EXPORT_VERSION=1",
   "exportVersion",
   "backupPayload",
@@ -153,6 +154,12 @@ const requiredApp = [
   "return-verdict",
   "return-verdict-eyebrow",
   "returnVerdictHtml",
+  "returnMetaRowHtml",
+  "return-meta",
+  "return-memory-chip",
+  "return-confidence",
+  "memoryChipLine",
+  "confidenceWords",
   "groupDirection",
   "simpleSightAction",
   "ret-converge",
@@ -417,6 +424,23 @@ const streakDb = {
   settings: db.settings,
 };
 if (Eng.memory.sessionStreak(streakDb, "main", 70) < 2) fail("sessionStreak expected >= 2");
+if (typeof Eng.memory.endDirectionKey !== "function") fail("endDirectionKey missing");
+const streakSt = Eng.grouping.robust(streakEnd);
+if (Eng.memory.endDirectionKey(streakSt, 122) !== "r") fail("endDirectionKey expected r");
+const activeStreakDb = {
+  setups: db.setups,
+  sessions: [],
+  sightMarks: [],
+  settings: db.settings,
+};
+const activeSess = {
+  setupId: "main",
+  dist: 70,
+  faceD: 122,
+  ends: [streakEnd, streakEnd],
+};
+if (Eng.memory.sessionStreak(activeStreakDb, "main", 70, activeSess) < 2)
+  fail("sessionStreak with active session expected >= 2");
 
 if (typeof Eng.grouping.describe !== "function") fail("Eng.grouping.describe missing");
 const desc = Eng.grouping.describe(st, 122);
@@ -502,6 +526,11 @@ if (!Beg.zenkinExplain || !Beg.zenkinExplain().includes("金")) fail("zenkinExpl
 if (!Beg.adviceDisclaimer || !Beg.adviceDisclaimer().includes("判断補助")) fail("adviceDisclaimer missing");
 if (!Beg.trustLine || !Beg.trustLine({ needsMove: true, qualityLabel: "低", conf: 40 }).includes("目安")) fail("trustLine missing");
 if (!Beg.safetyNote || !Beg.safetyNote().includes("コーチ")) fail("safetyNote missing");
+if (!Beg.memoryChipLine(3, "u") || !Beg.memoryChipLine(3, "u").includes("3回連続"))
+  fail("memoryChipLine mismatch");
+if (Beg.memoryChipLine(1, "u") != null) fail("memoryChipLine should hide streak 1");
+if (Beg.confidenceWords("high") !== "信頼度：高い" || Beg.confidenceWords("low") !== "信頼度：まだ足りない")
+  fail("confidenceWords mismatch");
 
 const ogDesc = /property="og:description" content="([^"]+)"/.exec(html);
 if (!ogDesc || ogDesc[1].length < 36) fail("og:description too short");

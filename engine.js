@@ -372,6 +372,7 @@
     memory: Object.freeze({
       personalState: personalState,
       sessionStreak: Phy.sessionStreak,
+      endDirectionKey: Phy.endDirectionKey,
       convergeIndex: Phy.convergeIndex,
       readinessHint: readinessHint,
     }),

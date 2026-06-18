@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=66, EXPORT_VERSION=1;
+const KEY="archeryConverge.v1", APP_VER=68, EXPORT_VERSION=1;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Eng=window.ConvergeEngine;
@@ -392,17 +392,41 @@ function trustLineHtml(adv,s){
   const link=refine&&ctx.needsMove?` <button type="button" class="trust-link" id="trustGear">${begOn()?"設定で精密化":"Refine in Settings"}</button>`:"";
   return `<p class="trust-line">${esc(text)}${link}</p>`;
 }
-function returnVerdictHtml(st,adv,j){
+function returnVerdictHtml(st,adv,j,faceD){
   if(!begOn()||!Beg)return "";
-  const dir=Beg.groupDirection(st);
+  const dir=Beg.groupDirection(st,faceD);
   const action=Beg.simpleSightAction(adv,j);
-  const quality=Beg.simpleGroup(st);
+  const quality=Beg.simpleGroup(st,faceD);
   const detail=quality&&quality!=="記録しよう"&&!dir.includes(quality)?quality:"";
   return `<section class="return-verdict" aria-label="${begOn()?"今回の集まり":"Grouping"}">
     <p class="return-verdict-eyebrow">${begOn()?"今日の6本":"This end"}</p>
     <p class="return-verdict-main">${esc(dir)}</p>
     <p class="return-verdict-action">${esc(action)}</p>
     ${detail?`<p class="return-verdict-detail">${esc(detail)}</p>`:""}</section>`;
+}
+function memoryChipLinePro(streak,dirKey){
+  if(streak<2||!dirKey||dirKey==="c")return "";
+  const bias={u:"high",d:"low",r:"right",l:"left",ur:"high-right",ru:"high-right",ul:"high-left",lu:"high-left",dr:"low-right",rd:"low-right",dl:"low-left",ld:"low-left"}[dirKey]||dirKey;
+  return `${streak} in a row · ${bias}`;
+}
+function returnMetaRowHtml(st,adv,s){
+  if(!st||!s)return "";
+  const setup=getSetup();
+  const streak=Eng.memory.sessionStreak(db,setup.id,s.dist,s);
+  const dirKey=Eng.memory.endDirectionKey(st,s.faceD);
+  const chipText=begOn()&&Beg?Beg.memoryChipLine(streak,dirKey):memoryChipLinePro(streak,dirKey);
+  const conf=adv&&adv.confidence!=null?adv.confidence:(st.confidence||0);
+  const band=Eng.metrics.confidenceBand(conf);
+  const confPct=Math.round(conf*100);
+  const confLabel=begOn()&&Beg?Beg.confidenceWords(band):`${confPct}%`;
+  const chip=chipText?`<span class="return-memory-chip">${esc(chipText)}</span>`:"";
+  const meter=`<div class="return-confidence" data-band="${esc(band)}">
+    <span class="return-confidence-label">${esc(confLabel)}</span>
+    <div class="return-confidence-track" role="meter" aria-valuenow="${confPct}" aria-valuemin="0" aria-valuemax="100" aria-label="${begOn()?"信頼度":"Confidence"}">
+      <div class="return-confidence-fill" style="width:${confPct}%"></div>
+    </div>
+  </div>`;
+  return `<div class="return-meta">${chip}${meter}</div>`;
 }
 function zenkinDotsHtml(){
   return `<div class="zenkin-dots" aria-hidden="true">${"<span></span>".repeat(6)}</div>`;
@@ -429,7 +453,6 @@ function adviceTechHtml(st,adv,j){
   const parts=[`${mono(st.mx,"x")} ${mono(st.my,"y")} R${st.rr.toFixed(1)}`];
   if(adv&&adv.moves.length)parts.push(adv.moves.map(m=>`${m.dir}${m.cm.toFixed(1)}cm`).join(" · "));
   else if(j&&j.label==="維持")parts.push("調整不要");
-  if(adv&&adv.confidence!=null)parts.push(`conf ${Math.round(adv.confidence*100)}%`);
   return `<div class="advice-tech">${parts.map(p=>`<span>${esc(p)}</span>`).join(" · ")}</div>`;
 }
 function safetyBannerHtml(){
@@ -908,7 +931,8 @@ function renderReturn(){
   const rtOver=geoDefs+(st?`<g class="geo-layer" pointer-events="none">${Geo.geoSvg(st,s.faceD,sug)}</g>`:"");
   const moveLine=adv&&adv.moves.length&&Beg?Beg.plainSightMove(adv.moves[0]):"";
   shell(2,returnTitle(s,tot,j)+(zenRet?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:"")+(!begOn()&&j?` ${jtagHtml(j)}`:""),"",`
-    ${begOn()?returnVerdictHtml(st,adv,j):`${trustLineHtml(adv,s)}${adviceTechHtml(st,adv,j)}`}
+    ${begOn()?returnVerdictHtml(st,adv,j,s.faceD):`${trustLineHtml(adv,s)}${adviceTechHtml(st,adv,j)}`}
+    ${returnMetaRowHtml(st,adv,s)}
     <div class="ret-split ret-reveal">
       <div class="cell"><div class="box sq-fit"><div class="tgt-stack ret-converge">${Geo.targetSvg(s.faceD,"rt",rtOver,targetModeFor(end,pe),oiRet)}</div></div></div>
       <div class="cell">${ui.adj?`<div class="sight-adj" style="width:100%;margin:0">

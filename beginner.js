@@ -2,10 +2,22 @@
 (function (root) {
   "use strict";
 
+  var Eng = root.ConvergeEngine;
   var PHASE_SUB = ["距離・サイトを決める", "的の前でタップ記録", "戻って結果を見る"];
 
   function isOn(settings) {
     return !settings || settings.beginnerMode !== false;
+  }
+
+  function offsetBands(faceD) {
+    faceD = faceD || 122;
+    if (Eng && Eng.metrics && Eng.metrics.offsetBands) return Eng.metrics.offsetBands(faceD);
+    return { softDist: 0.35, strongDist: 0.7 };
+  }
+
+  function isCentered(mx, my, faceD) {
+    if (Eng && Eng.metrics && Eng.metrics.isCentered) return Eng.metrics.isCentered(mx, my, faceD || 122);
+    return Math.abs(mx) <= 0.35 && Math.abs(my) <= 0.35;
   }
 
   function endLabel(n) {
@@ -17,27 +29,28 @@
   }
 
   /** Short label for beginner mode — no coordinates. */
-  function simpleGroup(st) {
+  function simpleGroup(st, faceD) {
     if (!st || st.n < 1) return "記録しよう";
     if (st.rr > 2.5) return "ばらけています";
-    if (st.rr < 1.2 && Math.abs(st.mx) <= 0.35 && Math.abs(st.my) <= 0.35) return "よく集まっています";
+    if (st.rr < 1.2 && isCentered(st.mx, st.my, faceD)) return "よく集まっています";
     if (st.rr < 2) return "だいたい集まっています";
     return "ばらけ気味です";
   }
 
   /** Where the group center landed — headline for return screen. */
-  function groupDirection(st) {
+  function groupDirection(st, faceD) {
     if (!st || st.n < 1) return "記録しよう";
-    var th = 0.35,
-      thStrong = 0.7;
+    var b = offsetBands(faceD);
+    var th = b.softDist;
+    var thStrong = b.strongDist;
     if (Math.abs(st.my) <= th && Math.abs(st.mx) <= th) return "中心はだいたい真ん中";
     var soft =
       (Math.abs(st.my) > th || Math.abs(st.mx) > th) &&
       Math.abs(st.my) <= thStrong &&
       Math.abs(st.mx) <= thStrong;
     var prefix = soft ? "中心は少し" : "中心は";
-    var v = "",
-      h = "";
+    var v = "";
+    var h = "";
     if (st.my > th) v = "上";
     else if (st.my < -th) v = "下";
     if (st.mx > th) h = "右";
@@ -57,10 +70,10 @@
   }
 
   /** Where the group landed vs center, in words a novice understands. */
-  function plainGroup(st) {
+  function plainGroup(st, faceD) {
     if (!st || st.n < 1) return "まだ矢がありません";
     var parts = [];
-    var th = 0.35;
+    var th = offsetBands(faceD).softDist;
     if (Math.abs(st.my) <= th && Math.abs(st.mx) <= th) parts.push("だいたい中心に集まっています");
     else {
       if (st.my > th) parts.push("中心より上");
@@ -106,6 +119,36 @@
   function plainJudgement(j) {
     if (!j) return null;
     return JUDGE_PLAIN[j.label] || { title: j.label, body: j.text || "" };
+  }
+
+  var BIAS_LABEL = {
+    u: "上寄り",
+    d: "下寄り",
+    r: "右寄り",
+    l: "左寄り",
+    ur: "右上寄り",
+    ru: "右上寄り",
+    ul: "左上寄り",
+    lu: "左上寄り",
+    dr: "右下寄り",
+    rd: "右下寄り",
+    dl: "左下寄り",
+    ld: "左下寄り",
+  };
+
+  /** Return-screen memory chip — streak of same bias (null if not worth showing). */
+  function memoryChipLine(streak, dirKey) {
+    if (streak < 2 || !dirKey || dirKey === "c") return null;
+    var bias = BIAS_LABEL[dirKey];
+    if (!bias) return null;
+    return streak + "回連続・" + bias;
+  }
+
+  /** Qualitative confidence label from Eng.metrics.confidenceBand tier. */
+  function confidenceWords(band) {
+    if (band === "high") return "信頼度：高い";
+    if (band === "mid") return "信頼度：ふつう";
+    return "信頼度：まだ足りない";
   }
 
   function adviceDisclaimer() {
@@ -243,5 +286,7 @@
     safetyNote: safetyNote,
     safetyBanner: safetyBanner,
     trustLine: trustLine,
+    memoryChipLine: memoryChipLine,
+    confidenceWords: confidenceWords,
   };
 })(typeof window !== "undefined" ? window : this);

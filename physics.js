@@ -380,18 +380,20 @@ function endDirectionKey(st,faceD){
   if(st.mx>th)k+="r";else if(st.mx<-th)k+="l";
   return k||"c";
 }
-function sessionStreak(db,setupId,dist){
+function sessionStreak(db,setupId,dist,activeSess){
   if(!db||!setupId)return 0;
   const keys=[];
+  function pushEnds(sess){
+    const fd=sess.faceD||122;
+    (sess.ends||[]).forEach(end=>{
+      const st=robustStats(end);
+      if(st&&st.n>=6)keys.push(endDirectionKey(st,fd));
+    });
+  }
   (db.sessions||[]).filter(s=>s.setupId===setupId&&s.dist===dist)
     .sort((a,b)=>(a.date||"").localeCompare(b.date||""))
-    .forEach(s=>{
-      const fd=s.faceD||122;
-      (s.ends||[]).forEach(end=>{
-        const st=robustStats(end);
-        if(st&&st.n>=6)keys.push(endDirectionKey(st,fd));
-      });
-    });
+    .forEach(pushEnds);
+  if(activeSess&&activeSess.setupId===setupId&&activeSess.dist===dist)pushEnds(activeSess);
   if(!keys.length)return 0;
   let run=1;
   for(let i=keys.length-1;i>0;i--){
@@ -584,7 +586,7 @@ const ArcheryPhysics=Object.freeze({
   physicsProfile,windModel,simulateArrow,solveZeroAngle,trajectoryModel,
   adviceForEnd,judgementFor,sessionQuality,personalModel,regressionAdvice,personalPhysicsCalibration,
   gearPrecisionProfile,classifyWind,suggestWindReconfirm,isWindy,
-  sessionStreak,convergeIndex
+  sessionStreak,convergeIndex,endDirectionKey
 });
 if(typeof module!=="undefined"&&module.exports)module.exports=ArcheryPhysics;
 root.ArcheryPhysics=ArcheryPhysics;
