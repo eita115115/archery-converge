@@ -141,7 +141,7 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=71",
+  "APP_VER=72",
   "returnVerdictHtml(st,adv,j,s.faceD)",
   "EXPORT_VERSION=1",
   "exportVersion",
@@ -210,6 +210,13 @@ const requiredApp = [
   "maybeSessionNudgeToast",
   "sessionNudgeToast",
   "backup-bar-strong",
+  "homeReadinessChipHtml",
+  "home-readiness-chip",
+  "gearCalibBarHtml",
+  "gear-calib-bar",
+  "readinessLine",
+  "gearCalibSummary",
+  "gearMissingHints",
   "homeFlowHtml",
   "backLbl",
   "app-mode",
@@ -563,6 +570,9 @@ if (Beg.histSessionTrend(sessAnalysis.summary) !== "右寄りの傾向") fail("h
 if (!Beg.histBestEndLine(3).includes("3回目")) fail("histBestEndLine missing");
 if (!Beg.sessionNudgeToast({ count: 150 }).includes("150")) fail("sessionNudgeToast missing count");
 if (!Beg.storageNudgeBarWarn({ count: 200 }).includes("200")) fail("storageNudgeBarWarn missing");
+if (Beg.readinessLine(memHint) !== "あと3回で傾向が見えやすく") fail("readinessLine building mismatch");
+if (!Beg.gearCalibSummary({ score: 0.6 }, { level: "高" }).includes("育っ")) fail("gearCalibSummary high");
+if (!Beg.gearMissingHints(["poundage", "drawLength"]).includes("ポンド")) fail("gearMissingHints labels");
 
 const ogDesc = /property="og:description" content="([^"]+)"/.exec(html);
 if (!ogDesc || ogDesc[1].length < 36) fail("og:description too short");

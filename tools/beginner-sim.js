@@ -183,6 +183,18 @@ if (!Beg.sessionNudgeToast({ count: 150 }).includes("バックアップ")) fail(
 if (!Beg.storageNudgeBarWarn({ count: 210 }).includes("210")) fail("storageNudgeBarWarn empty");
 if (!Beg.storageNudgeBarSub().includes("書き出し")) fail("storageNudgeBarSub empty");
 
+// --- Scenario I: readiness + gear calibration ---
+(function () {
+  const memFixture = JSON.parse(
+    fs.readFileSync(path.join(root, "tools/fixtures/converge-index.json"), "utf8")
+  );
+  const hint = Eng.memory.readinessHint(memFixture.db, memFixture.setupId, memFixture.settings);
+  if (Beg.readinessLine(hint) !== "あと3回で傾向が見えやすく") fail("readinessLine golden");
+  if (/index|converge|\d{2,}/.test(Beg.readinessLine(hint))) fail("readinessLine shows raw index");
+  if (!Beg.gearCalibSummary({ score: 0.1 }, { level: "低" }).includes("弓・矢")) fail("gearCalibSummary low");
+  if (!Beg.gearMissingHints(["arrowWeight"]).includes("矢重量")) fail("gearMissingHints label");
+})();
+
 console.log("beginner-sim: " + (issues.length ? issues.length + " issues" : "OK"));
 if (issues.length) {
   issues.slice(0, 12).forEach(i => console.log("  -", i));

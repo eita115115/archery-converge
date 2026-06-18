@@ -186,6 +186,45 @@
     return "一番集まったのは" + endNum + "回目";
   }
 
+  /** Home readiness chip — qualitative only, no raw convergeIndex. */
+  function readinessLine(hint) {
+    if (!hint) return null;
+    if (hint.tier === "mature") return "あなた用の目安がしっかり育ちました";
+    if (hint.tier === "ready") return "あなた用の目安が育っています";
+    if (hint.tier === "warming") return "傾向が見え始めています";
+    if (hint.tier === "building" && hint.sessionsNeeded != null)
+      return "あと" + hint.sessionsNeeded + "回で傾向が見えやすく";
+    if (hint.tier === "new") return "記録を重ねると傾向が見えてきます";
+    return null;
+  }
+
+  var GEAR_FIELD_LABELS = {
+    arrowWeight: "矢重量",
+    arrowDia: "矢径",
+    poundage: "ポンド",
+    drawLength: "引き尺",
+    arrowSpeed: "初速",
+    temperature: "気温",
+  };
+
+  /** Gear settings calibration quality — uses digest + gear profile, not raw index. */
+  function gearCalibSummary(digest, gear) {
+    digest = digest || {};
+    gear = gear || {};
+    var level = gear.level || "低";
+    if (level === "高" && (digest.score || 0) >= 0.5) return "設定がそろっていて、あなた用の目安が育っています";
+    if (level === "中") return "設定を少し足すと、あなた用の目安が近づきます";
+    return "弓・矢の数値を入れると、あなた用の目安が近づきます";
+  }
+
+  function gearMissingHints(missingKeys) {
+    if (!missingKeys || !missingKeys.length) return null;
+    var shown = missingKeys.slice(0, 3).map(function (k) {
+      return GEAR_FIELD_LABELS[k] || k;
+    });
+    return "未入力: " + shown.join("・") + (missingKeys.length > 3 ? " ほか" : "");
+  }
+
   /** One-time toast on done when session count crosses 150. */
   function sessionNudgeToast(nudge) {
     nudge = nudge || {};
@@ -358,5 +397,8 @@
     sessionNudgeToast: sessionNudgeToast,
     storageNudgeBarWarn: storageNudgeBarWarn,
     storageNudgeBarSub: storageNudgeBarSub,
+    readinessLine: readinessLine,
+    gearCalibSummary: gearCalibSummary,
+    gearMissingHints: gearMissingHints,
   };
 })(typeof window !== "undefined" ? window : this);

@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=71, EXPORT_VERSION=1;
+const KEY="archeryConverge.v1", APP_VER=72, EXPORT_VERSION=1;
 const COACH_CAP=2;
 const CONVERGE_MILESTONES=[25,50,75];
 const Cx=window.ConvergeCompat;
@@ -682,6 +682,48 @@ function homeHeadlineHtml(){
   if(begOn())return `<span class="tile-headline-line home-title-line"><span class="tile-headline-body home-title-body">着弾が</span><span class="tile-headline-punct home-title-punct">、</span></span><span class="tile-headline-line home-title-line"><span class="tile-headline-body home-title-body">収束する</span><span class="tile-headline-punct home-title-punct">。</span></span>`;
   return `<span class="tile-headline-line home-title-line"><span class="tile-headline-body home-title-body">Hits</span></span><span class="tile-headline-line home-title-line"><span class="tile-headline-body home-title-body">converge</span><span class="tile-headline-punct home-title-punct">.</span></span>`;
 }
+function readinessLinePro(hint){
+  if(!hint)return "";
+  if(hint.tier==="mature")return "Personal model mature";
+  if(hint.tier==="ready")return "Personal model ready";
+  if(hint.tier==="warming")return "Trends emerging";
+  if(hint.tier==="building"&&hint.sessionsNeeded!=null)return `${hint.sessionsNeeded} more sessions for clearer trends`;
+  return "Record sessions to build your model";
+}
+function homeReadinessChipHtml(){
+  const setup=getSetup();
+  if(!setup.id)return "";
+  const hint=Eng.memory.readinessHint(db,setup.id,db.settings);
+  const line=begOn()&&Beg?Beg.readinessLine(hint):readinessLinePro(hint);
+  if(!line)return "";
+  const tier=hint&&hint.tier?hint.tier:"new";
+  return `<p class="home-readiness-chip" data-tier="${esc(tier)}">${esc(line)}</p>`;
+}
+function gearCalibBarPro(digest,gear){
+  const parts=[`inputs ${Math.round((gear.score||0)*100)}%`];
+  if(digest&&digest.convergeIndex!=null)parts.push(`model ${digest.convergeIndex}`);
+  if(digest&&digest.score!=null)parts.push(`cal ${Math.round(digest.score*100)}%`);
+  return parts.join(" · ");
+}
+function gearCalibBarHtml(g){
+  const digest=db.settings.calibrationDigest||Eng.calibration.buildDigest(db,db.settings);
+  const gp=Eng.calibration.gear(g);
+  const missing=gp.missingFieldHints||[];
+  if(begOn()&&Beg){
+    const main=Beg.gearCalibSummary(digest,gp);
+    const sub=Beg.gearMissingHints(missing);
+    return `<div class="gear-calib-bar" data-level="${esc(gp.level||"低")}">
+      <p class="gear-calib-main">${esc(main)}</p>
+      ${sub?`<p class="gear-calib-sub">${esc(sub)}</p>`:""}
+    </div>`;
+  }
+  const main=gearCalibBarPro(digest,gp);
+  const sub=missing.length?`missing: ${missing.slice(0,4).join(", ")}`:"";
+  return `<div class="gear-calib-bar" data-level="${esc(gp.level||"低")}">
+    <p class="gear-calib-main">${esc(main)}</p>
+    ${sub?`<p class="gear-calib-sub">${esc(sub)}</p>`:""}
+  </div>`;
+}
 function renderHome(){
   shell(-1,"",null,`
     <div class="home-wrap">
@@ -699,6 +741,7 @@ function renderHome(){
             </svg></div>
             <h1 class="tile-headline typography-headline home-title${begOn()?" is-ja":" is-en"}">${homeHeadlineHtml()}</h1>
             <p class="tile-subhead typography-subhead home-tag">${begOn()?"6本のあとに、次が見える。":"After six, the next move shows."}</p>
+            ${homeReadinessChipHtml()}
           </div>
           <div class="tile-ctas home-start">
             <button class="btn button hero" id="goQuick">${begOn()?"記録を始める":"Start recording"}</button>
@@ -1153,6 +1196,7 @@ function renderGear(){
     <div class="app-page">
     <div class="beg-toggle"><label class="beg-lbl"><input type="checkbox" id="begMode" ${db.settings.beginnerMode!==false?"checked":""}> やさしい表示</label>
     <p class="field-hint beg-mode-hint">オフにすると数値・信頼度・図例を表示します</p></div>
+    ${gearCalibBarHtml(g)}
     <div class="gear-lbl">名前 / 弓</div>
     <div class="gear-grid">
       <input class="gear-inp" id="gn" placeholder="名前" value="${esc(g.name)}">
