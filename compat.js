@@ -63,6 +63,8 @@ function sizeSquare(box,host,maxSide){
 }
 function layoutFit(){
   var i,box,host,dist,wrap,ds,dials,dial,cell,stage;
+  var setupBody=document.querySelector(".frame.fit.setup-fit #body");
+  var setupScroll=setupBody?setupBody.scrollTop:0;
   var squares=document.querySelectorAll(".sq-fit");
   for(i=0;i<squares.length;i++){
     box=squares[i];
@@ -83,16 +85,14 @@ function layoutFit(){
       if(ds>100){dist.style.width=ds+"px";dist.style.height=ds+"px";}
     }
   }
+  if(setupBody&&setupScroll>0)setupBody.scrollTop=setupScroll;
 }
 var debounced=debounce(function(){setViewportVars();layoutFit();},60);
 function initCompat(){
   setViewportVars();
   root.addEventListener("resize",debounced,false);
   root.addEventListener("orientationchange",debounced,false);
-  if(root.visualViewport){
-    root.visualViewport.addEventListener("resize",debounced);
-    root.visualViewport.addEventListener("scroll",debounced);
-  }
+  if(root.visualViewport)root.visualViewport.addEventListener("resize",debounced);
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(layoutFit).catch(function(){});
 }
 root.ConvergeCompat={

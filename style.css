@@ -47,7 +47,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .frame.fit .hdr{padding:calc(4px + var(--safe-top)) 12px 6px;min-height:38px}
 .frame.fit .hdr .title{font-size:16px;color:var(--text)}
 .frame.fit .body{flex:1;min-height:0;overflow:hidden;padding:0 10px;display:flex;flex-direction:column}
-.frame.fit.setup-fit .body{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.frame.fit.setup-fit .body{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-padding-bottom:120px;overscroll-behavior:contain}
+.frame.fit.setup-fit .sight-x input{scroll-margin-bottom:72px}
 .frame.fit .foot{flex-shrink:0;padding:8px 12px;padding-bottom:calc(8px + var(--safe-bot))}
 .frame.fit .btn{padding:15px 14px;font-size:16px}
 .frame.fit .btn.sm{padding:12px 14px;font-size:14px;min-height:48px}

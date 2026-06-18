@@ -243,7 +243,33 @@ function bindReopenEnd(s,id,then){
 }
 
 function backLbl(){return begOn()?"戻る":"Back";}
-function shell(phaseIdx,title,back,bodyHtml,footHtml,fit){
+function setupActiveDist(){
+  const last=db.sessions[db.sessions.length-1];
+  return ui._dist||(last?.dist||70);
+}
+function captureSetupSightDraft(){
+  const dist=setupActiveDist();
+  if(!ui._setupSightByDist)ui._setupSightByDist={};
+  const sv=$("#sv"),sh=$("#sh");
+  if(sv||sh)ui._setupSightByDist[dist]={v:sv?sv.value:"",h:sh?sh.value:""};
+}
+function setupSightForDist(dist,mk){
+  if(!ui._setupSightByDist)ui._setupSightByDist={};
+  const d=ui._setupSightByDist[dist];
+  if(d)return {v:d.v??"",h:d.h??""};
+  return {v:mk?.v||"",h:mk?.h||""};
+}
+function preserveSetupScroll(){
+  const b=$("#body");
+  return b?b.scrollTop:0;
+}
+function restoreSetupFocus(id){
+  const el=id&&$(id);
+  if(!el)return;
+  try{el.focus({preventScroll:true});}catch(_){el.focus();}
+  try{const n=el.value.length;el.setSelectionRange(n,n);}catch(_){}
+}
+function shell(phaseIdx,title,back,bodyHtml,footHtml,fit,renderOpts){
   const el=$("#frame");
   const fitOn=!!fit;
   if(el){
@@ -261,16 +287,27 @@ function shell(phaseIdx,title,back,bodyHtml,footHtml,fit){
     ${fit?`<div class="main"><div class="body" id="body">${bodyHtml}</div>${footHtml?`<div class="foot" id="foot">${footHtml}</div>`:""}</div>`
       :`<div class="body" id="body">${bodyHtml}</div>${footHtml?`<div class="foot" id="foot">${footHtml}</div>`:""}`}`;
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
-  afterRender();
+  afterRender(renderOpts);
 }
-function afterRender(){
+function afterRender(opts){
+  opts=opts||{};
   if(Cx)Cx.setViewportVars();
   const body=$("#body");
+  const scrollRestore=opts.setupScroll;
+  const finish=()=>{
+    if(scrollRestore!=null&&body)body.scrollTop=scrollRestore;
+    if(opts.setupFocus)restoreSetupFocus(opts.setupFocus);
+  };
   if(body){
+    if(opts.skipAnim){
+      requestAnimationFrame(()=>{if(Cx)Cx.layoutFit();finish();});
+      return;
+    }
     body.classList.remove("page-in");
     requestAnimationFrame(()=>{
       body.classList.add("page-in");
       if(Cx)Cx.layoutFit();
+      finish();
     });
   }else if(Cx)requestAnimationFrame(()=>Cx.layoutFit());
 }

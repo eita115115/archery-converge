@@ -124,12 +124,16 @@ function renderHome(){
   $("#lnkHist").onclick=()=>nav("history");
   $("#lnkGear").onclick=()=>nav("gear");
 }
-function renderSetup(){
+function renderSetup(soft){
+  if(soft)captureSetupSightDraft();
+  const scroll=soft?preserveSetupScroll():null;
+  const focus=soft?ui._setupFocus:null;
   const g=getSetup(),last=db.sessions[db.sessions.length-1];
-  const dist=ui._dist||(last?.dist||70);
+  const dist=setupActiveDist();
   const wDir=ui._windDir??last?.windDir??"";
   const wSpd=ui._windSpd??last?.windSpeed??0;
   const mk=latestSightForDist(g.id,dist);
+  const sight=setupSightForDist(dist,mk);
   shell(0,begOn()?"準備":"Setup",backLbl(),`
     ${coachCardHtml("setup",{sessionCount:db.sessions.length})}
     ${distRings(dist)}
@@ -137,21 +141,32 @@ function renderSetup(){
     <div class="setup-mid">
       <div>${windCompass(wDir,wSpd)}</div>
       <div class="sight-x">
-        <input class="v-up" id="sv" inputmode="decimal" placeholder="${begOn()?"上下の数字":"上下"}" value="${esc(mk?.v||"")}">
+        <input class="v-up" id="sv" inputmode="decimal" placeholder="${begOn()?"上下の数字":"上下"}" value="${esc(sight.v)}">
         <div class="core"><svg viewBox="0 0 72 72"><circle cx="36" cy="36" r="34" fill="none" stroke="var(--line)" stroke-width="1"/>
           <line x1="36" y1="4" x2="36" y2="68" stroke="var(--hit)" stroke-width="1" opacity=".5"/>
           <line x1="4" y1="36" x2="68" y2="36" stroke="var(--hit)" stroke-width="1" opacity=".5"/>
           <circle cx="36" cy="36" r="4" fill="var(--red)"/></svg></div>
-        <input class="h-l" id="sh" inputmode="decimal" placeholder="${begOn()?"左右の数字":"左右"}" value="${esc(mk?.h||"")}">
+        <input class="h-l" id="sh" inputmode="decimal" placeholder="${begOn()?"左右の数字":"左右"}" value="${esc(sight.h)}">
       </div>
     </div>`,
-    `<button class="btn hero" id="start">${begOn()?"記録を始める（的の前へ）":"射る"}</button>`,"setup");
-  document.querySelectorAll(".dist-svg .ring").forEach(c=>c.onclick=()=>{ui._dist=+c.dataset.d;renderSetup();});
-  document.querySelectorAll(".sight-by-dist-row[data-sd]").forEach(c=>c.onclick=()=>{ui._dist=+c.dataset.sd;renderSetup();});
-  document.querySelectorAll(".wbtn").forEach(c=>c.onclick=()=>{ui._windDir=c.dataset.wd;renderSetup();});
-  document.querySelectorAll(".wind-spd button").forEach(c=>c.onclick=()=>{ui._windSpd=+c.dataset.ws;renderSetup();});
+    `<button class="btn hero" id="start">${begOn()?"記録を始める（的の前へ）":"射る"}</button>`,"setup",{skipAnim:!!soft,setupScroll:scroll,setupFocus:focus});
+  const patchSetup=()=>renderSetup(true);
+  document.querySelectorAll(".dist-svg .ring").forEach(c=>c.onclick=()=>{captureSetupSightDraft();ui._dist=+c.dataset.d;patchSetup();});
+  document.querySelectorAll(".sight-by-dist-row[data-sd]").forEach(c=>c.onclick=()=>{captureSetupSightDraft();ui._dist=+c.dataset.sd;patchSetup();});
+  document.querySelectorAll(".wbtn").forEach(c=>c.onclick=()=>{captureSetupSightDraft();ui._windDir=c.dataset.wd;patchSetup();});
+  document.querySelectorAll(".wind-spd button").forEach(c=>c.onclick=()=>{captureSetupSightDraft();ui._windSpd=+c.dataset.ws;patchSetup();});
+  const sv=$("#sv"),sh=$("#sh");
+  if(sv){
+    sv.onfocus=()=>{ui._setupFocus="#sv";};
+    sv.onblur=()=>{if(ui._setupFocus==="#sv")ui._setupFocus=null;captureSetupSightDraft();};
+  }
+  if(sh){
+    sh.onfocus=()=>{ui._setupFocus="#sh";};
+    sh.onblur=()=>{if(ui._setupFocus==="#sh")ui._setupFocus=null;captureSetupSightDraft();};
+  }
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
   $("#start").onclick=()=>{
+    captureSetupSightDraft();
     beginSession(dist,$("#sv").value.trim(),$("#sh").value.trim(),ui._windDir??"",ui._windSpd??0);
   };
 }
