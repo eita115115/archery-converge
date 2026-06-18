@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=72, EXPORT_VERSION=1;
+const KEY="archeryConverge.v1", APP_VER=73, EXPORT_VERSION=1;
 const COACH_CAP=2;
 const CONVERGE_MILESTONES=[25,50,75];
 const Cx=window.ConvergeCompat;
@@ -1086,18 +1086,22 @@ function renderReturn(){
 function renderDone(){
   const s=db.sessions[db.sessions.length-1];
   shell(-1,"",null,s?`
-    <div class="app-page">
-      <div class="end-hero">
-        <p class="eyebrow">SESSION</p>
-        <h2 class="headline">${begOn()?"おつかれさま":"Well done"}</h2>
-      </div>
-      ${coachCardHtml("done")}
-      <div class="end-badge" style="padding:24px 0"><div class="n">${sessTot(s)}</div>
-        <div class="s">${begOn()?`${s.ends.length}回（各6本）· ${s.dist}m`:`${s.ends.length}E · ${s.dist}m`}</div>
-        ${doneBadgeHintsHtml(s)}</div>
-      ${sightDial(s.sightStart||{},s.sightNow||{},null)}
-      ${(s.adjLog||[]).length?`<p style="text-align:center;font-size:13px;color:var(--dim);letter-spacing:-.01em">調整 ${s.adjLog.length} 回</p>`:""}
-      ${doneBackupPromptHtml(s)}
+    <div class="app-page app-page-tight">
+      <section class="home-tile section-hero done-tile">
+        <div class="tile-content tile-card">
+          <div class="end-hero">
+            <p class="eyebrow">SESSION</p>
+            <h2 class="headline">${begOn()?"おつかれさま":"Well done"}</h2>
+          </div>
+          ${coachCardHtml("done")}
+          <div class="end-badge" style="padding:24px 0"><div class="n">${sessTot(s)}</div>
+            <div class="s">${begOn()?`${s.ends.length}回（各6本）· ${s.dist}m`:`${s.ends.length}E · ${s.dist}m`}</div>
+            ${doneBadgeHintsHtml(s)}</div>
+          ${sightDial(s.sightStart||{},s.sightNow||{},null)}
+          ${(s.adjLog||[]).length?`<p style="text-align:center;font-size:13px;color:var(--dim);letter-spacing:-.01em">調整 ${s.adjLog.length} 回</p>`:""}
+          ${doneBackupPromptHtml(s)}
+        </div>
+      </section>
     </div>`:
     `<div class="empty">—</div>`,
     s?`<button class="btn ghost" id="undoFin" style="margin-bottom:8px">${begOn()?"終了を取り消す":"練習を続ける"}</button>
@@ -1193,10 +1197,13 @@ function renderGear(){
   const g=getSetup();
   const gp=Eng.calibration.gear(g);
   shell(-1,begOn()?"設定":"Settings",backLbl(),`
-    <div class="app-page">
-    <div class="beg-toggle"><label class="beg-lbl"><input type="checkbox" id="begMode" ${db.settings.beginnerMode!==false?"checked":""}> やさしい表示</label>
-    <p class="field-hint beg-mode-hint">オフにすると数値・信頼度・図例を表示します</p></div>
-    ${gearCalibBarHtml(g)}
+    <div class="app-page app-page-tight">
+    <div class="tile-card gear-tile">
+      <div class="beg-toggle"><label class="beg-lbl"><input type="checkbox" id="begMode" ${db.settings.beginnerMode!==false?"checked":""}> やさしい表示</label>
+      <p class="field-hint beg-mode-hint">オフにすると数値・信頼度・図例を表示します</p></div>
+      ${gearCalibBarHtml(g)}
+    </div>
+    <div class="tile-card gear-tile">
     <div class="gear-lbl">名前 / 弓</div>
     <div class="gear-grid">
       <input class="gear-inp" id="gn" placeholder="名前" value="${esc(g.name)}">
@@ -1221,6 +1228,7 @@ function renderGear(){
       <input class="gear-inp" id="gcv" inputmode="decimal" placeholder="上下" value="${esc(g.calibV70||"")}">
       <input class="gear-inp" id="gch" inputmode="decimal" placeholder="左右" value="${esc(g.calibH70||"")}">
       <input class="gear-inp full" id="geye" inputmode="decimal" placeholder="アイサイト距離mm（850）" value="${esc(db.settings.eyeSight||850)}">
+    </div>
     </div>
     </div>`,
     `<button class="btn hero" id="gs">${begOn()?"保存":"Save"}</button>`);

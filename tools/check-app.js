@@ -141,7 +141,7 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=72",
+  "APP_VER=73",
   "returnVerdictHtml(st,adv,j,s.faceD)",
   "EXPORT_VERSION=1",
   "exportVersion",
@@ -214,6 +214,9 @@ const requiredApp = [
   "home-readiness-chip",
   "gearCalibBarHtml",
   "gear-calib-bar",
+  "tile-card",
+  "done-tile",
+  "gear-tile",
   "readinessLine",
   "gearCalibSummary",
   "gearMissingHints",
@@ -573,6 +576,24 @@ if (!Beg.storageNudgeBarWarn({ count: 200 }).includes("200")) fail("storageNudge
 if (Beg.readinessLine(memHint) !== "あと3回で傾向が見えやすく") fail("readinessLine building mismatch");
 if (!Beg.gearCalibSummary({ score: 0.6 }, { level: "高" }).includes("育っ")) fail("gearCalibSummary high");
 if (!Beg.gearMissingHints(["poundage", "drawLength"]).includes("ポンド")) fail("gearMissingHints labels");
+
+const skTokens = [
+  "--sk-duration-fast",
+  "--sk-duration-hero",
+  "--sk-duration-zenkin",
+  "--sk-tile-radius",
+  "--sk-tone-ok",
+  "var(--sk-duration-hero)",
+  "var(--sk-duration-zenkin)",
+];
+skTokens.forEach(t => {
+  if (!css.includes(t)) fail("missing sk token: " + t);
+});
+if (!css.includes(".tile-card") || !css.includes(".done-tile")) fail("tile-card styles missing");
+const manifest = JSON.parse(fs.readFileSync(path.join(root, "manifest.json"), "utf8"));
+if (!manifest.id || manifest.theme_color !== "#0f766e") fail("manifest polish");
+const iconSvg = fs.readFileSync(path.join(root, "icon.svg"), "utf8");
+if (!iconSvg.includes('aria-label="Converge"') || iconSvg.includes("breast")) fail("icon.svg polish");
 
 const ogDesc = /property="og:description" content="([^"]+)"/.exec(html);
 if (!ogDesc || ogDesc[1].length < 36) fail("og:description too short");

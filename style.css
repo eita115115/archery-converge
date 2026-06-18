@@ -7,6 +7,10 @@
   --sk-body-link-color:var(--link);--sk-focus-color:var(--hit);--sk-focus-offset:1px;--sk-focus-offset-container:3px;
   --sk-link-disabled-opacity:.42;--sk-button-border-radius:980px;
   --sk-headline-plus-first-element-margin:.8em;--sk-paragraph-plus-element-margin:.8em;
+  --sk-duration-fast:.32s;--sk-duration-hero:.48s;--sk-duration-zenkin:.95s;
+  --sk-duration-verdict:.55s;--sk-duration-reveal:.58s;--sk-duration-return:.72s;
+  --sk-tile-radius:20px;--sk-tile-padding:24px;--sk-tile-shadow:var(--shadow-lg);
+  --sk-tone-ok:var(--hit);--sk-tone-hold:var(--sight);--sk-tone-warn:var(--beat);
   --geo-group:#0f766e;--geo-fill:rgba(15,118,110,.1);--geo-center:#b45309;--geo-axis:#d8d5cd;
   --slot-done:#0f766e;--slot-active:#1c1b19;--slot-idle:#d8d5cd;
   --mark-cur:#0f0f0e;--mark-past:rgba(60,60,60,.45);
@@ -55,7 +59,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .body{flex:1;padding:0 12px 12px;padding-bottom:calc(12px + var(--safe-bot))}
 .body.fill{display:flex;flex-direction:column;min-height:0}
 .body.tight{padding:0 6px 8px}
-#body.page-in{animation:view-in .48s var(--ease-spring) both}
+#body.page-in{animation:view-in var(--sk-duration-hero) var(--ease-spring) both}
 @keyframes view-in{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 
 /* distance rings */
@@ -103,12 +107,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .tgt-stack svg.face{width:100%;height:100%;display:block;touch-action:none;-ms-touch-action:none;
   border-radius:50%;box-shadow:var(--shadow),0 0 0 1px rgba(0,0,0,.04);transition:box-shadow .25s ease,filter .2s ease}
 .tgt-stack svg.face.celebration{box-shadow:0 10px 28px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.06)}
-.tgt-stack.hit-flash svg.face{animation:tgt-flash .52s var(--ease-spring) both}
+.tgt-stack.hit-flash svg.face{animation:tgt-flash var(--sk-duration-hero) var(--ease-spring) both}
 .tgt-stack.zenkin-converge::after{content:"";position:absolute;inset:4%;border-radius:50%;border:3px solid var(--gold);pointer-events:none;
-  animation:converge-ring .95s var(--ease-spring) both;box-shadow:0 0 24px rgba(180,83,9,.35)}
+  animation:converge-ring var(--sk-duration-zenkin) var(--ease-spring) both;box-shadow:0 0 24px rgba(180,83,9,.35)}
 .tgt-stack.zenkin-converge::before{content:"";position:absolute;inset:14%;border-radius:50%;border:2px solid rgba(180,83,9,.55);pointer-events:none;
-  animation:converge-ring .95s .12s var(--ease-spring) both}
-.tgt-stack.zenkin-converge svg.face{animation:zenkin-pop .9s var(--ease-spring) both}
+  animation:converge-ring var(--sk-duration-zenkin) .12s var(--ease-spring) both}
+.tgt-stack.zenkin-converge svg.face{animation:zenkin-pop var(--sk-duration-zenkin) var(--ease-spring) both}
 @keyframes converge-ring{from{transform:scale(1.28);opacity:.9}to{transform:scale(.7);opacity:0}}
 @keyframes zenkin-pop{0%{transform:scale(1)}35%{transform:scale(1.04)}55%{transform:scale(.98)}100%{transform:scale(1)}}
 .tgt-stack svg.face.face-reveal{animation:face-reveal .65s var(--ease-spring) both}
@@ -117,7 +121,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .mark-scored.mark-pop{transform-box:fill-box;transform-origin:center;animation:mark-pop .5s var(--ease-spring) both}
 .mark-scored.mark-pop.mark-ten{animation-duration:.62s}
 @keyframes mark-pop{0%{transform:scale(0);opacity:0}45%{transform:scale(1.4);opacity:1}65%{transform:scale(.9)}100%{transform:scale(1);opacity:.92}}
-.rec-progress .dot.bump{animation:dot-bump .48s var(--ease-spring) both}
+.rec-progress .dot.bump{animation:dot-bump var(--sk-duration-hero) var(--ease-spring) both}
 @keyframes dot-bump{0%{transform:scale(1)}40%{transform:scale(1.7)}100%{transform:scale(1)}}
 .btn.hero.ready-pulse{animation:ready-pulse .65s var(--ease-spring) both}
 @keyframes ready-pulse{0%,100%{transform:scale(1)}35%{transform:scale(1.06)}}
@@ -263,6 +267,15 @@ html:lang(ja) .btn-secondary{letter-spacing:0}
   padding:calc(40px + var(--safe-top)) max(20px,env(safe-area-inset-left,0px)) calc(24px + var(--safe-bot)) max(20px,env(safe-area-inset-right,0px));
   min-height:calc(var(--vh,1vh)*100);min-height:100dvh}
 .home-tile,.home-hero,.section-hero{display:flex;flex-direction:column;align-items:center;width:100%}
+.tile-card{width:100%;max-width:360px;padding:var(--sk-tile-padding);border-radius:var(--sk-tile-radius);background:var(--panel);
+  box-shadow:var(--sk-tile-shadow);border:1px solid var(--line2)}
+.done-tile{margin:0 auto}
+.done-tile .tile-card{text-align:center}
+.gear-tile{margin:0 0 12px}
+.gear-tile:last-child{margin-bottom:0}
+.gear-tile .gear-calib-bar{margin:12px 0 0;border:none;padding:12px 0 0;background:transparent}
+.gear-tile .gear-calib-bar:first-child{margin-top:0;padding-top:0}
+.gear-tile .beg-toggle{margin:0;border:none;padding:0;background:transparent}
 .tile-content{display:flex;flex-direction:column;align-items:center;position:relative;width:100%;max-width:360px}
 .tile-copy-wrapper{display:flex;flex-direction:column;align-items:center;width:100%}
 .tile-ctas{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:14px;margin-top:12px;width:100%}
@@ -314,7 +327,7 @@ html:lang(ja) .gear-calib-sub{letter-spacing:0}
 .record-wind-hint{flex-shrink:0;margin:0 0 4px;padding:7px 10px;border-radius:10px;background:rgba(28,27,25,.035);border:1px solid rgba(28,27,25,.08);
   font-size:12px;font-weight:500;line-height:1.4;color:var(--dim);text-align:center;letter-spacing:-.01em}
 html:lang(ja) .record-wind-hint{letter-spacing:0}
-.return-verdict{flex-shrink:0;text-align:center;padding:8px 8px 6px;margin:0 0 2px;animation:verdict-in .55s var(--ease-spring) both}
+.return-verdict{flex-shrink:0;text-align:center;padding:8px 8px 6px;margin:0 0 2px;animation:verdict-in var(--sk-duration-verdict) var(--ease-spring) both}
 @keyframes verdict-in{from{opacity:0;transform:translateY(16px) scale(.94)}to{opacity:1;transform:none}}
 .return-verdict-eyebrow{margin:0;font-size:14px;font-weight:400;line-height:1.2857742857;letter-spacing:-.016em;color:var(--dim)}
 html:lang(ja) .return-verdict-eyebrow{letter-spacing:0}
@@ -334,14 +347,14 @@ html:lang(ja) .return-memory-chip{letter-spacing:0}
 .return-confidence-label{font-size:12px;font-weight:500;line-height:1.35;color:var(--dim);letter-spacing:-.01em;text-align:center}
 html:lang(ja) .return-confidence-label{letter-spacing:0}
 .return-confidence-track{height:5px;border-radius:980px;background:rgba(28,27,25,.08);overflow:hidden}
-.return-confidence-fill{height:100%;border-radius:inherit;background:var(--hit);transition:width .45s var(--ease-out)}
-.return-confidence[data-band="mid"] .return-confidence-fill{background:var(--sight)}
+.return-confidence-fill{height:100%;border-radius:inherit;background:var(--sk-tone-ok);transition:width var(--sk-duration-fast) var(--ease-out)}
+.return-confidence[data-band="mid"] .return-confidence-fill{background:var(--sk-tone-hold)}
 .return-confidence[data-band="low"] .return-confidence-fill{background:var(--dim)}
-.ret-split.ret-reveal{animation:ret-reveal .58s .08s var(--ease-spring) both}
+.ret-split.ret-reveal{animation:ret-reveal var(--sk-duration-reveal) .08s var(--ease-spring) both}
 @keyframes ret-reveal{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
 .ret-converge .geo-center-dot{transform-box:fill-box;transform-origin:center;animation:center-rise .9s .32s var(--ease-spring) both}
 .ret-converge .geo-layer ellipse,.ret-converge .geo-layer circle[stroke-dasharray]{transform-box:fill-box;transform-origin:center;animation:group-ring-in .85s .2s var(--ease-spring) both}
-.ret-converge .mark-scored.ret-mark-in{transform-box:fill-box;transform-origin:center;animation:mark-converge .72s var(--ease-spring) both}
+.ret-converge .mark-scored.ret-mark-in{transform-box:fill-box;transform-origin:center;animation:mark-converge var(--sk-duration-return) var(--ease-spring) both}
 .ret-converge .mark-scored.ret-mark-in:nth-child(1){animation-delay:.08s}
 .ret-converge .mark-scored.ret-mark-in:nth-child(2){animation-delay:.14s}
 .ret-converge .mark-scored.ret-mark-in:nth-child(3){animation-delay:.2s}
@@ -521,9 +534,9 @@ html:lang(ja) .hist-end-body{letter-spacing:0}
 .advice-card{flex-shrink:0;background:transparent;border:none;border-radius:0;
   padding:12px 2px 14px;margin:0 0 6px;line-height:1.5;border-bottom:1px solid var(--line)}
 .advice-card .advice-title{font-size:15px;font-weight:700;color:var(--warn);margin-bottom:6px}
-.advice-card.tone-ok .advice-title{color:var(--hit)}
-.advice-card.tone-hold .advice-title{color:var(--sight)}
-.advice-card.tone-warn .advice-title{color:var(--beat)}
+.advice-card.tone-ok .advice-title{color:var(--sk-tone-ok)}
+.advice-card.tone-hold .advice-title{color:var(--sk-tone-hold)}
+.advice-card.tone-warn .advice-title{color:var(--sk-tone-warn)}
 .advice-card .advice-group{font-size:13px;color:var(--mute);margin-bottom:8px}
 .advice-card .advice-group b{color:var(--text)}
 .advice-card .advice-move{font-size:13px;color:var(--text);padding:6px 0;border-top:1px solid var(--line)}
@@ -542,6 +555,10 @@ html:lang(ja) .hist-end-body{letter-spacing:0}
   .mark-scored.mark-pop,.tgt-stack.hit-flash svg.face,.btn.hero.ready-pulse,
   .tgt-stack.zenkin-converge::after,.tgt-stack.zenkin-converge::before,.tgt-stack.zenkin-converge svg.face,
   .zenkin-dots span,.ret-converge .geo-center-dot,.ret-converge .mark-scored.ret-mark-in,.ret-converge .geo-layer ellipse,.ret-converge .geo-layer circle,
-  .rec-progress.converge-dots .dot,.pulse.on svg,.pulse.on .val,.return-verdict,.ret-split.ret-reveal{animation:none!important}
-  .rec-progress .dot,.zoom-chip,.btn,.toast,.hist-row{transition-duration:.01ms!important}
+  .rec-progress.converge-dots .dot,.pulse.on svg,.pulse.on .val,.return-verdict,.ret-split.ret-reveal,
+  .return-meta,.return-memory-chip,.home-readiness-chip,.hist-end-sum::before{animation:none!important}
+  .rec-progress .dot,.zoom-chip,.btn,.toast,.hist-row,.return-confidence-fill,.hist-end-sum::before{transition-duration:.01ms!important}
+  .tgt-stack.zenkin-converge::after,.tgt-stack.zenkin-converge::before{opacity:0}
+  .zenkin-dots span{display:none}
+  .ret-converge .geo-center-dot,.ret-converge .mark-scored.ret-mark-in,.ret-converge .geo-layer ellipse,.ret-converge .geo-layer circle{opacity:1;transform:none}
 }

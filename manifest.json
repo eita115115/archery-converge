@@ -1,4 +1,5 @@
 {
+  "id": "archery-converge",
   "name": "Converge — 得点記録 & サイト確認",
   "short_name": "Converge",
   "description": "的の前でタップ記録、射線に戻ってグルーピングとサイト調整を確認するアーチェリー練習帳。オフライン対応。",
@@ -6,10 +7,12 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#f8f7f4",
-  "theme_color": "#f8f7f4",
+  "theme_color": "#0f766e",
   "lang": "ja",
+  "dir": "ltr",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
     { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any maskable" }
