@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=70, EXPORT_VERSION=1;
+const KEY="archeryConverge.v1", APP_VER=71, EXPORT_VERSION=1;
 const COACH_CAP=2;
 const CONVERGE_MILESTONES=[25,50,75];
 const Cx=window.ConvergeCompat;
@@ -522,10 +522,14 @@ function markQuickGuideSeen(){
 }
 function backupBarHtml(exportId,importId){
   const b=begOn();
-  return `<div class="backup-bar">
+  const nudge=Eng.storage.sessionNudge(db);
+  const strong=nudge.level==="strong";
+  const warn=strong?(b&&Beg?Beg.storageNudgeBarWarn(nudge):`${nudge.count} sessions — export soon`):(b?"記録はこの端末のみ":"Data stays on this device");
+  const sub=strong?(b&&Beg?Beg.storageNudgeBarSub():"Export a backup to free device storage"):(b?"書き出しと読み込みで機種をまたいで移せます":"Export and import to move between devices");
+  return `<div class="backup-bar${strong?" backup-bar-strong":""}">
     <div class="backup-bar-copy">
-      <p class="backup-bar-warn">${b?"記録はこの端末のみ":"Data stays on this device"}</p>
-      <p class="backup-bar-sub">${b?"書き出しと読み込みで機種をまたいで移せます":"Export and import to move between devices"}</p>
+      <p class="backup-bar-warn">${esc(warn)}</p>
+      <p class="backup-bar-sub">${esc(sub)}</p>
     </div>
     <div class="backup-bar-actions">
       <button type="button" class="btn ghost backup-bar-btn" id="${exportId}">${b?"書き出す":"Export"}</button>
@@ -564,6 +568,38 @@ function sessCompareHint(s){
   const d=sessTot(s)-sessTot(prev);
   if(!d)return begOn()?"前回と同じ距離で同点":"Same dist as prior session";
   return begOn()?(d>0?`前回（${prev.dist}m）より +${d}点`:`前回（${prev.dist}m）より ${d}点`):(d>0?`+${d} vs prior`:`${d} vs prior`);
+}
+function doneStreakHint(s){
+  if(!s||!s.ends||!s.ends.length)return "";
+  const setupId=s.setupId||getSetup().id;
+  if(!setupId)return "";
+  const streak=Eng.memory.sessionStreak(db,setupId,s.dist);
+  if(streak<2)return "";
+  const lastEnd=s.ends[s.ends.length-1],st=stats(lastEnd);
+  if(!st||st.n<6)return "";
+  const dirKey=Eng.memory.endDirectionKey(st,s.faceD);
+  if(begOn()&&Beg){
+    const line=Beg.memoryChipLine(streak,dirKey);
+    return line||"";
+  }
+  return memoryChipLinePro(streak,dirKey);
+}
+function doneBadgeHintsHtml(s){
+  const hints=[];
+  const cmp=sessCompareHint(s);
+  if(cmp)hints.push(cmp);
+  const streak=doneStreakHint(s);
+  if(streak)hints.push(streak);
+  if(!hints.length)return "";
+  return hints.map(h=>`<div class="s cmp">${esc(h)}</div>`).join("");
+}
+function maybeSessionNudgeToast(){
+  const nudge=Eng.storage.sessionNudge(db);
+  if(nudge.level!=="soft"||db.settings.sessionNudge150Seen)return;
+  db.settings.sessionNudge150Seen=true;
+  save();
+  const msg=begOn()&&Beg?Beg.sessionNudgeToast(nudge):`Many sessions (${nudge.count}) — export a backup`;
+  setTimeout(()=>toast(msg),520);
 }
 function retBarHtml(st,adv,j){
   if(begOn())return "";
@@ -1015,7 +1051,7 @@ function renderDone(){
       ${coachCardHtml("done")}
       <div class="end-badge" style="padding:24px 0"><div class="n">${sessTot(s)}</div>
         <div class="s">${begOn()?`${s.ends.length}回（各6本）· ${s.dist}m`:`${s.ends.length}E · ${s.dist}m`}</div>
-        ${sessCompareHint(s)?`<div class="s cmp">${esc(sessCompareHint(s))}</div>`:""}</div>
+        ${doneBadgeHintsHtml(s)}</div>
       ${sightDial(s.sightStart||{},s.sightNow||{},null)}
       ${(s.adjLog||[]).length?`<p style="text-align:center;font-size:13px;color:var(--dim);letter-spacing:-.01em">調整 ${s.adjLog.length} 回</p>`:""}
       ${doneBackupPromptHtml(s)}
@@ -1027,6 +1063,7 @@ function renderDone(){
   const homeBtn=$("#home");if(homeBtn)homeBtn.onclick=()=>nav("home");
   const bkDone=$("#bkOutDone");if(bkDone)bkDone.onclick=exportBackup;
   const skipBk=$("#skipDoneBk");if(skipBk)skipBk.onclick=()=>{if(s){db.settings.lastDoneBackupSkip=s.id;save();}render();};
+  maybeSessionNudgeToast();
 }
 
 function endTot(arrows){return (arrows||[]).reduce((a,x)=>a+x.s,0);}

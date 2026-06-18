@@ -141,7 +141,7 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=70",
+  "APP_VER=71",
   "returnVerdictHtml(st,adv,j,s.faceD)",
   "EXPORT_VERSION=1",
   "exportVersion",
@@ -205,6 +205,11 @@ const requiredApp = [
   "advice-foot",
   "adviceDisclaimer",
   "sessCompareHint",
+  "doneBadgeHintsHtml",
+  "doneStreakHint",
+  "maybeSessionNudgeToast",
+  "sessionNudgeToast",
+  "backup-bar-strong",
   "homeFlowHtml",
   "backLbl",
   "app-mode",
@@ -556,6 +561,8 @@ if (!Beg.histEndHead(histRow, 122, 1, 60).includes("回目")) fail("histEndHead 
 if (!Beg.histEndBody(histRow, 122)) fail("histEndBody empty");
 if (Beg.histSessionTrend(sessAnalysis.summary) !== "右寄りの傾向") fail("histSessionTrend mismatch");
 if (!Beg.histBestEndLine(3).includes("3回目")) fail("histBestEndLine missing");
+if (!Beg.sessionNudgeToast({ count: 150 }).includes("150")) fail("sessionNudgeToast missing count");
+if (!Beg.storageNudgeBarWarn({ count: 200 }).includes("200")) fail("storageNudgeBarWarn missing");
 
 const ogDesc = /property="og:description" content="([^"]+)"/.exec(html);
 if (!ogDesc || ogDesc[1].length < 36) fail("og:description too short");

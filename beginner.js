@@ -186,6 +186,22 @@
     return "一番集まったのは" + endNum + "回目";
   }
 
+  /** One-time toast on done when session count crosses 150. */
+  function sessionNudgeToast(nudge) {
+    nudge = nudge || {};
+    return "記録が増えています（" + (nudge.count || 150) + "件）。バックアップを取っておくと安心です";
+  }
+
+  /** Stronger copy on history backup bar at 200+ sessions. */
+  function storageNudgeBarWarn(nudge) {
+    nudge = nudge || {};
+    return "記録がたまっています（" + (nudge.count || 200) + "件）";
+  }
+
+  function storageNudgeBarSub() {
+    return "書き出しをしておくと、端末の容量を気にしなくて大丈夫です";
+  }
+
   /** One-time toast when convergeIndex crosses 25 / 50 / 75. */
   function convergeMilestoneLine(level) {
     if (level >= 75) return "あなた用の目安がかなり育ちました";
@@ -339,5 +355,8 @@
     histEndBody: histEndBody,
     histSessionTrend: histSessionTrend,
     histBestEndLine: histBestEndLine,
+    sessionNudgeToast: sessionNudgeToast,
+    storageNudgeBarWarn: storageNudgeBarWarn,
+    storageNudgeBarSub: storageNudgeBarSub,
   };
 })(typeof window !== "undefined" ? window : this);

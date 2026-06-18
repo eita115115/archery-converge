@@ -178,6 +178,11 @@ if (Beg.coachCard("setup", { sessionCount: 2 }).includes("m/s")) fail("setup win
     fail("histSessionTrend: " + Beg.histSessionTrend(analysis.summary));
 })();
 
+// --- Scenario H: done streak + storage nudge ---
+if (!Beg.sessionNudgeToast({ count: 150 }).includes("バックアップ")) fail("sessionNudgeToast empty");
+if (!Beg.storageNudgeBarWarn({ count: 210 }).includes("210")) fail("storageNudgeBarWarn empty");
+if (!Beg.storageNudgeBarSub().includes("書き出し")) fail("storageNudgeBarSub empty");
+
 console.log("beginner-sim: " + (issues.length ? issues.length + " issues" : "OK"));
 if (issues.length) {
   issues.slice(0, 12).forEach(i => console.log("  -", i));
