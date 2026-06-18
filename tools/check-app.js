@@ -134,7 +134,7 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=58",
+  "APP_VER=59",
   "return-verdict",
   "return-verdict-eyebrow",
   "returnVerdictHtml",

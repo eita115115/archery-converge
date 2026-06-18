@@ -5,6 +5,10 @@
     "check:app": "node tools/check-app.js",
     "check:parse": "node tools/parse-check.js",
     "check:beginner": "node tools/beginner-sim.js",
-    "check": "npm run check:app && npm run check:beginner"
+    "check": "npm run check:app && npm run check:beginner",
+    "icon": "node tools/render-icon.js"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.1"
   }
 }
