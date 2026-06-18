@@ -141,7 +141,12 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=65",
+  "APP_VER=66",
+  "EXPORT_VERSION=1",
+  "exportVersion",
+  "backupPayload",
+  "bkInHist",
+  "bkOutHist",
   "schemaVersion",
   "storageNudge",
   "QuotaExceededError",
@@ -444,6 +449,15 @@ const nudge150 = Eng.storage.sessionNudge({ sessions: new Array(150) });
 const nudge200 = Eng.storage.sessionNudge({ sessions: new Array(200) });
 if (nudge150.level !== "soft" || nudge200.level !== "strong") fail("sessionNudge thresholds");
 if (!appSrc.includes("QuotaExceededError")) fail("save() quota handler missing");
+if (!appSrc.includes("parseImportPayload")) fail("parseImportPayload missing");
+if (!appSrc.includes("Eng.storage.migrateDb")) fail("import should run migrateDb");
+const legacyImport = Eng.storage.migrateDb(
+  Object.assign(
+    { schemaVersion: 1, setups: legacyV1.setups, sightMarks: legacyV1.sightMarks, sessions: legacyV1.sessions, active: null, settings: legacyV1.settings },
+    { settings: Object.assign({ eyeSight: 850, beginnerMode: true }, legacyV1.settings) }
+  )
+);
+if (legacyImport.schemaVersion !== 2 || !legacyImport.sessions.length) fail("legacy import migrate failed");
 
 const stack = Geo.targetSvg(
   122,

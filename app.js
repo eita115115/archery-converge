@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=65;
+const KEY="archeryConverge.v1", APP_VER=66, EXPORT_VERSION=1;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Eng=window.ConvergeEngine;
@@ -461,15 +461,42 @@ function markQuickGuideSeen(){
   db.settings.quickGuideSeen=true;
   save();
 }
-function backupBarHtml(id){
+function backupBarHtml(exportId,importId){
   const b=begOn();
   return `<div class="backup-bar">
     <div class="backup-bar-copy">
       <p class="backup-bar-warn">${b?"記録はこの端末のみ":"Data stays on this device"}</p>
-      <p class="backup-bar-sub">${b?"機種変更・削除で消えることがあります":"Export before switching phones or browsers"}</p>
+      <p class="backup-bar-sub">${b?"書き出しと読み込みで機種をまたいで移せます":"Export and import to move between devices"}</p>
     </div>
-    <button type="button" class="btn ghost backup-bar-btn" id="${id}">${b?"バックアップする":"Export backup"}</button>
+    <div class="backup-bar-actions">
+      <button type="button" class="btn ghost backup-bar-btn" id="${exportId}">${b?"書き出す":"Export"}</button>
+      ${importId?`<button type="button" class="btn button-secondary backup-bar-btn" id="${importId}">${b?"読み込む":"Import"}</button>`:""}
+    </div>
   </div>`;
+}
+function backupPayload(){
+  return{
+    exportVersion:EXPORT_VERSION,
+    appVersion:APP_VER,
+    exportedAt:new Date().toISOString(),
+    schemaVersion:db.schemaVersion,
+    setups:db.setups,
+    sightMarks:db.sightMarks,
+    sessions:db.sessions,
+    active:db.active,
+    settings:db.settings
+  };
+}
+function parseImportPayload(raw){
+  if(!raw||typeof raw!=="object")throw new Error("invalid");
+  return{
+    schemaVersion:raw.schemaVersion,
+    setups:raw.setups,
+    sightMarks:raw.sightMarks,
+    sessions:raw.sessions,
+    active:raw.active,
+    settings:raw.settings
+  };
 }
 function sessCompareHint(s){
   if(!s||db.sessions.length<2)return "";
@@ -601,7 +628,7 @@ function renderHome(){
 
 function exportBackup(){
   const a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(backupPayload(),null,2)],{type:"application/json"}));
   a.download="converge-backup-"+today()+".json";
   a.click();
   db.settings.hasExported=true;
@@ -619,8 +646,10 @@ function importBackup(){
     r.onload=()=>{
       try{
         if(!confirm(begOn()?"今のデータを上書きします。よろしいですか？":"Replace all data?"))return;
-        db=Object.assign(blankDb(),JSON.parse(r.result));
+        const parsed=JSON.parse(r.result);
+        db=Object.assign(blankDb(),parseImportPayload(parsed));
         db.settings=Object.assign({eyeSight:850,beginnerMode:true},db.settings||{});
+        if(Eng&&Eng.storage&&Eng.storage.migrateDb)db=Eng.storage.migrateDb(db);
         db.active=normalizeActive(db.active);
         (db.sessions||[]).forEach(s=>{if(!Array.isArray(s.ends))s.ends=[];});
         const n=db.sessions.length;
@@ -940,13 +969,14 @@ function renderDone(){
 function renderHistory(){
   shell(-1,begOn()?"履歴":"History",backLbl(),(()=>{
     const ss=[...db.sessions].reverse();
-    return `${backupBarHtml("bkOutHist")}<div class="app-page">${ss.length?ss.map(s=>`
+    return `${backupBarHtml("bkOutHist","bkInHist")}<div class="app-page">${ss.length?ss.map(s=>`
       <div class="hist-row" data-id="${s.id}"><div><div class="d">${fmtD(s.date)} · ${s.dist}m</div>
         <div class="m">${begOn()?s.ends.length+"回":s.ends.length+"E"}${s.note?" · "+esc(s.note):""}</div></div><div class="pts">${sessTot(s)}</div></div>`).join("")
       :`<div class="empty">${begOn()?"まだ記録がありません":"No sessions yet"}</div>`}</div>`;
   })(),"");
   const bb=$("#backBtn");if(bb)bb.onclick=()=>nav("home");
   const bkHist=$("#bkOutHist");if(bkHist)bkHist.onclick=exportBackup;
+  const bkIn=$("#bkInHist");if(bkIn)bkIn.onclick=importBackup;
   $("#body").querySelectorAll(".hist-row").forEach(r=>r.onclick=()=>{ui.histId=r.dataset.id;render();});
 }
 
