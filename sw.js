@@ -1,4 +1,4 @@
-const CACHE = "archery-converge-v75";
+const CACHE = "archery-converge-v76";
 const ASSETS = [
   "./index.html",
   "./style.css",
@@ -7,6 +7,13 @@ const ASSETS = [
   "./physics.js",
   "./engine.js",
   "./beginner.js",
+  "./app-state.js",
+  "./ui/helpers.js",
+  "./storage.js",
+  "./screens/home.js",
+  "./screens/record.js",
+  "./screens/return.js",
+  "./screens/history.js",
   "./app.js",
   "./manifest.json",
   "./icon.svg",

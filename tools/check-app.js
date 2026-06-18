@@ -11,7 +11,17 @@ const physicsSrc = fs.readFileSync(path.join(root, "physics.js"), "utf8");
 const geometrySrc = fs.readFileSync(path.join(root, "geometry.js"), "utf8");
 const beginnerSrc = fs.readFileSync(path.join(root, "beginner.js"), "utf8");
 const engineSrc = fs.readFileSync(path.join(root, "engine.js"), "utf8");
-const appSrc = fs.readFileSync(path.join(root, "app.js"), "utf8");
+const appFiles = [
+  "app-state.js",
+  "ui/helpers.js",
+  "storage.js",
+  "screens/home.js",
+  "screens/record.js",
+  "screens/return.js",
+  "screens/history.js",
+  "app.js",
+];
+const appSrc = appFiles.map(f => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
 
 function fail(msg) {
   console.error("check-app FAIL:", msg);
@@ -54,6 +64,10 @@ const requiredHtml = [
   'src="physics.js"',
   'src="engine.js"',
   'src="beginner.js"',
+  'src="app-state.js"',
+  'src="ui/helpers.js"',
+  'src="storage.js"',
+  'src="screens/home.js"',
   'src="app.js"',
   "ConvergeApp.init",
   "coach-card",
@@ -102,6 +116,10 @@ const htmlOnly = new Set([
   'src="physics.js"',
   'src="engine.js"',
   'src="beginner.js"',
+  'src="app-state.js"',
+  'src="ui/helpers.js"',
+  'src="storage.js"',
+  'src="screens/home.js"',
   'src="app.js"',
   "ConvergeApp.init",
   'meta name="description"',
@@ -137,7 +155,7 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=75",
+  "APP_VER=76",
   "returnVerdictHtml(st,adv,j,s.faceD)",
   "EXPORT_VERSION=1",
   "exportVersion",
@@ -277,7 +295,21 @@ if (!geometrySrc.includes("function previewMark"))
 if (!geometrySrc.includes("arrowMarkRadius") || !geometrySrc.includes("archery-note markCircle"))
   fail("archery-note mark import missing");
 
-const scriptOrder = ["compat.js", "geometry.js", "physics.js", "engine.js", "beginner.js", "app.js"];
+const scriptOrder = [
+  "compat.js",
+  "geometry.js",
+  "physics.js",
+  "engine.js",
+  "beginner.js",
+  "app-state.js",
+  "ui/helpers.js",
+  "storage.js",
+  "screens/home.js",
+  "screens/record.js",
+  "screens/return.js",
+  "screens/history.js",
+  "app.js",
+];
 let last = -1;
 scriptOrder.forEach(f => {
   const i = html.indexOf('src="' + f + '"');
@@ -292,7 +324,23 @@ const sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
 const swVer = +/archery-converge-v(\d+)/.exec(sw)[1];
 if (appVer !== version || swVer !== version) fail(`version mismatch app=${appVer} json=${version} sw=${swVer}`);
 
-const swAssets = ["index.html", "style.css", "compat.js", "geometry.js", "physics.js", "engine.js", "beginner.js", "app.js"];
+const swAssets = [
+  "index.html",
+  "style.css",
+  "compat.js",
+  "geometry.js",
+  "physics.js",
+  "engine.js",
+  "beginner.js",
+  "app-state.js",
+  "ui/helpers.js",
+  "storage.js",
+  "screens/home.js",
+  "screens/record.js",
+  "screens/return.js",
+  "screens/history.js",
+  "app.js",
+];
 swAssets.forEach(a => {
   if (!sw.includes(a)) fail("sw.js missing cache asset: " + a);
 });
@@ -511,6 +559,8 @@ const nudge200 = Eng.storage.sessionNudge({ sessions: new Array(200) });
 if (nudge150.level !== "soft" || nudge200.level !== "strong") fail("sessionNudge thresholds");
 if (!appSrc.includes("QuotaExceededError")) fail("save() quota handler missing");
 if (!appSrc.includes("parseImportPayload")) fail("parseImportPayload missing");
+if (!appSrc.includes('replace(/>/g,"&gt;")')) fail("esc() must escape >");
+if (!appSrc.includes("Array.isArray(raw)")) fail("parseImportPayload type guard missing");
 if (!appSrc.includes("Eng.storage.migrateDb")) fail("import should run migrateDb");
 const legacyImport = Eng.storage.migrateDb(
   Object.assign(
@@ -519,6 +569,29 @@ const legacyImport = Eng.storage.migrateDb(
   )
 );
 if (legacyImport.schemaVersion !== 2 || !legacyImport.sessions.length) fail("legacy import migrate failed");
+
+Phy.clearCaches();
+const mkEnd = (my) =>
+  Array.from({ length: 6 }, (_, i) => {
+    const x = 2 + i * 0.05;
+    const h = Geo.hitAt(x, my, 122);
+    return { x: h.x, y: h.y, s: h.s, X: h.X };
+  });
+const regDb = {
+  setups: db.setups,
+  sessions: [
+    { id: "reg1", setupId: "main", dist: 70, faceD: 122, windDir: "", windSpeed: 0, sightNow: { v: "10", h: "5" }, ends: [mkEnd(1.0)] },
+    { id: "reg2", setupId: "main", dist: 70, faceD: 122, windDir: "", windSpeed: 0, sightNow: { v: "12", h: "7" }, ends: [mkEnd(1.8)] },
+    { id: "reg3", setupId: "main", dist: 70, faceD: 122, windDir: "", windSpeed: 0, sightNow: { v: "14", h: "9" }, ends: [mkEnd(2.4)] },
+  ],
+  sightMarks: [],
+  settings: db.settings,
+};
+const reg = Phy.regressionAdvice(regDb, "main", 70);
+["v", "h"].forEach(axis => {
+  if (reg[axis] && !isFinite(reg[axis].quality)) fail("regressionAdvice " + axis + ".quality must be finite");
+});
+if (!physicsSrc.includes("weight:sw")) fail("weightedLineFit must return weight");
 
 const stack = Geo.targetSvg(
   122,

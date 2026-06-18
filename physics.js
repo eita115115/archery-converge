@@ -310,7 +310,7 @@ function weightedLineFit(pts){
   if(Math.abs(vx)<1e-9)return null;
   const b=cv/vx,a=yb-b*xb;
   let ss=0,se=0;clean.forEach(p=>{const e=a+b*p.x;ss+=(p.y-yb)*(p.y-yb)*p.w;se+=(p.y-e)*(p.y-e)*p.w;});
-  return {a,b,zero:Math.abs(b)>1e-9?-a/b:null,r2:ss>1e-9?clamp(1-se/ss,0,1):0,n:clean.length,scatter:Math.sqrt(Math.max(0,se/sw)),kind:"weighted"};
+  return {a,b,zero:Math.abs(b)>1e-9?-a/b:null,r2:ss>1e-9?clamp(1-se/ss,0,1):0,n:clean.length,scatter:Math.sqrt(Math.max(0,se/sw)),weight:sw,kind:"weighted"};
 }
 function robustWeightedLine(pts){
   if(pts.length<2)return null;
