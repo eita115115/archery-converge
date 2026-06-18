@@ -164,6 +164,56 @@
     return { ends: ends, summary: summarizeSessionEnds(ends, faceD) };
   }
 
+  /** Compact per-end snapshot for session.endMeta[] — avoids recompute in history. */
+  function sessionEndMeta(db, settings, setup, session) {
+    var analysis = analyzeSession(db, settings, setup, session);
+    return analysis.ends.map(function (row) {
+      var d = row.describe || {};
+      var sp = d.spread || {};
+      return {
+        confidence: row.adv && row.adv.confidence != null ? row.adv.confidence : row.st && row.st.confidence,
+        jLabel: row.j && row.j.label ? row.j.label : null,
+        mx: row.st && row.st.mx,
+        my: row.st && row.st.my,
+        rr: row.st && row.st.rr,
+        n: row.st && row.st.n,
+        sx: sp.sx,
+        sy: sp.sy,
+        outliers: d.outliers || 0,
+      };
+    });
+  }
+
+  /** Rehydrate analyzeSession shape from stored endMeta (fallback: analyzeSession). */
+  function analysisFromEndMeta(session) {
+    var faceD = (session && session.faceD) || 122;
+    var meta = (session && session.endMeta) || [];
+    var ends = meta.map(function (m, i) {
+      var st =
+        m && m.n
+          ? { n: m.n, mx: m.mx, my: m.my, rr: m.rr, confidence: m.confidence }
+          : null;
+      var j = m && m.jLabel ? { label: m.jLabel } : null;
+      var describe = st
+        ? {
+            center: { mx: m.mx, my: m.my },
+            spread: { rr: m.rr, sx: m.sx, sy: m.sy },
+            outliers: m.outliers || 0,
+            confidence: m.confidence,
+            method: "cached",
+          }
+        : null;
+      return {
+        index: i,
+        st: st,
+        adv: m && m.confidence != null ? { confidence: m.confidence } : null,
+        j: j,
+        describe: describe,
+      };
+    });
+    return { ends: ends, summary: summarizeSessionEnds(ends, faceD) };
+  }
+
   function trajectoryFor(db, settings, setup, sess) {
     var s = slimSession(sess);
     var g = slimSetup(setup);
@@ -342,6 +392,9 @@
       quality: Phy.sessionQuality,
       analyzeEnd: analyzeEnd,
       analyzeSession: analyzeSession,
+      sessionEndMeta: sessionEndMeta,
+      analysisFromEndMeta: analysisFromEndMeta,
+      summarizeEnds: summarizeSessionEnds,
     }),
     calibration: Object.freeze({
       personal: Phy.personalModel,

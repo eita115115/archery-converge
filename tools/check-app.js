@@ -137,7 +137,7 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=74",
+  "APP_VER=75",
   "returnVerdictHtml(st,adv,j,s.faceD)",
   "EXPORT_VERSION=1",
   "exportVersion",
@@ -164,6 +164,10 @@ const requiredApp = [
   "CONVERGE_MILESTONES",
   "histEndRowsHtml",
   "histSessionAnalysis",
+  "hasValidEndMeta",
+  "sessionEndMeta",
+  "analysisFromEndMeta",
+  "endMeta",
   "hist-end-list",
   "hist-end-row",
   "histEndHead",
@@ -476,6 +480,18 @@ if (!sessAnalysis.summary || sessAnalysis.summary.trend !== sessFixture.expected
   fail("analyzeSession trend mismatch: " + (sessAnalysis.summary && sessAnalysis.summary.trend));
 if (!sessAnalysis.ends[0].describe || sessAnalysis.ends[0].describe.center.mx == null)
   fail("analyzeSession missing per-end describe");
+if (typeof Eng.advice.sessionEndMeta !== "function" || typeof Eng.advice.analysisFromEndMeta !== "function")
+  fail("sessionEndMeta / analysisFromEndMeta missing");
+const endMeta = Eng.advice.sessionEndMeta(db, db.settings, db.setups[0], sessFixture.session);
+if (!endMeta || endMeta.length !== sessFixture.expectedEndCount || endMeta[0].jLabel == null)
+  fail("sessionEndMeta shape invalid");
+const cachedSess = Object.assign({}, sessFixture.session, { endMeta: endMeta });
+const cachedAnalysis = Eng.advice.analysisFromEndMeta(cachedSess);
+if (!cachedAnalysis.ends || cachedAnalysis.ends.length !== sessFixture.expectedEndCount)
+  fail("analysisFromEndMeta end count mismatch");
+if (!cachedAnalysis.summary || cachedAnalysis.summary.trend !== sessFixture.expectedTrend)
+  fail("analysisFromEndMeta trend mismatch");
+if (cachedAnalysis.ends[0].j.label !== endMeta[0].jLabel) fail("analysisFromEndMeta jLabel mismatch");
 
 if (!Eng.storage || typeof Eng.storage.migrateDb !== "function") fail("Eng.storage missing");
 const legacyV1 = JSON.parse(fs.readFileSync(path.join(root, "tools/fixtures/legacy-v1.json"), "utf8"));

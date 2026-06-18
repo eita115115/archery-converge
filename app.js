@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=74, EXPORT_VERSION=1;
+const KEY="archeryConverge.v1", APP_VER=75, EXPORT_VERSION=1;
 const COACH_CAP=2;
 const CONVERGE_MILESTONES=[25,50,75];
 const Cx=window.ConvergeCompat;
@@ -1065,7 +1065,8 @@ function renderReturn(){
   };
   $("#next").onclick=()=>{ui.screen="record";ui.adj=false;render();};
   $("#fin").onclick=()=>{
-    db.sessions.push({...s,cur:[],total:sessTot(s)});delete db.active;save();ui.screen="done";render();
+    const endMeta=Eng.advice.sessionEndMeta(db,db.settings,getSetup(),s);
+    db.sessions.push({...s,cur:[],total:sessTot(s),endMeta});delete db.active;save();ui.screen="done";render();
   };
 }
 
@@ -1100,7 +1101,13 @@ function renderDone(){
 }
 
 function endTot(arrows){return (arrows||[]).reduce((a,x)=>a+x.s,0);}
-function histSessionAnalysis(s){return Eng.advice.analyzeSession(db,db.settings,getSetup(),s);}
+function hasValidEndMeta(s){
+  return !!(s&&Array.isArray(s.ends)&&Array.isArray(s.endMeta)&&s.endMeta.length===s.ends.length&&s.endMeta.length>0);
+}
+function histSessionAnalysis(s){
+  if(hasValidEndMeta(s))return Eng.advice.analysisFromEndMeta(s);
+  return Eng.advice.analyzeSession(db,db.settings,getSetup(),s);
+}
 function histSessionSummaryHtml(s,analysis){
   const sum=analysis&&analysis.summary;
   if(!sum||sum.endCount<2)return "";
