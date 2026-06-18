@@ -147,6 +147,16 @@ if (Beg.confidenceWords("mid") !== "信頼度：ふつう") fail("confidenceWord
 if (Beg.confidenceWords("low") !== "信頼度：まだ足りない") fail("confidenceWords low");
 if (/conf|%|R\d/.test(Beg.confidenceWords("high"))) fail("confidenceWords contains jargon");
 
+// --- Scenario F: X3 wind + milestones ---
+if (!Beg.windRecordHint({ windy: true }).includes("風")) fail("windRecordHint empty");
+if (!Beg.windRecordHint({ windy: true, lateralDominant: true }).includes("横風"))
+  fail("windRecordHint lateral empty");
+if (/m\/s|classify|windy/.test(Beg.windRecordHint({ windy: true }))) fail("windRecordHint jargon");
+if (Beg.convergeMilestoneLine(25) !== "あなた用の目安が育ってきました") fail("milestone 25");
+if (Beg.convergeMilestoneLine(50) !== "あなた用の目安がしっかり育ってきました") fail("milestone 50");
+if (!Beg.coachCard("setup", { sessionCount: 5 }).includes("m/s")) fail("setup wind tip at 5 sessions");
+if (Beg.coachCard("setup", { sessionCount: 2 }).includes("m/s")) fail("setup wind tip too early");
+
 console.log("beginner-sim: " + (issues.length ? issues.length + " issues" : "OK"));
 if (issues.length) {
   issues.slice(0, 12).forEach(i => console.log("  -", i));

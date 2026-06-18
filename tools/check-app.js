@@ -141,7 +141,7 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=68",
+  "APP_VER=69",
   "returnVerdictHtml(st,adv,j,s.faceD)",
   "EXPORT_VERSION=1",
   "exportVersion",
@@ -160,6 +160,12 @@ const requiredApp = [
   "return-confidence",
   "memoryChipLine",
   "confidenceWords",
+  "windRecordHint",
+  "convergeMilestoneLine",
+  "recordWindHintHtml",
+  "record-wind-hint",
+  "maybeConvergeMilestoneToast",
+  "CONVERGE_MILESTONES",
   "groupDirection",
   "simpleSightAction",
   "ret-converge",
@@ -531,6 +537,14 @@ if (!Beg.memoryChipLine(3, "u") || !Beg.memoryChipLine(3, "u").includes("3回連
 if (Beg.memoryChipLine(1, "u") != null) fail("memoryChipLine should hide streak 1");
 if (Beg.confidenceWords("high") !== "信頼度：高い" || Beg.confidenceWords("low") !== "信頼度：まだ足りない")
   fail("confidenceWords mismatch");
+if (!Beg.windRecordHint({ windy: true }) || !Beg.windRecordHint({ windy: true }).includes("風"))
+  fail("windRecordHint missing");
+if (!Beg.windRecordHint({ windy: true, lateralDominant: true }).includes("横風"))
+  fail("windRecordHint lateral");
+if (Beg.convergeMilestoneLine(25) !== "あなた用の目安が育ってきました") fail("convergeMilestoneLine 25");
+if (Beg.convergeMilestoneLine(75) !== "あなた用の目安がかなり育ちました") fail("convergeMilestoneLine 75");
+const setupCoach = Beg.coachCard("setup", { sessionCount: 6 });
+if (!setupCoach.includes("m/s")) fail("setup coach advanced wind tip missing");
 
 const ogDesc = /property="og:description" content="([^"]+)"/.exec(html);
 if (!ogDesc || ogDesc[1].length < 36) fail("og:description too short");

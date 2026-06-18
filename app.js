@@ -3,8 +3,9 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=68, EXPORT_VERSION=1;
+const KEY="archeryConverge.v1", APP_VER=69, EXPORT_VERSION=1;
 const COACH_CAP=2;
+const CONVERGE_MILESTONES=[25,50,75];
 const Cx=window.ConvergeCompat;
 const Eng=window.ConvergeEngine;
 const Beg=window.ConvergeBeginner;
@@ -409,6 +410,41 @@ function memoryChipLinePro(streak,dirKey){
   const bias={u:"high",d:"low",r:"right",l:"left",ur:"high-right",ru:"high-right",ul:"high-left",lu:"high-left",dr:"low-right",rd:"low-right",dl:"low-left",ld:"low-left"}[dirKey]||dirKey;
   return `${streak} in a row · ${bias}`;
 }
+function convergeMilestonesSeen(){
+  if(!Array.isArray(db.settings.convergeMilestonesSeen))db.settings.convergeMilestonesSeen=[];
+  return db.settings.convergeMilestonesSeen;
+}
+function maybeConvergeMilestoneToast(){
+  const setup=getSetup();
+  if(!setup.id)return;
+  const index=Eng.memory.convergeIndex(db,setup.id,db.settings);
+  db.settings.convergeIndex=index;
+  const seen=convergeMilestonesSeen();
+  let hit=null;
+  CONVERGE_MILESTONES.forEach(m=>{
+    if(index>=m&&seen.indexOf(m)<0){
+      if(!hit||m>hit)hit=m;
+    }
+  });
+  if(!hit)return;
+  seen.push(hit);
+  save();
+  const msg=begOn()&&Beg?Beg.convergeMilestoneLine(hit):`Personal model milestone (${hit})`;
+  setTimeout(()=>toast(msg),480);
+}
+function windRecordHintPro(wc){
+  wc=wc||{};
+  if(wc.lateralDominant)return "Strong crosswind — grouping may drift sideways.";
+  return "Windy conditions — treat return advice as approximate.";
+}
+function recordWindHintHtml(s){
+  if(!s)return "";
+  const st=s.cur.length?stats(s.cur):null;
+  const wc=Eng.wind.classify(sessForPhy(s),st);
+  if(!wc.windy)return "";
+  const text=begOn()&&Beg?Beg.windRecordHint(wc):windRecordHintPro(wc);
+  return `<p class="record-wind-hint" role="status">${esc(text)}</p>`;
+}
 function returnMetaRowHtml(st,adv,s){
   if(!st||!s)return "";
   const setup=getSetup();
@@ -691,6 +727,7 @@ function renderSetup(){
   const wSpd=ui._windSpd??last?.windSpeed??0;
   const mk=db.sightMarks.filter(m=>g&&m.setupId===g.id&&m.dist===dist).sort((a,b)=>b.date.localeCompare(a.date))[0];
   shell(0,begOn()?"準備":"Setup",backLbl(),`
+    ${coachCardHtml("setup",{sessionCount:db.sessions.length})}
     ${distRings(dist)}
     <div class="setup-mid">
       <div>${windCompass(wDir,wSpd)}</div>
@@ -722,6 +759,7 @@ function renderRecord(){
   const canSetupBack=!n&&!s.ends.length;
   shell(1,recordTitle(s,n,pe)+(zenRec?` <span class="jtag ok">${begOn()?"全金！":"全金"}</span>`:""),canSetupBack?backLbl():"",`
     ${coachCardHtml("record",{n,pe,zenkin:zenRec})}
+    ${recordWindHintHtml(s)}
     <div class="zoom-bar">${zoomChipsHtml()}</div>
     <div class="tgt-stage">
       <div class="box sq-fit" id="tgBox">
@@ -948,6 +986,7 @@ function renderReturn(){
       <button class="btn ghost" id="fin">${begOn()?"今日は終わり":"終了"}</button>
     </div>`,true);
   bindReopenEnd(s,"#reopenRet",renderRecord);
+  maybeConvergeMilestoneToast();
   const tg=$("#trustGear");if(tg)tg.onclick=()=>nav("gear");
   let mh="";end.forEach(a=>{mh+=Geo.dot(a,s.faceD,"var(--mark-cur)",Geo.lbl(a),"ret-mark-in");});const rm=$("#rtmarks");if(rm)rm.innerHTML=mh;
   $("#adjBtn").onclick=()=>{

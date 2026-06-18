@@ -151,6 +151,20 @@
     return "信頼度：まだ足りない";
   }
 
+  /** Subtle record-screen reminder when Eng.wind.classify → windy. */
+  function windRecordHint(wc) {
+    wc = wc || {};
+    if (wc.lateralDominant) return "横風が強めです。的の前では風の影響を意識して打ちましょう。";
+    return "風が強めです。戻ったあとの目安は風の影響を考慮してください。";
+  }
+
+  /** One-time toast when convergeIndex crosses 25 / 50 / 75. */
+  function convergeMilestoneLine(level) {
+    if (level >= 75) return "あなた用の目安がかなり育ちました";
+    if (level >= 50) return "あなた用の目安がしっかり育ってきました";
+    return "あなた用の目安が育ってきました";
+  }
+
   function adviceDisclaimer() {
     return "※判断補助です。サイトを動かす前に射形・安全・コーチの指示を優先してください。";
   }
@@ -196,7 +210,10 @@
         icon: "①",
         title: "射る前の準備",
         body:
-          "リングで的までの距離（メートル）を選びます。風がわからなければ真ん中の「無」でOK。サイト＝照準器の目盛り。今見ている数字をメモして入れてください（空欄でも始められます）。",
+          "リングで的までの距離（メートル）を選びます。風がわからなければ真ん中の「無」でOK。サイト＝照準器の目盛り。今見ている数字をメモして入れてください（空欄でも始められます）。" +
+          (ctx.sessionCount >= 5
+            ? " 慣れてきたら、風の向きと強さ（m/s）を入れておくと戻ったときの判断が安定します。"
+            : ""),
       },
       record: {
         icon: "②",
@@ -288,5 +305,7 @@
     trustLine: trustLine,
     memoryChipLine: memoryChipLine,
     confidenceWords: confidenceWords,
+    windRecordHint: windRecordHint,
+    convergeMilestoneLine: convergeMilestoneLine,
   };
 })(typeof window !== "undefined" ? window : this);
