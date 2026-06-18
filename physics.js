@@ -371,6 +371,49 @@ function dirAlign(ax,ay,bx,by){
   if(am<.01||bm<.01)return 0;
   return clamp((ax*bx+ay*by)/(am*bm),-1,1);
 }
+function endDirectionKey(st,faceD){
+  const w=ringW(faceD),th=w*.2;
+  if(Math.abs(st.mx)<=th&&Math.abs(st.my)<=th)return "c";
+  let k="";
+  if(st.my>th)k+="u";else if(st.my<-th)k+="d";
+  if(st.mx>th)k+="r";else if(st.mx<-th)k+="l";
+  return k||"c";
+}
+function sessionStreak(db,setupId,dist){
+  if(!db||!setupId)return 0;
+  const keys=[];
+  (db.sessions||[]).filter(s=>s.setupId===setupId&&s.dist===dist)
+    .sort((a,b)=>(a.date||"").localeCompare(b.date||""))
+    .forEach(s=>{
+      const fd=s.faceD||122;
+      (s.ends||[]).forEach(end=>{
+        const st=robustStats(end);
+        if(st&&st.n>=6)keys.push(endDirectionKey(st,fd));
+      });
+    });
+  if(!keys.length)return 0;
+  let run=1;
+  for(let i=keys.length-1;i>0;i--){
+    if(keys[i]===keys[i-1]&&keys[i]!=="c")run++;
+    else break;
+  }
+  return run;
+}
+function convergeIndex(db,setupId,settings){
+  if(!setupId||!db)return 0;
+  const sessions=(db.sessions||[]).filter(s=>s.setupId===setupId);
+  const sessionScore=Math.min(40,sessions.length*4);
+  const pcal=personalPhysicsCalibration(db,setupId,settings);
+  const calScore=(pcal&&pcal.score?pcal.score:0)*35;
+  let regScore=0;
+  [...new Set(sessions.map(s=>s.dist).filter(d=>d!=null))].forEach(d=>{
+    const reg=regressionAdvice(db,setupId,d);
+    if(reg.v)regScore+=clamp(reg.v.quality!=null?reg.v.quality:reg.v.r2||0,0,1)*5;
+    if(reg.h)regScore+=clamp(reg.h.quality!=null?reg.h.quality:reg.h.r2||0,0,1)*5;
+  });
+  regScore=Math.min(25,regScore);
+  return Math.round(clamp(sessionScore+calScore+regScore,0,100));
+}
 function personalModel(db,sess,setup,currentSt){
   if(!sess||!currentSt||!db)return null;
   const same=(db.sessions||[]).filter(s=>s.id!==sess.id&&(s.setupId||"")===(sess.setupId||"")&&s.dist===sess.dist&&s.faceD===sess.faceD)
@@ -503,7 +546,8 @@ function adviceForEnd(db,settings,setup,sess,arrows){
     moves.push({axis:"h",dir:st.mx>0?"右":"左",cm:adj,mm,clicks,sightDelta:st.mx>0?adj:-adj});
   }
   const vector=sightVector(moves);
-  return {st,moves,vector,model,personal,quality,confidence:model.confidence,needsMove:moves.length>0};
+  const streak=sessionStreak(db,setup&&setup.id,dist);
+  return {st,moves,vector,model,personal,quality,confidence:model.confidence,needsMove:moves.length>0,streak};
 }
 function sightVector(moves){
   let h=0,v=0,mmH=0,mmV=0,clicksH=null,clicksV=null;
@@ -516,13 +560,18 @@ function sightVector(moves){
 function judgementFor(adv,sess){
   if(!adv)return null;
   const st=adv.st,w=ringW(sess.faceD);
+  const rrN=st.rr/w,mxN=Math.abs(st.mx)/w,myN=Math.abs(st.my)/w;
+  if(rrN<1.2&&mxN<.2&&myN<.2)return {label:"維持",tone:"ok",scale:0,text:"中心は良好。サイトは触らず確認を重ねる。"};
   if(!adv.needsMove)return {label:"維持",tone:"ok",scale:0,text:"中心は良好。サイトは触らず確認を重ねる。"};
-  if(adv.personal&&adv.personal.state==="今回だけ")return {label:"保留",tone:"hold",scale:.35,text:"過去傾向と逆。追加エンドで再現性を確認。"};
+  if(adv.personal&&adv.personal.state==="今回だけ"){
+    const cut=(adv.streak||0)>=2?-.4:-.25;
+    if((adv.personal.align||0)<cut)return {label:"保留",tone:"hold",scale:.35,text:"過去傾向と逆。追加エンドで再現性を確認。"};
+  }
   if(st.n<6||(adv.confidence||0)<.45)return {label:"保留",tone:"hold",scale:.4,text:"本数・信頼度が足りない。1エンド追加してから。"};
-  if(st.rr>w*2.8)return {label:"射形優先",tone:"warn",scale:.45,text:"散りが大きい。提案量の半分以下で様子見。"};
+  if(rrN>2.8)return {label:"射形優先",tone:"warn",scale:.45,text:"散りが大きい。提案量の半分以下で様子見。"};
   if(suggestWindReconfirm(sess,adv))return {label:"風考慮",tone:"hold",scale:.5,text:"横風の影響あり。無風で再確認が理想。"};
   if(adv.personal&&adv.personal.state==="過去と一致"&&(adv.confidence||0)>=.62)return {label:"動かす",tone:"ok",scale:1,text:"過去傾向と一致。提案量で動かす根拠あり。"};
-  if((adv.confidence||0)>=.72&&st.rr<=w*2.2)return {label:"動かす",tone:"ok",scale:1,text:"中心と信頼度が揃った。提案通りに動かす。"};
+  if((adv.confidence||0)>=.72&&rrN<=2.2)return {label:"動かす",tone:"ok",scale:1,text:"中心と信頼度が揃った。提案通りに動かす。"};
   return {label:"少量",tone:"mid",scale:.65,text:"傾向は見えた。提案の6〜7割で様子見。"};
 }
 
@@ -533,7 +582,8 @@ const ArcheryPhysics=Object.freeze({
   robustStats,groupStats,
   physicsProfile,windModel,simulateArrow,solveZeroAngle,trajectoryModel,
   adviceForEnd,judgementFor,sessionQuality,personalModel,regressionAdvice,personalPhysicsCalibration,
-  gearPrecisionProfile,classifyWind,suggestWindReconfirm,isWindy
+  gearPrecisionProfile,classifyWind,suggestWindReconfirm,isWindy,
+  sessionStreak,convergeIndex
 });
 if(typeof module!=="undefined"&&module.exports)module.exports=ArcheryPhysics;
 root.ArcheryPhysics=ArcheryPhysics;

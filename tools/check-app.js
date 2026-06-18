@@ -141,7 +141,7 @@ const requiredApp = [
   "ConvergeEngine required",
   "analyzeEnd",
   "engineBump",
-  "APP_VER=62",
+  "APP_VER=63",
   "return-verdict",
   "return-verdict-eyebrow",
   "returnVerdictHtml",
@@ -343,6 +343,8 @@ if (Eng.metrics.isCentered(0.5, 0.2, 122)) fail("isCentered should fail outside 
 if (Eng.metrics.confidenceBand(0.7) !== "high" || Eng.metrics.confidenceBand(0.5) !== "mid")
   fail("confidenceBand tiers wrong");
 if (!Eng.wind || typeof Eng.wind.classify !== "function") fail("Eng.wind.classify missing");
+if (Eng.runtimeVersion !== 2) fail("ConvergeEngine runtimeVersion should be 2");
+if (!Eng.memory || typeof Eng.memory.convergeIndex !== "function") fail("Eng.memory missing");
 const windySess = { dist: 70, faceD: 122, windDir: "左から", windSpeed: 4 };
 const stLat = { n: 6, sx: 2.2, sy: 1, mx: 1.2, my: 0.4, rr: 1.8, confidence: 0.72 };
 const wc = Eng.wind.classify(windySess, stLat);
@@ -370,8 +372,9 @@ const adv = Phy.adviceForEnd(db, db.settings, db.setups[0], sess, end);
 if (!adv || !adv.moves.length) fail("adviceForEnd failed");
 
 const windySession = { id: "w1", date: "2026-06-18", dist: 70, faceD: 122, setupId: "main", windDir: "左から", windSpeed: 4 };
+const stWindJudge = { n: 6, sx: 2.2, sy: 1, mx: 1.5, my: 0.8, rr: 1.8, confidence: 0.72 };
 const mockWindAdv = {
-  st: stLat,
+  st: stWindJudge,
   needsMove: true,
   confidence: 0.65,
   personal: { state: "観察中" },
@@ -380,6 +383,32 @@ const mockWindAdv = {
 if (!Eng.wind.suggestReconfirm(windySession, mockWindAdv)) fail("suggestReconfirm expected true");
 const windyJ = Eng.advice.judgement(mockWindAdv, windySession);
 if (!windyJ || windyJ.label !== "風考慮") fail("judgement 風考慮 expected for windy lateral end");
+
+const memFixture = JSON.parse(fs.readFileSync(path.join(root, "tools/fixtures/converge-index.json"), "utf8"));
+Phy.clearCaches();
+const memIdx = Eng.memory.convergeIndex(memFixture.db, memFixture.setupId, memFixture.settings);
+if (memIdx !== memFixture.expectedIndex) fail(`convergeIndex fixture: expected ${memFixture.expectedIndex} got ${memIdx}`);
+const memHint = Eng.memory.readinessHint(memFixture.db, memFixture.setupId, memFixture.settings);
+if (!memHint || memHint.tier !== memFixture.expectedTier || memHint.index !== memFixture.expectedIndex)
+  fail("readinessHint fixture mismatch");
+const streakEnd = [
+  { x: 2.5, y: 1, s: 9 },
+  { x: 2.6, y: 1.1, s: 9 },
+  { x: 2.4, y: 0.9, s: 10 },
+  { x: 2.55, y: 1, s: 9 },
+  { x: 2.45, y: 1.05, s: 10 },
+  { x: 2.5, y: 1, s: 9 },
+];
+const streakDb = {
+  setups: db.setups,
+  sessions: [
+    { id: "st1", date: "2026-06-10", dist: 70, faceD: 122, setupId: "main", ends: [streakEnd] },
+    { id: "st2", date: "2026-06-11", dist: 70, faceD: 122, setupId: "main", ends: [streakEnd] },
+  ],
+  sightMarks: [],
+  settings: db.settings,
+};
+if (Eng.memory.sessionStreak(streakDb, "main", 70) < 2) fail("sessionStreak expected >= 2");
 
 const stack = Geo.targetSvg(
   122,

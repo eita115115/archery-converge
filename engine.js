@@ -7,7 +7,7 @@
   var Geo = root.ConvergeGeometry;
   if (!Phy) throw new Error("ConvergeEngine requires ArcheryPhysics");
 
-  var RUNTIME_VERSION = 1;
+  var RUNTIME_VERSION = 2;
 
   function clamp(v, a, b) {
     return Math.max(a, Math.min(b, v));
@@ -155,6 +155,41 @@
     return "low";
   }
 
+  function personalState(db, sess, setup, st) {
+    return Phy.personalModel(db, slimSession(sess), slimSetup(setup), st);
+  }
+
+  function readinessHint(db, setupId, settings) {
+    if (!setupId) return null;
+    var index = Phy.convergeIndex(db, setupId, settings);
+    var n = (db.sessions || []).filter(function (s) {
+      return s.setupId === setupId;
+    }).length;
+    var toPersonal = Math.max(0, 3 - n);
+    var toIndex25 = Math.max(0, Math.ceil((25 - index) / 4));
+    var tier = "new";
+    if (index >= 75) tier = "mature";
+    else if (index >= 50) tier = "ready";
+    else if (index >= 25) tier = "warming";
+    else if (n >= 1) tier = "building";
+    var hasRegression = false;
+    var dists = [];
+    (db.sessions || []).forEach(function (s) {
+      if (s.setupId === setupId && s.dist != null && dists.indexOf(s.dist) < 0) dists.push(s.dist);
+    });
+    dists.forEach(function (d) {
+      var reg = Phy.regressionAdvice(db, setupId, d);
+      if ((reg.v && (reg.v.quality || reg.v.r2 || 0) > 0.5) || (reg.h && (reg.h.quality || reg.h.r2 || 0) > 0.5))
+        hasRegression = true;
+    });
+    return {
+      tier: tier,
+      index: index,
+      sessionsNeeded: tier === "new" || tier === "building" ? Math.max(toPersonal, toIndex25) : null,
+      hasRegression: hasRegression,
+    };
+  }
+
   root.ConvergeEngine = Object.freeze({
     runtimeVersion: RUNTIME_VERSION,
     physicsVersion: Phy.version,
@@ -198,6 +233,12 @@
       model: Phy.windModel,
       classify: Phy.classifyWind,
       suggestReconfirm: Phy.suggestWindReconfirm,
+    }),
+    memory: Object.freeze({
+      personalState: personalState,
+      sessionStreak: Phy.sessionStreak,
+      convergeIndex: Phy.convergeIndex,
+      readinessHint: readinessHint,
     }),
     ringW: ringW,
   });

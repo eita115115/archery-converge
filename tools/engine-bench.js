@@ -69,6 +69,8 @@ bench("trajectory cold x20", () => Eng.ballistics.trajectory(sess, db.setups[0],
 bench("trajectory cached x200", () => Eng.ballistics.trajectory(sess, db.setups[0], 850), 200);
 bench("analyzeEnd x50", () => Eng.advice.analyzeEnd(db, db.settings, db.setups[0], sess, arrows), 50);
 bench("wind.classify x200", () => Eng.wind.classify(windySess, st), 200, 0.5);
+Eng.memory.convergeIndex(db, "s1", db.settings);
+bench("convergeIndex x100", () => Eng.memory.convergeIndex(db, "s1", db.settings), 100, 5);
 
 if (failed) process.exit(1);
 console.log("engine-bench OK tier=" + Eng.profile.tier + " steps=" + Eng.profile.maxSimSteps);

@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=62;
+const KEY="archeryConverge.v1", APP_VER=63;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Eng=window.ConvergeEngine;
