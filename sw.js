@@ -1,4 +1,4 @@
-const CACHE = "archery-converge-v82";
+const CACHE = "archery-converge-v83";
 const ASSETS = [
   "./index.html",
   "./style.css",
@@ -18,15 +18,6 @@ const ASSETS = [
   "./manifest.json",
   "./icon.svg",
   "./apple-touch-icon.png",
-  "./assets/.cache/f/a7f3c201.jpg",
-  "./assets/.cache/f/b8e4d302.jpg",
-  "./assets/.cache/f/c9f5e413.jpg",
-  "./assets/.cache/f/d0a6f524.jpg",
-  "./assets/.cache/f/e1b7a635.jpg",
-  "./assets/.cache/f/f2c8b746.jpg",
-  "./assets/.cache/f/03d9c857.jpg",
-  "./assets/.cache/f/14eab968.jpg",
-  "./assets/.cache/f/25fbc079.jpg",
   "./version.json",
 ];
 

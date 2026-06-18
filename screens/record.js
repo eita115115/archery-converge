@@ -78,8 +78,10 @@ function updateRecordFace(s){
   if(!face||!svg)return;
   const wasCelebration=svg.classList.contains("celebration"),isCelebration=mode==="celebration";
   if(wasCelebration===isCelebration&&!isCelebration)return;
-  face.innerHTML=Geo.targetFaceSvg(s.faceD,"tg",mode,zenkinFaceIdx(s,s.cur,pe));
-  Geo.applyZenkinFaceClasses(svg,mode,zenkinFaceIdx(s,s.cur,pe));
+  const oi=zenkinFaceIdx(s,s.cur,pe);
+  if(isCelebration){const ov=Geo.zenkinFaceAt(oi);if(ov&&ov.file)prefetchCelebrationFace(ov.file);}
+  face.innerHTML=Geo.targetFaceSvg(s.faceD,"tg",mode,oi);
+  Geo.applyZenkinFaceClasses(svg,mode,oi);
   if(isCelebration&&!wasCelebration){svg.classList.add("face-reveal");setTimeout(()=>svg.classList.remove("face-reveal"),560);}
 }
 function updateRecordCoach(s){
@@ -136,6 +138,7 @@ function afterRecordArrow(s,arrow){
   const stack=document.querySelector(".tgt-stack");
   if(stack){stack.classList.remove("hit-flash");void stack.offsetWidth;stack.classList.add("hit-flash");setTimeout(()=>stack.classList.remove("hit-flash"),520);}
   const zen=Geo.isZenkinEnd(s.cur,s.perEnd);
+  if(!zen&&s.cur.length===5&&s.cur.every(a=>a.s>=10)&&zenkinFxOn())warmupCelebrationFaces();
   tapHaptic({zenkin:zen&&zenkinFxOn(),ten:arrow.s>=10});
   if(zen&&zenkinFxOn())flashZenkinConverge(document.querySelector(".tgt-stack"),$(".rec-progress"));
 }
@@ -173,7 +176,10 @@ function bindTarget(s){
     s.cur.push({x:+h.x.toFixed(2),y:+h.y.toFixed(2),s:h.s,X:h.X,cut});
     const hint=begOn()&&Beg?Beg.firstArrowToast(s.cur.length,s.perEnd,h.s):null;
     const zen=Geo.isZenkinEnd(s.cur,s.perEnd);
-    if(zen&&s.zenkinFaceIdx==null)s.zenkinFaceIdx=Geo.pickZenkinFace();
+    if(zen&&s.zenkinFaceIdx==null){
+      s.zenkinFaceIdx=Geo.pickZenkinFace();
+      if(zenkinFxOn()){const ov=Geo.zenkinFaceAt(s.zenkinFaceIdx);if(ov&&ov.file)prefetchCelebrationFace(ov.file);}
+    }
     save();
     if(zen&&zenkinFxOn()){const lb=Geo.zenkinFaceLabel(s.zenkinFaceIdx);toast(begOn()?"全金！！ "+lb:"全金 — "+lb);}
     else if(hint)toast(hint);

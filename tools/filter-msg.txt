@@ -1,0 +1,4 @@
+regex:oppai==>face
+regex:おっぱい==>お祝い
+regex:zenkin==>celebration
+regex:Zenkin==>Celebration

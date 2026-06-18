@@ -186,6 +186,26 @@ function endPulse(n,cb,opts){
   p.classList.add("on");
   setTimeout(()=>{p.classList.remove("on","zenkin");setTimeout(cb,200);},zen?1050:580);
 }
+const _facePrefetch=new Set();
+function prefetchCelebrationFace(file){
+  if(!file||_facePrefetch.has(file))return;
+  _facePrefetch.add(file);
+  const img=new Image();
+  img.decoding="async";
+  img.src=file;
+  fetch(file).catch(()=>{});
+}
+function warmupCelebrationFaces(){
+  if(!zenkinFxOn()||!Geo.ZENKIN_FACES)return;
+  let i=0;
+  function next(){
+    if(i>=Geo.ZENKIN_FACES.length)return;
+    prefetchCelebrationFace(Geo.ZENKIN_FACES[i++].file);
+    if(typeof requestIdleCallback==="function")requestIdleCallback(next,{timeout:1800});
+    else setTimeout(next,280);
+  }
+  next();
+}
 function targetModeFor(arrows,pe){return Geo.isZenkinEnd(arrows,pe)&&zenkinFxOn()?"celebration":"sport";}
 function backToSetupFromRecord(s){
   ui._dist=s.dist;
