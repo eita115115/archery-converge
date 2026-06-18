@@ -85,8 +85,11 @@ const requiredHtml = [
   "prefers-reduced-motion",
   "return-verdict",
   "zenkin-converge",
-  "home-breathe",
-  "hero-glow",
+  "--sk-focus-color",
+  "--sk-button-border-radius",
+  "btn-secondary",
+  "typography-subhead",
+  "section-hero",
   "verdict-in",
 ];
 const htmlOnly = new Set([
@@ -131,7 +134,7 @@ forbiddenHtml.forEach(s => {
 
 const requiredApp = [
   "ConvergeGeometry required",
-  "APP_VER=57",
+  "APP_VER=58",
   "return-verdict",
   "return-verdict-eyebrow",
   "returnVerdictHtml",
@@ -140,7 +143,11 @@ const requiredApp = [
   "ret-converge",
   "zenkin-dots",
   "flashZenkinConverge",
-  "home-setup-note",
+  "button-secondary",
+  "tile-ctas",
+  "tile-copy-wrapper",
+  "typography-headline",
+  "homeHeadlineHtml",
   "zenkin-converge",
   "ret-reveal",
   "page-in",

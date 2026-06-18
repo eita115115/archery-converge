@@ -3,7 +3,7 @@
 const Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
 
-const KEY="archeryConverge.v1", APP_VER=57;
+const KEY="archeryConverge.v1", APP_VER=58;
 const COACH_CAP=2;
 const Cx=window.ConvergeCompat;
 const Phy=window.ArcheryPhysics;
@@ -540,29 +540,35 @@ function homeFlowHtml(){
   ];
   return `<div class="home-flow home-steps">${steps.map(([k,v],i)=>`${i?`<span class="flow-dot" aria-hidden="true"></span>`:""}<div class="flow-item"><span class="flow-k">${k}</span><span class="flow-v">${v}</span></div>`).join("")}</div>`;
 }
+function homeHeadlineHtml(){
+  if(begOn())return `<span class="tile-headline-line home-title-line"><span class="tile-headline-body home-title-body">着弾が</span><span class="tile-headline-punct home-title-punct">、</span></span><span class="tile-headline-line home-title-line"><span class="tile-headline-body home-title-body">収束する</span><span class="tile-headline-punct home-title-punct">。</span></span>`;
+  return `<span class="tile-headline-line home-title-line"><span class="tile-headline-body home-title-body">Hits</span></span><span class="tile-headline-line home-title-line"><span class="tile-headline-body home-title-body">converge</span><span class="tile-headline-punct home-title-punct">.</span></span>`;
+}
 function renderHome(){
   shell(-1,"",null,`
     <div class="home-wrap">
-      <section class="home-hero">
-        <div class="home-visual" aria-hidden="true"><svg viewBox="0 0 100 100" role="img" aria-label="的">
-          <defs><radialGradient id="hg" cx="50%" cy="45%" r="50%"><stop offset="0%" stop-color="#fff"/><stop offset="70%" stop-color="#f5f3ee"/><stop offset="100%" stop-color="#e8e4dc"/></radialGradient></defs>
-          <circle cx="50" cy="50" r="46" fill="url(#hg)" stroke="#d8d5cd" stroke-width=".5"/>
-          <circle cx="50" cy="50" r="36" fill="none" stroke="#1c1b19" stroke-width="1.2" opacity=".12"/>
-          <circle cx="50" cy="50" r="26" fill="none" stroke="#1c1b19" stroke-width="1.2" opacity=".18"/>
-          <circle cx="50" cy="50" r="16" fill="none" stroke="#1c1b19" stroke-width="1.2" opacity=".22"/>
-          <circle cx="50" cy="50" r="6" fill="#1c1b19"/>
-          <circle cx="50" cy="50" r="2.2" fill="#d4a72c"/>
-        </svg></div>
-        <h1 class="home-title${begOn()?" is-ja":" is-en"}">${begOn()
-          ?`<span class="home-title-line"><span class="home-title-body">着弾が</span><span class="home-title-punct">、</span></span><span class="home-title-line"><span class="home-title-body">収束する</span><span class="home-title-punct">。</span></span>`
-          :`<span class="home-title-line"><span class="home-title-body">Hits</span></span><span class="home-title-line"><span class="home-title-body">converge</span><span class="home-title-punct">.</span></span>`}</h1>
-        <p class="home-tag">${begOn()?"6本のあとに、次が見える。":"After six, the next move shows."}</p>
+      <section class="home-tile home-hero section-hero">
+        <div class="tile-content">
+          <div class="tile-copy-wrapper">
+            <div class="home-visual" aria-hidden="true"><svg viewBox="0 0 100 100" role="img" aria-label="的">
+              <defs><radialGradient id="hg" cx="50%" cy="45%" r="50%"><stop offset="0%" stop-color="#fff"/><stop offset="70%" stop-color="#f5f3ee"/><stop offset="100%" stop-color="#e8e4dc"/></radialGradient></defs>
+              <circle cx="50" cy="50" r="46" fill="url(#hg)" stroke="#d8d5cd" stroke-width=".5"/>
+              <circle cx="50" cy="50" r="36" fill="none" stroke="#1c1b19" stroke-width="1.2" opacity=".12"/>
+              <circle cx="50" cy="50" r="26" fill="none" stroke="#1c1b19" stroke-width="1.2" opacity=".18"/>
+              <circle cx="50" cy="50" r="16" fill="none" stroke="#1c1b19" stroke-width="1.2" opacity=".22"/>
+              <circle cx="50" cy="50" r="6" fill="#1c1b19"/>
+              <circle cx="50" cy="50" r="2.2" fill="#d4a72c"/>
+            </svg></div>
+            <h1 class="tile-headline typography-headline home-title${begOn()?" is-ja":" is-en"}">${homeHeadlineHtml()}</h1>
+            <p class="tile-subhead typography-subhead home-tag">${begOn()?"6本のあとに、次が見える。":"After six, the next move shows."}</p>
+          </div>
+          <div class="tile-ctas home-start">
+            <button class="btn button hero" id="goQuick">${begOn()?"記録を始める":"Start recording"}</button>
+            <button type="button" class="btn button-secondary" id="goSetup">${begOn()?"距離・サイトを変更":"Change dist & sight"}</button>
+          </div>
+          ${db.sessions.length?`<p class="home-prev">${begOn()?"前回":"Last"} · ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · <b>${sessTot(db.sessions[db.sessions.length-1])}</b></p>`:""}
+        </div>
       </section>
-      ${db.sessions.length?`<p class="home-prev">${begOn()?"前回":"Last"} · ${fmtD(db.sessions[db.sessions.length-1].date)} · ${db.sessions[db.sessions.length-1].dist}m · <b>${sessTot(db.sessions[db.sessions.length-1])}</b></p>`:""}
-      <div class="home-start">
-        <button class="btn hero" id="goQuick">${begOn()?"記録を始める":"Start recording"}</button>
-        <button type="button" class="home-setup-note" id="goSetup">${begOn()?"距離・サイトを変更":"Change dist & sight"}</button>
-      </div>
       <footer class="home-foot">
         <nav class="home-foot-nav home-foot-nav-thin">
           <button type="button" id="lnkHist">${begOn()?"履歴":"History"}</button>
