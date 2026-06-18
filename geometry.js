@@ -90,17 +90,17 @@
     [1, "#d4a72c", "#222"],
   ];
 
-  /** 全金お祝いフェイス（非公開アセット・zenkin/）— weight = 出現重み（小さいほどレア） */
+  /** 全金お祝いフェイス（難読化アセット）— weight = 出現重み（小さいほどレア） */
   var ZENKIN_FACES = [
-    { id: "v1", file: "zenkin/1.jpg", label: "①", fx: 0.52, fy: 0.46, zoom: 1.08, weight: 28, tier: "common" },
-    { id: "v2", file: "zenkin/2.jpg", label: "②", fx: 0.5, fy: 0.44, zoom: 1.06, weight: 22, tier: "common" },
-    { id: "v3", file: "zenkin/3.jpg", label: "③", fx: 0.56, fy: 0.45, zoom: 1.1, weight: 22, tier: "common" },
-    { id: "v4", file: "zenkin/4.jpg", label: "④", fx: 0.5, fy: 0.42, zoom: 1.08, weight: 14, tier: "flashy" },
-    { id: "v5", file: "zenkin/5.jpg", label: "⑤", fx: 0.5, fy: 0.45, zoom: 1.08, weight: 0.35, tier: "gold" },
-    { id: "v6", file: "zenkin/6.jpg", label: "⑥", fx: 0.5, fy: 0.45, zoom: 1.08, weight: 0.35, tier: "silver" },
-    { id: "v7", file: "zenkin/7.jpg", label: "⑦", fx: 0.5, fy: 0.45, zoom: 1.05, weight: 4, tier: "epic" },
-    { id: "v8", file: "zenkin/8.jpg", label: "⑧", fx: 0.5, fy: 0.5, zoom: 1.0, weight: 0.35, tier: "framed" },
-    { id: "v9", file: "zenkin/9.jpg", label: "⑨", fx: 0.5, fy: 0.5, zoom: 1.0, weight: 0.35, tier: "framed" },
+    { id: "v1", file: "assets/.cache/f/a7f3c201.jpg", label: "①", fx: 0.52, fy: 0.46, zoom: 1.08, weight: 28, tier: "common" },
+    { id: "v2", file: "assets/.cache/f/b8e4d302.jpg", label: "②", fx: 0.5, fy: 0.44, zoom: 1.06, weight: 22, tier: "common" },
+    { id: "v3", file: "assets/.cache/f/c9f5e413.jpg", label: "③", fx: 0.56, fy: 0.45, zoom: 1.1, weight: 22, tier: "common" },
+    { id: "v4", file: "assets/.cache/f/d0a6f524.jpg", label: "④", fx: 0.5, fy: 0.42, zoom: 1.08, weight: 14, tier: "flashy" },
+    { id: "v5", file: "assets/.cache/f/e1b7a635.jpg", label: "⑤", fx: 0.5, fy: 0.45, zoom: 1.08, weight: 0.35, tier: "gold" },
+    { id: "v6", file: "assets/.cache/f/f2c8b746.jpg", label: "⑥", fx: 0.5, fy: 0.45, zoom: 1.08, weight: 0.35, tier: "silver" },
+    { id: "v7", file: "assets/.cache/f/03d9c857.jpg", label: "⑦", fx: 0.5, fy: 0.45, zoom: 1.05, weight: 4, tier: "epic" },
+    { id: "v8", file: "assets/.cache/f/14eab968.jpg", label: "⑧", fx: 0.5, fy: 0.5, zoom: 1.0, weight: 0.35, tier: "framed" },
+    { id: "v9", file: "assets/.cache/f/25fbc079.jpg", label: "⑨", fx: 0.5, fy: 0.5, zoom: 1.0, weight: 0.35, tier: "framed" },
   ];
 
   function zenkinFaceAt(idx) {

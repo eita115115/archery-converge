@@ -3,5 +3,7 @@ Thumbs.db
 *.log
 node_modules/
 
-# 開発用参考画像（GitHub Pages には載せない）
+# 開発用参考画像（公開ビルドには載せない）
 refs/
+# 旧パス（再生成禁止）
+zenkin/

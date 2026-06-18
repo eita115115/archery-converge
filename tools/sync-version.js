@@ -28,16 +28,16 @@ function writeVersion(v) {
 
 function syncAppState(v) {
   const src = fs.readFileSync(appStatePath, "utf8");
+  if (!/APP_VER=\d+/.test(src)) throw new Error("app-state.js: APP_VER= pattern not found");
   const next = src.replace(/APP_VER=\d+/, `APP_VER=${v}`);
-  if (next === src) throw new Error("app-state.js: APP_VER= pattern not found");
-  fs.writeFileSync(appStatePath, next);
+  if (next !== src) fs.writeFileSync(appStatePath, next);
 }
 
 function syncSw(v) {
   const src = fs.readFileSync(swPath, "utf8");
+  if (!/archery-converge-v\d+/.test(src)) throw new Error("sw.js: archery-converge-v pattern not found");
   const next = src.replace(/archery-converge-v\d+/, `archery-converge-v${v}`);
-  if (next === src) throw new Error("sw.js: archery-converge-v pattern not found");
-  fs.writeFileSync(swPath, next);
+  if (next !== src) fs.writeFileSync(swPath, next);
 }
 
 function versions() {

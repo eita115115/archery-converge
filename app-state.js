@@ -1,7 +1,7 @@
 /* ConvergeApp — state, persistence, coach */
 var Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
-var KEY="archeryConverge.v1", APP_VER=81, EXPORT_VERSION=1;
+var KEY="archeryConverge.v1", APP_VER=82, EXPORT_VERSION=1;
 var COACH_CAP=2;
 var CONVERGE_MILESTONES=[25,50,75];
 var Cx=window.ConvergeCompat;

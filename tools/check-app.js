@@ -644,7 +644,7 @@ if (!dotSolid.includes("mark-solid") || dotSolid.includes("stroke-dasharray")) f
 if (typeof Geo.isLineCut !== "function") fail("isLineCut export");
 
 const celebration = Geo.targetSvg(122, "chk", "", "celebration");
-if (!celebration.includes("face celebration") || !celebration.includes("zenkin/1.jpg"))
+if (!celebration.includes("face celebration") || !celebration.includes("assets/.cache/f/a7f3c201.jpg"))
   fail("celebration target face missing");
 Geo.ZENKIN_FACES.forEach((v) => {
   if (!fs.existsSync(path.join(root, v.file))) fail("zenkin face missing: " + v.file);

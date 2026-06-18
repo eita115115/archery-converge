@@ -11,7 +11,7 @@
     "version:check": "node tools/sync-version.js --check",
     "version:bump": "node tools/sync-version.js --bump",
     "icon": "node tools/render-icon.js",
-    "zenkin:build": "node tools/build-zenkin.js"
+    "faces:build": "node tools/build-faces.js"
   },
   "devDependencies": {
     "sharp": "^0.35.1"
