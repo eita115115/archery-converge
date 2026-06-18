@@ -8,10 +8,11 @@ function slice(a, b) {
   return lines.slice(a - 1, b).join("\n");
 }
 
+const appVer = JSON.parse(fs.readFileSync(path.join(root, "version.json"), "utf8")).v;
 const stateHead = `/* ConvergeApp — state, persistence, coach */
 var Geo=window.ConvergeGeometry;
 if(!Geo)throw new Error("ConvergeGeometry required");
-var KEY="archeryConverge.v1", APP_VER=76, EXPORT_VERSION=1;
+var KEY="archeryConverge.v1", APP_VER=${appVer}, EXPORT_VERSION=1;
 var COACH_CAP=2;
 var CONVERGE_MILESTONES=[25,50,75];
 var Cx=window.ConvergeCompat;

@@ -5,8 +5,11 @@
     "check:app": "node tools/check-app.js",
     "check:parse": "node tools/parse-check.js",
     "check:beginner": "node tools/beginner-sim.js",
-    "check": "npm run check:app && npm run check:beginner",
+    "check": "npm run version:check && npm run check:app && npm run check:beginner",
     "check:engine": "node tools/engine-bench.js",
+    "version:sync": "node tools/sync-version.js",
+    "version:check": "node tools/sync-version.js --check",
+    "version:bump": "node tools/sync-version.js --bump",
     "icon": "node tools/render-icon.js"
   },
   "devDependencies": {
